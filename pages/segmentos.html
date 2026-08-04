@@ -4,15 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Solicitar Demonstração — Portal Associativo</title>
-  <meta name="description" content="Solicite uma demonstração do Portal Associativo para o seu clube ou associação — sem compromisso, resposta em até 1 dia útil.">
-  <link rel="canonical" href="https://portalassociativo.com.br/pages/demonstracao.html">
+  <title>Segmentos atendidos — Portal Associativo</title>
+  <meta name="description" content="Clubes equestres, associações rurais, clubes recreativos, entidades de classe e associações de bairro — veja como o Portal Associativo se encaixa no seu tipo de associação.">
+  <link rel="canonical" href="https://portalassociativo.com.br/pages/segmentos.html">
 
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Solicitar Demonstração — Portal Associativo">
-  <meta property="og:description" content="Sem compromisso, resposta em até 1 dia útil.">
+  <meta property="og:title" content="Segmentos atendidos — Portal Associativo">
+  <meta property="og:description" content="Veja como o Portal Associativo se encaixa no seu tipo de associação.">
   <meta property="og:image" content="https://portalassociativo.com.br/assets/images/brand/og-cover.png">
-  <meta property="og:url" content="https://portalassociativo.com.br/pages/demonstracao.html">
+  <meta property="og:url" content="https://portalassociativo.com.br/pages/segmentos.html">
   <meta property="og:locale" content="pt_BR">
 
   <link rel="icon" type="image/svg+xml" href="../assets/images/icons/favicon.svg">
@@ -42,13 +42,13 @@
     <div class="collapse navbar-collapse" id="nav">
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
         <li class="nav-item"><a class="nav-link" data-nav-link href="funcionalidades.html">Funcionalidades</a></li>
-        <li class="nav-item"><a class="nav-link" data-nav-link href="segmentos.html">Segmentos</a></li>
+        <li class="nav-item"><a class="nav-link active-page" data-nav-link href="segmentos.html">Segmentos</a></li>
         <li class="nav-item"><a class="nav-link" data-nav-link href="planos.html">Planos</a></li>
         <li class="nav-item"><a class="nav-link" data-nav-link href="documentacao.html">Documentação</a></li>
         <li class="nav-item"><a class="nav-link" data-nav-link href="sobre.html">Sobre</a></li>
         <li class="nav-item"><a class="nav-link" data-nav-link href="contato.html">Contato</a></li>
         <li class="nav-item mt-2 mt-lg-0 ms-lg-2">
-          <a class="btn btn-accent w-100 w-lg-auto active-page" data-nav-link href="demonstracao.html">Solicitar demonstração</a>
+          <a class="btn btn-accent w-100 w-lg-auto" href="demonstracao.html">Solicitar demonstração</a>
         </li>
         <li class="nav-item">
           <a class="nav-link ds-text-sm" data-nav-link href="login.html"><i class="bi bi-box-arrow-in-right me-1"></i>Login Master</a>
@@ -59,71 +59,88 @@
 </nav>
 
 <main id="conteudo-principal">
-  <section class="ds-section">
-    <div class="container ds-container-reading">
-      <div class="text-center mb-5">
-        <span class="ds-eyebrow">Demonstração</span>
-        <h1 class="mt-2 mb-3">Solicitar demonstração</h1>
-        <p class="ds-lead">
-          Conte um pouco sobre a sua associação e a gente mostra o Portal funcionando, com uma
-          proposta com valor por escrito — sem compromisso, resposta em até 1 dia útil.
-        </p>
-      </div>
 
-      <form class="row g-3 needs-validation" id="demoForm" novalidate>
-        <div class="col-md-6">
-          <label for="nome" class="form-label">Seu nome</label>
-          <input type="text" class="form-control" id="nome" name="nome" required minlength="2">
-          <div class="invalid-feedback">Digite seu nome — precisamos saber com quem estamos falando.</div>
-        </div>
-        <div class="col-md-6">
-          <label for="cargo" class="form-label">Seu cargo na diretoria <span class="ds-text-muted ds-text-sm">(opcional)</span></label>
-          <input type="text" class="form-control" id="cargo" name="cargo" placeholder="Presidente, tesoureiro, secretária...">
-        </div>
-        <div class="col-md-6">
-          <label for="associacao" class="form-label">Nome da associação/clube</label>
-          <input type="text" class="form-control" id="associacao" name="associacao" required minlength="2">
-          <div class="invalid-feedback">Digite o nome da sua associação.</div>
-        </div>
-        <div class="col-md-6">
-          <label for="associados" class="form-label">Quantos associados, aproximadamente?</label>
-          <select class="form-select" id="associados" name="associados" required>
-            <option value="" selected disabled>Selecione uma faixa</option>
-            <option>Até 50</option>
-            <option>De 51 a 150</option>
-            <option>De 151 a 500</option>
-            <option>Mais de 500</option>
-          </select>
-          <div class="invalid-feedback">Escolha uma faixa — só para dimensionar a demonstração.</div>
-        </div>
-        <div class="col-md-6">
-          <label for="telefone" class="form-label">Telefone (com WhatsApp, se possível)</label>
-          <input type="tel" class="form-control" id="telefone" name="telefone" required placeholder="(00) 00000-0000">
-          <div class="invalid-feedback">Digite um telefone de contato.</div>
-        </div>
-        <div class="col-md-6">
-          <label for="email" class="form-label">E-mail</label>
-          <input type="email" class="form-control" id="email" name="email" required>
-          <div class="invalid-feedback">Digite um e-mail válido.</div>
-        </div>
-        <div class="col-12">
-          <label for="mensagem" class="form-label">Algo específico que você gostaria de ver? <span class="ds-text-muted ds-text-sm">(opcional)</span></label>
-          <textarea class="form-control" id="mensagem" name="mensagem" rows="4"></textarea>
-        </div>
-        <div class="col-12">
-          <button type="submit" class="btn btn-primary btn-lg w-100 w-sm-auto">
-            <i class="bi bi-send me-1"></i>Solicitar demonstração
-          </button>
-        </div>
-        <div class="col-12">
-          <div class="ds-alert ds-alert-ok d-none" data-form-feedback>
-            <i class="bi bi-check-circle ds-alert-icon"></i>
-            <div>Abrimos seu aplicativo de e-mail com os dados já preenchidos — é só confirmar o envio.</div>
-          </div>
-        </div>
-      </form>
+  <section class="ds-section pb-4">
+    <div class="container ds-container-reading text-center">
+      <span class="ds-eyebrow">Segmentos atendidos</span>
+      <h1 class="ds-display mt-3 mb-3" style="font-size:clamp(1.75rem, 3vw + 1rem, 2.5rem);">
+        O produto começa vertical, mas a arquitetura já é horizontal
+      </h1>
+      <p class="ds-lead">
+        O Portal Associativo nasceu para resolver a gestão de clubes equestres e associações
+        rurais — um nicho que, hoje, ninguém atende bem. Mas o mesmo painel simples serve
+        qualquer associação que hoje se organiza por planilha, WhatsApp e boleto avulso.
+      </p>
     </div>
   </section>
+
+  <section class="ds-section ds-section-alt">
+    <div class="container">
+      <div class="row g-4">
+
+        <div class="col-md-6">
+          <div class="ds-card ds-card-body h-100">
+            <div class="ds-qc-icon mb-3"><i class="bi bi-flower1"></i></div>
+            <h2 class="h4 fw-bold">Clubes equestres e associações rurais</h2>
+            <p class="ds-text-muted">
+              O primeiro nicho atendido pelo Portal, e o que deu origem a ele — hoje gerido, na
+              grande maioria dos casos, por planilha, boletim avulso e grupo de WhatsApp. Nenhum
+              concorrente do setor tem qualquer especialização na cultura rural/equestre.
+            </p>
+            <p class="mb-0"><strong>Prova real:</strong> o <a href="sobre.html">Clube do Cavalo de Bonfim MG</a> é o primeiro cliente em produção do Portal Associativo.</p>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="ds-card ds-card-body h-100">
+            <div class="ds-qc-icon mb-3"><i class="bi bi-trophy"></i></div>
+            <h2 class="h4 fw-bold">Clubes recreativos e sociais</h2>
+            <p class="ds-text-muted">
+              Piscina, salão de festas, quadra esportiva — associações que vivem de mensalidade
+              em dia e de uma agenda de eventos organizada, geridas por uma diretoria eleita, não
+              por um time técnico.
+            </p>
+            <p class="mb-0">Financeiro, Eventos e Comunicação resolvem a maior parte da rotina desse tipo de clube.</p>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="ds-card ds-card-body h-100">
+            <div class="ds-qc-icon mb-3"><i class="bi bi-briefcase"></i></div>
+            <h2 class="h4 fw-bold">Entidades de classe</h2>
+            <p class="ds-text-muted">
+              Associações profissionais e sindicatos que precisam de categoria de sócio própria,
+              comunicação institucional e cobrança recorrente — sem parecer ferramenta de RH
+              genérica.
+            </p>
+            <p class="mb-0">A nomenclatura de categoria de sócio se adapta ao nicho, dentro de um sistema consistente.</p>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="ds-card ds-card-body h-100">
+            <div class="ds-qc-icon mb-3"><i class="bi bi-house-heart"></i></div>
+            <h2 class="h4 fw-bold">Associações de bairro e comunitárias</h2>
+            <p class="ds-text-muted">
+              Diretorias voluntárias, sem orçamento para um sistema complexo — precisam de algo
+              simples o bastante para operar sozinhas, sem depender de um técnico contratado.
+            </p>
+            <p class="mb-0">Módulos como Leilões podem ficar desativados — o sitemap é sempre o completo menos o que não faz sentido para o contexto.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="ds-section text-center" style="background:var(--brand-dark); color:#fff;">
+    <div class="container">
+      <h2 class="mb-3">Não achou o seu tipo de associação na lista?</h2>
+      <p class="mb-4" style="opacity:.85;">A arquitetura do Portal é horizontal desde a origem — fale com a gente e vamos ver se faz sentido para o seu caso.</p>
+      <a href="contato.html" class="btn btn-accent btn-lg">Fale com a gente</a>
+    </div>
+  </section>
+
 </main>
 
 <footer class="py-5 border-top" style="background:var(--brand-dark);">
@@ -168,21 +185,6 @@
 </footer>
 
 <script src="../js/bootstrap.bundle.min.js"></script>
-<script type="module">
-  import { initMailtoForm } from "../js/forms.js";
-  initMailtoForm(document.getElementById("demoForm"), {
-    subjectPrefix: "Solicitação de demonstração",
-    buildBody: (d) => [
-      `Nome: ${d.nome}`,
-      d.cargo ? `Cargo: ${d.cargo}` : null,
-      `Associação/clube: ${d.associacao}`,
-      `Nº aproximado de associados: ${d.associados}`,
-      `Telefone: ${d.telefone}`,
-      `E-mail: ${d.email}`,
-      d.mensagem ? `\nO que gostaria de ver:\n${d.mensagem}` : null,
-    ].filter(Boolean).join("\n"),
-  });
-</script>
 <script type="module" src="../js/app.js"></script>
 </body>
 </html>

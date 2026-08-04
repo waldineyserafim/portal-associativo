@@ -61,16 +61,19 @@ como referência de markup a ser copiado para as páginas.
 
 ## Formulários (contato / demonstração)
 
-Sem backend próprio neste projeto (por definição do escopo). Duas rotas
-possíveis quando forem implementados:
+Sem backend próprio neste projeto (por definição do escopo). **Decisão adotada
+nesta fase**: `js/forms.js` monta um link `mailto:` com os dados do formulário
+já preenchidos no corpo da mensagem e abre o cliente de e-mail do usuário —
+funciona 100% estático, sem depender de serviço de terceiro (Formspree/
+Web3Forms) nem de Cloud Function própria. O endereço de destino
+(`contato@portalassociativo.com.br`, constante `DEST_EMAIL` em `js/forms.js`)
+é um placeholder de domínio — **precisa apontar para uma caixa real antes da
+publicação**.
 
-- Serviço de formulário estático de terceiros (Formspree, Web3Forms) — mais
-  simples, zero backend.
-- Uma Cloud Function no projeto Firebase já existente — mais controle, mas
-  acopla o Portal ao deploy de Functions do CCBMG.
-
-**Não implementado ainda** — decisão a tomar antes de sair do placeholder em
-`components/forms/`.
+Se o volume de leads justificar substituir esse fluxo por um serviço de
+formulário de terceiros ou por uma Cloud Function própria no futuro, a troca
+fica isolada em `js/forms.js` — os formulários em si (`pages/contato.html`,
+`pages/demonstracao.html`) não precisam mudar de estrutura.
 
 ## Convenções herdadas do CCBMG
 

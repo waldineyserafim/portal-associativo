@@ -1,14 +1,15 @@
 <!--
   components/layout/modal.html
   Status: placeholder estrutural — conteúdo definitivo ainda não implementado.
-
-  Componente: Casca-base para modais (Bootstrap 5.3 .modal).
   Não é carregado via data-component (modais variam de conteúdo por página) —
   este arquivo serve como referência de markup a ser copiado/adaptado.
 
-  Uso previsto inicial: modal de "Solicitar demonstração" (ver
-  components/forms/demo-request-form.html) disparado a partir do CTA da hero
-  e da navbar.
+  Decisão da Fase 2: "Solicitar demonstração" é uma página própria
+  (pages/demonstracao.html), não um modal — mais simples de linkar
+  diretamente (navbar, CTAs, SEO) sem duplicar o formulário em cada página
+  que precisar do CTA. Este componente fica disponível para um caso futuro
+  real de decisão que exija foco total (Brand DS §7 — ex. confirmação de
+  ação irreversível).
 -->
 <div class="modal fade" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">

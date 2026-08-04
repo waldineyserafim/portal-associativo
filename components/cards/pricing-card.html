@@ -1,10 +1,12 @@
 <!--
   components/cards/pricing-card.html
-  Status: placeholder estrutural — conteúdo definitivo ainda não implementado.
+  Status: implementado — ver index.html (Home) e as páginas em pages/ para o markup real em produção. Este arquivo permanece como referência de padrão, não é carregado via data-component (ver docs/architecture).
 
   Componente: Card de plano, usado dentro de sections/pricing.html.
-  Estrutura prevista: nome do plano, preço, lista de benefícios (checklist),
-  CTA. Usar .ds-card como base (css/components.css).
+  Estrutura real (pages/planos.html): nome do plano, lista de benefícios
+  (checklist), CTA — SEM campo de preço em reais (ver nota em
+  sections/pricing.html). Usa .ds-card + .ds-pricing-card + .ds-pricing-list
+  (css/components.css); o plano em destaque soma .ds-pricing-featured.
 -->
 <div class="col-md-6 col-lg-4">
   <div class="ds-card ds-card-body h-100 text-center">

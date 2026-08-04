@@ -4,15 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Solicitar Demonstração — Portal Associativo</title>
-  <meta name="description" content="Solicite uma demonstração do Portal Associativo para o seu clube ou associação — sem compromisso, resposta em até 1 dia útil.">
-  <link rel="canonical" href="https://portalassociativo.com.br/pages/demonstracao.html">
+  <title>Documentação — Portal Associativo</title>
+  <meta name="description" content="Central de ajuda pública do Portal Associativo — primeiros passos, associados, financeiro, eventos e segurança, sem precisar de login.">
+  <link rel="canonical" href="https://portalassociativo.com.br/pages/documentacao.html">
 
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Solicitar Demonstração — Portal Associativo">
-  <meta property="og:description" content="Sem compromisso, resposta em até 1 dia útil.">
+  <meta property="og:title" content="Documentação — Portal Associativo">
+  <meta property="og:description" content="Central de ajuda pública do Portal Associativo.">
   <meta property="og:image" content="https://portalassociativo.com.br/assets/images/brand/og-cover.png">
-  <meta property="og:url" content="https://portalassociativo.com.br/pages/demonstracao.html">
+  <meta property="og:url" content="https://portalassociativo.com.br/pages/documentacao.html">
   <meta property="og:locale" content="pt_BR">
 
   <link rel="icon" type="image/svg+xml" href="../assets/images/icons/favicon.svg">
@@ -44,11 +44,11 @@
         <li class="nav-item"><a class="nav-link" data-nav-link href="funcionalidades.html">Funcionalidades</a></li>
         <li class="nav-item"><a class="nav-link" data-nav-link href="segmentos.html">Segmentos</a></li>
         <li class="nav-item"><a class="nav-link" data-nav-link href="planos.html">Planos</a></li>
-        <li class="nav-item"><a class="nav-link" data-nav-link href="documentacao.html">Documentação</a></li>
+        <li class="nav-item"><a class="nav-link active-page" data-nav-link href="documentacao.html">Documentação</a></li>
         <li class="nav-item"><a class="nav-link" data-nav-link href="sobre.html">Sobre</a></li>
         <li class="nav-item"><a class="nav-link" data-nav-link href="contato.html">Contato</a></li>
         <li class="nav-item mt-2 mt-lg-0 ms-lg-2">
-          <a class="btn btn-accent w-100 w-lg-auto active-page" data-nav-link href="demonstracao.html">Solicitar demonstração</a>
+          <a class="btn btn-accent w-100 w-lg-auto" href="demonstracao.html">Solicitar demonstração</a>
         </li>
         <li class="nav-item">
           <a class="nav-link ds-text-sm" data-nav-link href="login.html"><i class="bi bi-box-arrow-in-right me-1"></i>Login Master</a>
@@ -59,71 +59,82 @@
 </nav>
 
 <main id="conteudo-principal">
-  <section class="ds-section">
-    <div class="container ds-container-reading">
-      <div class="text-center mb-5">
-        <span class="ds-eyebrow">Demonstração</span>
-        <h1 class="mt-2 mb-3">Solicitar demonstração</h1>
-        <p class="ds-lead">
-          Conte um pouco sobre a sua associação e a gente mostra o Portal funcionando, com uma
-          proposta com valor por escrito — sem compromisso, resposta em até 1 dia útil.
-        </p>
-      </div>
 
-      <form class="row g-3 needs-validation" id="demoForm" novalidate>
-        <div class="col-md-6">
-          <label for="nome" class="form-label">Seu nome</label>
-          <input type="text" class="form-control" id="nome" name="nome" required minlength="2">
-          <div class="invalid-feedback">Digite seu nome — precisamos saber com quem estamos falando.</div>
-        </div>
-        <div class="col-md-6">
-          <label for="cargo" class="form-label">Seu cargo na diretoria <span class="ds-text-muted ds-text-sm">(opcional)</span></label>
-          <input type="text" class="form-control" id="cargo" name="cargo" placeholder="Presidente, tesoureiro, secretária...">
-        </div>
-        <div class="col-md-6">
-          <label for="associacao" class="form-label">Nome da associação/clube</label>
-          <input type="text" class="form-control" id="associacao" name="associacao" required minlength="2">
-          <div class="invalid-feedback">Digite o nome da sua associação.</div>
-        </div>
-        <div class="col-md-6">
-          <label for="associados" class="form-label">Quantos associados, aproximadamente?</label>
-          <select class="form-select" id="associados" name="associados" required>
-            <option value="" selected disabled>Selecione uma faixa</option>
-            <option>Até 50</option>
-            <option>De 51 a 150</option>
-            <option>De 151 a 500</option>
-            <option>Mais de 500</option>
-          </select>
-          <div class="invalid-feedback">Escolha uma faixa — só para dimensionar a demonstração.</div>
-        </div>
-        <div class="col-md-6">
-          <label for="telefone" class="form-label">Telefone (com WhatsApp, se possível)</label>
-          <input type="tel" class="form-control" id="telefone" name="telefone" required placeholder="(00) 00000-0000">
-          <div class="invalid-feedback">Digite um telefone de contato.</div>
-        </div>
-        <div class="col-md-6">
-          <label for="email" class="form-label">E-mail</label>
-          <input type="email" class="form-control" id="email" name="email" required>
-          <div class="invalid-feedback">Digite um e-mail válido.</div>
-        </div>
-        <div class="col-12">
-          <label for="mensagem" class="form-label">Algo específico que você gostaria de ver? <span class="ds-text-muted ds-text-sm">(opcional)</span></label>
-          <textarea class="form-control" id="mensagem" name="mensagem" rows="4"></textarea>
-        </div>
-        <div class="col-12">
-          <button type="submit" class="btn btn-primary btn-lg w-100 w-sm-auto">
-            <i class="bi bi-send me-1"></i>Solicitar demonstração
-          </button>
-        </div>
-        <div class="col-12">
-          <div class="ds-alert ds-alert-ok d-none" data-form-feedback>
-            <i class="bi bi-check-circle ds-alert-icon"></i>
-            <div>Abrimos seu aplicativo de e-mail com os dados já preenchidos — é só confirmar o envio.</div>
-          </div>
-        </div>
-      </form>
+  <section class="ds-section pb-4">
+    <div class="container ds-container-reading text-center">
+      <span class="ds-eyebrow">Documentação</span>
+      <h1 class="ds-display mt-3 mb-3" style="font-size:clamp(1.75rem, 3vw + 1rem, 2.5rem);">
+        Respostas sem precisar ligar pra ninguém
+      </h1>
+      <p class="ds-lead">
+        Esta central é pública, sem login — porque ninguém deveria precisar entrar no sistema
+        só para tirar uma dúvida simples.
+      </p>
     </div>
   </section>
+
+  <section class="ds-section ds-section-alt pt-3">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-md-6 col-lg-4">
+          <div class="ds-quick-card h-100">
+            <div class="ds-qc-icon"><i class="bi bi-rocket-takeoff"></i></div>
+            <h2 class="ds-qc-label">Primeiros passos</h2>
+            <p class="ds-qc-desc">Como entrar pela primeira vez, trocar a senha provisória e encontrar sua carteirinha de associado.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <div class="ds-quick-card h-100">
+            <div class="ds-qc-icon"><i class="bi bi-person-badge"></i></div>
+            <h2 class="ds-qc-label">Associados</h2>
+            <p class="ds-qc-desc">Como atualizar seu cadastro, conferir seu status e entender o que cada campo do painel significa.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <div class="ds-quick-card h-100">
+            <div class="ds-qc-icon"><i class="bi bi-cash-coin"></i></div>
+            <h2 class="ds-qc-label">Financeiro e pagamentos</h2>
+            <p class="ds-qc-desc">Como pagar por PIX, boleto ou cartão, o que fazer se um pagamento não aparecer confirmado, e como cancelar uma assinatura.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <div class="ds-quick-card h-100">
+            <div class="ds-qc-icon"><i class="bi bi-calendar-event"></i></div>
+            <h2 class="ds-qc-label">Eventos</h2>
+            <p class="ds-qc-desc">Como se inscrever em um evento, encontrar seu comprovante e o que fazer se precisar cancelar a inscrição.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <div class="ds-quick-card h-100">
+            <div class="ds-qc-icon"><i class="bi bi-shield-lock"></i></div>
+            <h2 class="ds-qc-label">Segurança e privacidade</h2>
+            <p class="ds-qc-desc">Como seus dados são protegidos, quem tem acesso a eles e como pedir a exclusão dos seus dados — ver <a href="privacidade.html">Privacidade</a>.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <div class="ds-quick-card h-100">
+            <div class="ds-qc-icon"><i class="bi bi-building-gear"></i></div>
+            <h2 class="ds-qc-label">Para a diretoria</h2>
+            <p class="ds-qc-desc">Como cadastrar um associado novo, publicar um evento e moderar um classificado, sem precisar de treinamento.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ds-section">
+    <div class="container ds-container-reading text-center">
+      <div class="ds-alert ds-alert-info d-inline-flex text-start">
+        <i class="bi bi-info-circle ds-alert-icon"></i>
+        <div>
+          Não encontrou o que precisava? As dúvidas mais comuns também estão respondidas nas
+          <a href="../index.html#faq">Perguntas frequentes</a> da Home. Se ainda assim faltar
+          algo, <a href="contato.html">fale com a gente</a> — sem burocracia.
+        </div>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <footer class="py-5 border-top" style="background:var(--brand-dark);">
@@ -168,21 +179,6 @@
 </footer>
 
 <script src="../js/bootstrap.bundle.min.js"></script>
-<script type="module">
-  import { initMailtoForm } from "../js/forms.js";
-  initMailtoForm(document.getElementById("demoForm"), {
-    subjectPrefix: "Solicitação de demonstração",
-    buildBody: (d) => [
-      `Nome: ${d.nome}`,
-      d.cargo ? `Cargo: ${d.cargo}` : null,
-      `Associação/clube: ${d.associacao}`,
-      `Nº aproximado de associados: ${d.associados}`,
-      `Telefone: ${d.telefone}`,
-      `E-mail: ${d.email}`,
-      d.mensagem ? `\nO que gostaria de ver:\n${d.mensagem}` : null,
-    ].filter(Boolean).join("\n"),
-  });
-</script>
 <script type="module" src="../js/app.js"></script>
 </body>
 </html>

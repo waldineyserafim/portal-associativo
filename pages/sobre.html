@@ -4,15 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Solicitar Demonstração — Portal Associativo</title>
-  <meta name="description" content="Solicite uma demonstração do Portal Associativo para o seu clube ou associação — sem compromisso, resposta em até 1 dia útil.">
-  <link rel="canonical" href="https://portalassociativo.com.br/pages/demonstracao.html">
+  <title>Sobre — Portal Associativo</title>
+  <meta name="description" content="Conheça o propósito, a missão e a origem do Portal Associativo — e por que ele existe para devolver o tempo da diretoria ao vínculo com o associado.">
+  <link rel="canonical" href="https://portalassociativo.com.br/pages/sobre.html">
 
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Solicitar Demonstração — Portal Associativo">
-  <meta property="og:description" content="Sem compromisso, resposta em até 1 dia útil.">
+  <meta property="og:title" content="Sobre — Portal Associativo">
+  <meta property="og:description" content="O propósito, a missão e a origem do Portal Associativo.">
   <meta property="og:image" content="https://portalassociativo.com.br/assets/images/brand/og-cover.png">
-  <meta property="og:url" content="https://portalassociativo.com.br/pages/demonstracao.html">
+  <meta property="og:url" content="https://portalassociativo.com.br/pages/sobre.html">
   <meta property="og:locale" content="pt_BR">
 
   <link rel="icon" type="image/svg+xml" href="../assets/images/icons/favicon.svg">
@@ -45,10 +45,10 @@
         <li class="nav-item"><a class="nav-link" data-nav-link href="segmentos.html">Segmentos</a></li>
         <li class="nav-item"><a class="nav-link" data-nav-link href="planos.html">Planos</a></li>
         <li class="nav-item"><a class="nav-link" data-nav-link href="documentacao.html">Documentação</a></li>
-        <li class="nav-item"><a class="nav-link" data-nav-link href="sobre.html">Sobre</a></li>
+        <li class="nav-item"><a class="nav-link active-page" data-nav-link href="sobre.html">Sobre</a></li>
         <li class="nav-item"><a class="nav-link" data-nav-link href="contato.html">Contato</a></li>
         <li class="nav-item mt-2 mt-lg-0 ms-lg-2">
-          <a class="btn btn-accent w-100 w-lg-auto active-page" data-nav-link href="demonstracao.html">Solicitar demonstração</a>
+          <a class="btn btn-accent w-100 w-lg-auto" href="demonstracao.html">Solicitar demonstração</a>
         </li>
         <li class="nav-item">
           <a class="nav-link ds-text-sm" data-nav-link href="login.html"><i class="bi bi-box-arrow-in-right me-1"></i>Login Master</a>
@@ -59,71 +59,81 @@
 </nav>
 
 <main id="conteudo-principal">
-  <section class="ds-section">
-    <div class="container ds-container-reading">
-      <div class="text-center mb-5">
-        <span class="ds-eyebrow">Demonstração</span>
-        <h1 class="mt-2 mb-3">Solicitar demonstração</h1>
-        <p class="ds-lead">
-          Conte um pouco sobre a sua associação e a gente mostra o Portal funcionando, com uma
-          proposta com valor por escrito — sem compromisso, resposta em até 1 dia útil.
-        </p>
-      </div>
 
-      <form class="row g-3 needs-validation" id="demoForm" novalidate>
-        <div class="col-md-6">
-          <label for="nome" class="form-label">Seu nome</label>
-          <input type="text" class="form-control" id="nome" name="nome" required minlength="2">
-          <div class="invalid-feedback">Digite seu nome — precisamos saber com quem estamos falando.</div>
-        </div>
-        <div class="col-md-6">
-          <label for="cargo" class="form-label">Seu cargo na diretoria <span class="ds-text-muted ds-text-sm">(opcional)</span></label>
-          <input type="text" class="form-control" id="cargo" name="cargo" placeholder="Presidente, tesoureiro, secretária...">
-        </div>
-        <div class="col-md-6">
-          <label for="associacao" class="form-label">Nome da associação/clube</label>
-          <input type="text" class="form-control" id="associacao" name="associacao" required minlength="2">
-          <div class="invalid-feedback">Digite o nome da sua associação.</div>
-        </div>
-        <div class="col-md-6">
-          <label for="associados" class="form-label">Quantos associados, aproximadamente?</label>
-          <select class="form-select" id="associados" name="associados" required>
-            <option value="" selected disabled>Selecione uma faixa</option>
-            <option>Até 50</option>
-            <option>De 51 a 150</option>
-            <option>De 151 a 500</option>
-            <option>Mais de 500</option>
-          </select>
-          <div class="invalid-feedback">Escolha uma faixa — só para dimensionar a demonstração.</div>
-        </div>
-        <div class="col-md-6">
-          <label for="telefone" class="form-label">Telefone (com WhatsApp, se possível)</label>
-          <input type="tel" class="form-control" id="telefone" name="telefone" required placeholder="(00) 00000-0000">
-          <div class="invalid-feedback">Digite um telefone de contato.</div>
-        </div>
-        <div class="col-md-6">
-          <label for="email" class="form-label">E-mail</label>
-          <input type="email" class="form-control" id="email" name="email" required>
-          <div class="invalid-feedback">Digite um e-mail válido.</div>
-        </div>
-        <div class="col-12">
-          <label for="mensagem" class="form-label">Algo específico que você gostaria de ver? <span class="ds-text-muted ds-text-sm">(opcional)</span></label>
-          <textarea class="form-control" id="mensagem" name="mensagem" rows="4"></textarea>
-        </div>
-        <div class="col-12">
-          <button type="submit" class="btn btn-primary btn-lg w-100 w-sm-auto">
-            <i class="bi bi-send me-1"></i>Solicitar demonstração
-          </button>
-        </div>
-        <div class="col-12">
-          <div class="ds-alert ds-alert-ok d-none" data-form-feedback>
-            <i class="bi bi-check-circle ds-alert-icon"></i>
-            <div>Abrimos seu aplicativo de e-mail com os dados já preenchidos — é só confirmar o envio.</div>
-          </div>
-        </div>
-      </form>
+  <section class="ds-section pb-4">
+    <div class="container ds-container-reading text-center">
+      <span class="ds-eyebrow">Sobre o Portal Associativo</span>
+      <h1 class="ds-display mt-3 mb-3" style="font-size:clamp(1.75rem, 3vw + 1rem, 2.5rem);">
+        O seu maior ativo é o sócio ativo
+      </h1>
+      <p class="ds-lead">
+        Associações existem para reunir pessoas em torno de algo que elas amam. A maior parte do
+        tempo da diretoria, porém, é gasta perseguindo boleto vencido, atualizando planilha e
+        respondendo a mesma dúvida no WhatsApp pela décima vez. O Portal Associativo existe para
+        devolver esse tempo para o que importa: o vínculo entre a associação e o associado.
+      </p>
     </div>
   </section>
+
+  <section class="ds-section ds-section-alt">
+    <div class="container ds-container-reading">
+      <div class="row g-4">
+        <div class="col-md-4">
+          <h2 class="h5 fw-bold"><i class="bi bi-bullseye text-primary me-2"></i>Missão</h2>
+          <p class="ds-text-muted">Tornar a gestão de associações tão simples que qualquer diretoria eleita — técnica ou não — consiga operá-la sozinha, sem treinamento e sem medo de errar.</p>
+        </div>
+        <div class="col-md-4">
+          <h2 class="h5 fw-bold"><i class="bi bi-binoculars text-primary me-2"></i>Visão</h2>
+          <p class="ds-text-muted">Ser, nos próximos anos, a plataforma de referência para gestão de associações no Brasil — começando pelo nicho equestre/rural e expandindo para qualquer associação, com a mesma disciplina de simplicidade.</p>
+        </div>
+        <div class="col-md-4">
+          <h2 class="h5 fw-bold"><i class="bi bi-heart text-primary me-2"></i>Valores</h2>
+          <p class="ds-text-muted">Simplicidade é respeito. Confiança se constrói, não se declara. Nenhuma pessoa fica para trás por não entender tecnologia — nem o tesoureiro voluntário de 60 anos que nunca usou um sistema de gestão.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ds-section" id="primeiro-cliente">
+    <div class="container ds-container-reading">
+      <div class="section-heading">
+        <span class="ds-eyebrow">Nossa origem</span>
+        <h2 class="mt-2">O primeiro clube em produção real</h2>
+      </div>
+      <div class="ds-case text-center">
+        <span class="ds-case-badge"><i class="bi bi-patch-check"></i>Cliente real, não estudo de caso fictício</span>
+        <h3 class="h4 fw-bold mt-3 mb-3">Clube do Cavalo de Bonfim MG</h3>
+        <p class="ds-lead mb-0">
+          O Portal Associativo nasceu resolvendo a gestão de um clube equestre de verdade — o
+          Clube do Cavalo de Bonfim MG, hoje em produção com associados, financeiro e eventos
+          funcionando no dia a dia. É a partir dessa base real, não de uma hipótese de mercado,
+          que o produto expande para outros segmentos.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="ds-section ds-section-alt">
+    <div class="container ds-container-reading">
+      <div class="section-heading">
+        <span class="ds-eyebrow">Quem constrói</span>
+        <h2 class="mt-2">Serafim Technologies</h2>
+      </div>
+      <p class="ds-lead text-center mb-0">
+        O Portal Associativo é desenvolvido pela Serafim Technologies, com um compromisso simples:
+        o produto tem que ser tão bem desenhado quanto qualquer landing page — nunca uma interface
+        datada escondida atrás de um marketing bonito.
+      </p>
+    </div>
+  </section>
+
+  <section class="ds-section text-center" style="background:var(--brand-dark); color:#fff;">
+    <div class="container">
+      <h2 class="mb-3">Quer conhecer o Portal por dentro?</h2>
+      <a href="demonstracao.html" class="btn btn-accent btn-lg">Solicitar demonstração</a>
+    </div>
+  </section>
+
 </main>
 
 <footer class="py-5 border-top" style="background:var(--brand-dark);">
@@ -168,21 +178,6 @@
 </footer>
 
 <script src="../js/bootstrap.bundle.min.js"></script>
-<script type="module">
-  import { initMailtoForm } from "../js/forms.js";
-  initMailtoForm(document.getElementById("demoForm"), {
-    subjectPrefix: "Solicitação de demonstração",
-    buildBody: (d) => [
-      `Nome: ${d.nome}`,
-      d.cargo ? `Cargo: ${d.cargo}` : null,
-      `Associação/clube: ${d.associacao}`,
-      `Nº aproximado de associados: ${d.associados}`,
-      `Telefone: ${d.telefone}`,
-      `E-mail: ${d.email}`,
-      d.mensagem ? `\nO que gostaria de ver:\n${d.mensagem}` : null,
-    ].filter(Boolean).join("\n"),
-  });
-</script>
 <script type="module" src="../js/app.js"></script>
 </body>
 </html>

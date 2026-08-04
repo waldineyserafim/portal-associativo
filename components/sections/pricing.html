@@ -1,10 +1,13 @@
 <!--
   components/sections/pricing.html
-  Status: placeholder estrutural — conteúdo definitivo ainda não implementado.
+  Status: implementado — ver index.html (Home) e as páginas em pages/ para o markup real em produção. Este arquivo permanece como referência de padrão, não é carregado via data-component (ver docs/architecture).
 
-  Componente: Seção de planos. Cada plano usa components/cards/pricing-card.html.
-  Valores/planos ainda não definidos para o Portal (produto institucional
-  multi-tenant) — ver docs/roadmap antes de implementar.
+  Componente: Seção de planos. Cada plano usa components/cards/pricing-card.html
+  (classes .ds-pricing-card/.ds-pricing-list, css/components.css) — ver
+  pages/planos.html para a implementação real: três planos (Essencial,
+  Completo, Sob medida) com lista de features, mas SEM valor em reais —
+  ver docs/roadmap/README.md ("Não fazer antes da hora") e o aviso
+  ds-alert-info na própria pages/planos.html para o racional.
 -->
 <section class="ds-section ds-section-alt" id="planos">
   <div class="container">

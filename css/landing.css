@@ -5,7 +5,7 @@
   background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
   color: #fff;
 }
-.hero .ds-eyebrow { color: var(--accent); }
+.hero .ds-eyebrow { color: var(--brand-tint); }
 .hero .ds-lead { color: rgba(255,255,255,0.82); }
 
 .hero-cta {

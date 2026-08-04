@@ -3,19 +3,26 @@
    permitir portar componentes entre os dois projetos sem reescrever classes. */
 
 :root {
-  /* Cores da marca — Portal Associativo (produto institucional da plataforma) */
-  --brand:         #1a2b6b;
-  --brand-dark:    #0f1b45;
-  --brand-light:   #e9ebf7;
-  --accent:        #d4a72c;
-  --accent-light:  #faf3df;
+  /* Cores da marca — Portal Associativo (docs/brand-system/VISUAL_IDENTITY.md §Mini Brand Book) */
+  --brand:         #A85A34; /* Terracota — primária */
+  --brand-dark:    #7C4326; /* Terracota profundo */
+  --brand-light:   #F1E1D3; /* Tinta clara de terracota — fundos de ícone/badge */
+  --brand-tint:    #D89A6A; /* Tinta clara de terracota — texto/eyebrow sobre fundo escuro */
 
   /* Neutros */
-  --ink:           #111827;
-  --ink-muted:     #6c757d;
+  --ink:           #211D18; /* Tinta */
+  --ink-muted:     #6B6156;
   --surface:       #ffffff;
-  --surface-alt:   #f7f8fb;
-  --border-subtle: rgba(0,0,0,0.06);
+  --surface-alt:   #F5F0E6; /* Off-white/paper — nunca branco clínico em grandes áreas */
+  --border-subtle: rgba(33,29,24,0.08);
+
+  /* Cores semânticas (Brand DS §6.1 — desaturadas, nunca neon/puras) */
+  --success:       #3F7D5C;
+  --success-light: #E3EFE8;
+  --warning:       #B8863B;
+  --warning-light: #F5ECD9;
+  --danger:        #A23B2E;
+  --danger-light:  #F5E1DC;
 
   /* Escala tipográfica */
   --text-xs:   0.70rem;
@@ -48,7 +55,7 @@
   --shadow-sm:    0 1px 4px rgba(0,0,0,0.08);
   --shadow-md:    0 4px 12px rgba(0,0,0,0.10);
   --shadow-lg:    0 8px 24px rgba(0,0,0,0.12);
-  --shadow-brand: 0 4px 16px rgba(26,43,107,0.16);
+  --shadow-brand: 0 4px 16px rgba(168,90,52,0.16);
 
   /* Camadas z-index */
   --z-base:     1;
