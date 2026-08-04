@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Portal Associativo — Símbolo, versão MONOCROMÁTICA (1 cor, preto puro)
+  Uso: contextos de reprodução em uma única cor onde nem "tinta" nem "terracota" da marca
+  podem ser garantidas (carimbo, gravação a laser monocromática, fax/impressão térmica,
+  documentos jurídicos em preto e branco). Nunca use esta versão como substituto informal
+  da versão positiva em contextos coloridos — ela existe apenas para reprodução restrita a 1 cor.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"
+     role="img" aria-labelledby="portal-associativo-symbol-mono-title">
+  <title id="portal-associativo-symbol-mono-title">Portal Associativo — símbolo monocromático</title>
+  <g id="portal-associativo-symbol-monochrome">
+    <path id="ring"
+          d="M 38.37 85.96 A 34 34 0 1 1 61.63 85.96"
+          fill="none"
+          stroke="#000000"
+          stroke-width="16"
+          stroke-linecap="round" />
+  </g>
+</svg>

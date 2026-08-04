@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Portal Associativo — Logo horizontal, versão NEGATIVA (cor fixa)
+  Uso: fundo escuro (tinta #211D18, terracota profundo #7C4326, fotografia escura).
+  Cor fixa em off-white #F5F0E6. O arquivo não inclui fundo — quem aplica é
+  responsável por garantir contraste suficiente (docs/brand-system/BRAND_DESIGN_SYSTEM.md §12).
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 100" width="500" height="100"
+     role="img" aria-labelledby="portal-associativo-logo-negative-title">
+  <title id="portal-associativo-logo-negative-title">Portal Associativo — versão negativa</title>
+  <g id="portal-associativo-logo-negative">
+    <g id="symbol">
+      <path d="M 38.37 85.96 A 34 34 0 1 1 61.63 85.96"
+            fill="none" stroke="#F5F0E6" stroke-width="16" stroke-linecap="round" />
+    </g>
+    <text id="wordmark" x="116" y="66"
+          font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+          font-size="36" fill="#F5F0E6">
+      <tspan font-weight="500">Portal </tspan><tspan font-weight="700">associativo</tspan>
+    </text>
+  </g>
+</svg>

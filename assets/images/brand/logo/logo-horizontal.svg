@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Portal Associativo — Logo horizontal (lockup principal)
+  Fonte de verdade: docs/brand-system/VISUAL_IDENTITY.md, seção 4.4
+
+  Estrutura:
+    - Símbolo (0–100 no eixo X) + espaço de 16 unidades (== espessura do traço do anel,
+      docs/brand-system/BRAND_DESIGN_SYSTEM.md §6.6) + wordmark "Portal associativo"
+    - Wordmark: "Portal" peso 500 (medium) + "associativo" peso 700 (bold) —
+      caixa mista deliberada, ver docs/brand-system/VISUAL_IDENTITY.md §4.4
+    - Cor: currentColor (herda do contexto). Para cor fixa, use logo-positive.svg /
+      logo-negative.svg / logo-monochrome.svg.
+
+  ATENÇÃO — texto vivo, não convertido a contorno:
+    O wordmark abaixo é <text> real (não path/outline). Isso o mantém editável, mas
+    a renderização depende da fonte declarada estar instalada no visualizador (fallback
+    para sans-serif do sistema caso contrário). Antes de enviar este arquivo a um
+    fornecedor de impressão/bordado, converta o texto em contornos (Illustrator/Figma
+    → "Create Outlines"/"Flatten") usando a tipografia oficial definida em
+    docs/brand-system/BRAND_DESIGN_SYSTEM.md §6.2. Os arquivos vetoriais de impressão em
+    assets/images/brand/print/ mantêm essa mesma ressalva.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 100" width="500" height="100"
+     role="img" aria-labelledby="portal-associativo-logo-h-title">
+  <title id="portal-associativo-logo-h-title">Portal Associativo</title>
+  <g id="portal-associativo-logo-horizontal">
+    <g id="symbol">
+      <path d="M 38.37 85.96 A 34 34 0 1 1 61.63 85.96"
+            fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" />
+    </g>
+    <text id="wordmark" x="116" y="66"
+          font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+          font-size="36" fill="currentColor">
+      <tspan font-weight="500">Portal </tspan><tspan font-weight="700">associativo</tspan>
+    </text>
+  </g>
+</svg>

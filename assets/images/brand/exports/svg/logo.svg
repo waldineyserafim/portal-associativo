@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Portal Associativo — Logo (versão padrão)
+  Este arquivo é um espelho intencional de logo-horizontal.svg: existe para que
+  qualquer pessoa que procure "o logo" sem ler a documentação primeiro já encontre
+  a versão correta por padrão — o lockup horizontal é o uso mais comum do sistema
+  (docs/brand-system/VISUAL_IDENTITY.md §4.4). Para os demais contextos, use o arquivo específico:
+  logo-vertical.svg, logo-positive.svg, logo-negative.svg, logo-monochrome.svg,
+  logo-outline.svg. Ver assets/images/brand/README.md.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 100" width="500" height="100"
+     role="img" aria-labelledby="portal-associativo-logo-title">
+  <title id="portal-associativo-logo-title">Portal Associativo</title>
+  <g id="portal-associativo-logo">
+    <g id="symbol">
+      <path d="M 38.37 85.96 A 34 34 0 1 1 61.63 85.96"
+            fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" />
+    </g>
+    <text id="wordmark" x="116" y="66"
+          font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+          font-size="36" fill="currentColor">
+      <tspan font-weight="500">Portal </tspan><tspan font-weight="700">associativo</tspan>
+    </text>
+  </g>
+</svg>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Portal Associativo — Imagem de compartilhamento (Open Graph / Twitter Card)
+  1200×630. Deliberadamente tipográfica (símbolo + wordmark + slogan) — sem
+  fotografia genérica de banco de imagens (proibido pela Creative Direction)
+  e sem fotografia real fabricada (não temos fotografia real disponível para
+  este ativo institucional). Rasterizada para og-cover.png via ferramenta do
+  sistema — ver assets/images/brand/README.md.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <rect x="0" y="0" width="1200" height="630" fill="#F5F0E6" />
+  <g transform="translate(230,315) scale(4.1176) translate(-50,-54)">
+    <path d="M 38.37 85.96 A 34 34 0 1 1 61.63 85.96"
+          fill="none" stroke="#A85A34" stroke-width="16" stroke-linecap="round" />
+  </g>
+  <text x="420" y="295" font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+        font-size="52" font-weight="700" fill="#211D18">Portal associativo</text>
+  <text x="420" y="345" font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+        font-size="26" font-weight="400" fill="#6B6156">O seu maior ativo é o sócio ativo.</text>
+</svg>

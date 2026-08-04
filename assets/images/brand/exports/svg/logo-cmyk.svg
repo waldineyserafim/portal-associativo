@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Portal Associativo — Logo para produção gráfica (referência CMYK)
+  LIMITAÇÃO TÉCNICA HONESTA: o formato SVG/RGB não suporta perfil de cor CMYK
+  embutido nem separação de canais nativamente — isso só existe em formatos de
+  produção gráfica (PDF/X-4, EPS, ou o próprio arquivo nativo do Illustrator).
+  Este arquivo usa as cores RGB de marca com a conversão CMYK aproximada anotada
+  abaixo, para que a gráfica/prepress faça a conversão final com perfil de cor
+  calibrado à máquina de impressão usada (nunca confiar em conversão RGB→CMYK
+  automática de software genérico para produção final):
+
+    Tinta       #211D18  →  aprox. C 0  M 15  Y 25  K 88
+    Terracota   #A85A34  →  aprox. C 0  M 47  Y 68  K 34
+    Off-white   #F5F0E6  →  aprox. C 0  M  2  Y  6  K  4
+
+  Para produção real, entregue este arquivo + a tabela acima ao pré-impressor,
+  ou recrie o traçado em Illustrator aplicando as cores Pantone/CMYK definidas
+  pela gráfica.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 100" width="500" height="100"
+     role="img" aria-labelledby="portal-associativo-logo-cmyk-title">
+  <title id="portal-associativo-logo-cmyk-title">Portal Associativo — referência para CMYK</title>
+  <g id="portal-associativo-logo-cmyk">
+    <g id="symbol">
+      <path d="M 38.37 85.96 A 34 34 0 1 1 61.63 85.96"
+            fill="none" stroke="#A85A34" stroke-width="16" stroke-linecap="round" />
+    </g>
+    <text id="wordmark" x="116" y="66"
+          font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+          font-size="36" fill="#211D18">
+      <tspan font-weight="500">Portal </tspan><tspan font-weight="700">associativo</tspan>
+    </text>
+  </g>
+</svg>

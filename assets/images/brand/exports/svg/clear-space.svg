@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Portal Associativo — Área de proteção (clear space)
+  Regra: respiro mínimo ao redor da marca = espessura do próprio traço do anel (16
+  unidades da grade de construção). Ver docs/brand-system/VISUAL_IDENTITY.md §4.10.
+  A área tracejada é o limite mínimo — nenhum outro elemento (texto, logo de
+  parceiro, borda de layout) pode invadir esse espaço.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 132" width="400" height="400"
+     role="img" aria-labelledby="portal-associativo-clearspace-title">
+  <title id="portal-associativo-clearspace-title">Portal Associativo — área de proteção</title>
+  <rect x="0" y="0" width="132" height="132" fill="#F5F0E6" />
+  <rect x="16" y="16" width="100" height="100" fill="none" stroke="#DDD1B6" stroke-width="0.8" stroke-dasharray="2 2" />
+  <g transform="translate(16,16)">
+    <path d="M 38.37 85.96 A 34 34 0 1 1 61.63 85.96"
+          fill="none" stroke="#211D18" stroke-width="16" stroke-linecap="round" />
+  </g>
+  <g font-family="ui-monospace, 'SF Mono', 'Roboto Mono', monospace" font-size="3.6" fill="#5B5645">
+    <text x="66" y="10" text-anchor="middle">clear space = 16 unidades (== espessura do traço)</text>
+    <line x1="0" y1="8" x2="16" y2="8" stroke="#5B5645" stroke-width="0.5" />
+  </g>
+</svg>

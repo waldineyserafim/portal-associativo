@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Portal Associativo — Logo para impressão em 1 cor (K puro / preto)
+  Uso: offset de 1 cor, carimbo, gravação, papelaria em preto e branco, fax.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 100" width="500" height="100"
+     role="img" aria-labelledby="portal-associativo-logo-black-title">
+  <title id="portal-associativo-logo-black-title">Portal Associativo — versão preta (impressão 1 cor)</title>
+  <g id="portal-associativo-logo-black">
+    <g id="symbol">
+      <path d="M 38.37 85.96 A 34 34 0 1 1 61.63 85.96"
+            fill="none" stroke="#000000" stroke-width="16" stroke-linecap="round" />
+    </g>
+    <text id="wordmark" x="116" y="66"
+          font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+          font-size="36" fill="#000000">
+      <tspan font-weight="500">Portal </tspan><tspan font-weight="700">associativo</tspan>
+    </text>
+  </g>
+</svg>

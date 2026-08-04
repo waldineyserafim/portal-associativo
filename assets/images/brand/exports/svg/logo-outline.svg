@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Portal Associativo — Logo horizontal, versão OUTLINE (apenas contorno)
+  Uso: contextos onde uma banda espessa preenchida não é viável — gravação a laser,
+  corte de vinil, ponto único de bordado (running stitch), impressão térmica de baixa
+  resolução. Em vez de um traço de 16 unidades, esta versão traça o CONTORNO externo
+  (raio 42) e interno (raio 26) do mesmo anel — raio-guia 34 ± metade da espessura
+  original (16/2 = 8) — como duas linhas finas fechadas por dois segmentos retos nas
+  pontas da abertura. Geometria derivada de symbol.svg; nunca redesenhar à mão.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 100" width="500" height="100"
+     role="img" aria-labelledby="portal-associativo-logo-outline-title">
+  <title id="portal-associativo-logo-outline-title">Portal Associativo — versão outline</title>
+  <g id="portal-associativo-logo-outline" fill="none" stroke="#211D18" stroke-width="1.2">
+    <g id="symbol-outline">
+      <path id="outer-contour" d="M 35.64 93.48 A 42 42 0 1 1 64.36 93.48" />
+      <path id="inner-contour" d="M 41.11 78.44 A 26 26 0 1 1 58.89 78.44" />
+      <line id="cap-left" x1="35.64" y1="93.48" x2="41.11" y2="78.44" />
+      <line id="cap-right" x1="64.36" y1="93.48" x2="58.89" y2="78.44" />
+    </g>
+    <text id="wordmark" x="116" y="66"
+          font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+          font-size="36" stroke-width="0.6">
+      <tspan font-weight="500">Portal </tspan><tspan font-weight="700">associativo</tspan>
+    </text>
+  </g>
+</svg>

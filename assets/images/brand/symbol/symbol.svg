@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Portal Associativo — Símbolo oficial ("Medalha-Portal")
+  Fonte de verdade geométrica: docs/brand-system/VISUAL_IDENTITY.md, seção 4.2
+
+  Construção:
+    - viewBox 100×100, malha de 8 unidades (docs/brand-system/BRAND_DESIGN_SYSTEM.md §6.6)
+    - Círculo-guia: raio 34, centro deslocado em (50, 54)
+    - Traço do anel: espessura 16 (stroke, nunca preenchimento com furo)
+    - Abertura ("portal"): vão de 40°, centrado na base (6 horas), pontas arredondadas
+    - Cor: currentColor — este arquivo herda a cor do contexto (CSS `color`)
+      Use symbol-positive.svg / symbol-negative.svg / symbol-monochrome.svg
+      quando precisar de uma cor fixa (PowerPoint, e-mail, impressão sem CSS).
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"
+     role="img" aria-labelledby="portal-associativo-symbol-title">
+  <title id="portal-associativo-symbol-title">Portal Associativo</title>
+  <g id="portal-associativo-symbol">
+    <path id="ring"
+          d="M 38.37 85.96 A 34 34 0 1 1 61.63 85.96"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="16"
+          stroke-linecap="round" />
+  </g>
+</svg>

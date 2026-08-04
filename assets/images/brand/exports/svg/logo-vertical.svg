@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Portal Associativo — Logo vertical (lockup empilhado)
+  Uso: apenas quando o lockup horizontal não cabe (selo/carimbo, post quadrado,
+  capa de documento em retrato). Ver docs/brand-system/VISUAL_IDENTITY.md §4.4.
+  Mesma ressalva de texto vivo do logo-horizontal.svg se aplica aqui.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 190" width="280" height="190"
+     role="img" aria-labelledby="portal-associativo-logo-v-title">
+  <title id="portal-associativo-logo-v-title">Portal Associativo</title>
+  <g id="portal-associativo-logo-vertical">
+    <g id="symbol" transform="translate(90,0)">
+      <path d="M 38.37 85.96 A 34 34 0 1 1 61.63 85.96"
+            fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" />
+    </g>
+    <text id="wordmark" x="140" y="168" text-anchor="middle"
+          font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+          font-size="24" fill="currentColor">
+      <tspan font-weight="500">Portal </tspan><tspan font-weight="700">associativo</tspan>
+    </text>
+  </g>
+</svg>

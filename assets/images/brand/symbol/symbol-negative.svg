@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Portal Associativo — Símbolo, versão NEGATIVA
+  Uso: fundo escuro (tinta #211D18, terracota profundo, foto escura). Cor fixa em off-white (#F5F0E6).
+  Ver assets/images/brand/README.md → "Quando usar cada versão".
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"
+     role="img" aria-labelledby="portal-associativo-symbol-negative-title">
+  <title id="portal-associativo-symbol-negative-title">Portal Associativo — símbolo negativo</title>
+  <g id="portal-associativo-symbol-negative">
+    <path id="ring"
+          d="M 38.37 85.96 A 34 34 0 1 1 61.63 85.96"
+          fill="none"
+          stroke="#F5F0E6"
+          stroke-width="16"
+          stroke-linecap="round" />
+  </g>
+</svg>

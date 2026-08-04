@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Portal Associativo — App Icon maskable (Android adaptive icons)
+  Fundo em sangria total (o SO aplica sua própria máscara de recorte —
+  círculo, squircle, etc.) com o símbolo reduzido a 72% do canvas — a marca
+  ocupa, na prática, cerca de 30% do raio total a partir do centro, dentro
+  da "zona segura" de 40% de raio (80% de diâmetro) exigida pela spec de
+  ícone maskable do W3C, com folga confortável.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="512" height="512">
+  <rect x="0" y="0" width="100" height="100" fill="#F5F0E6" />
+  <g transform="translate(50,50) scale(0.72) translate(-50,-54)">
+    <path d="M 38.37 85.96 A 34 34 0 1 1 61.63 85.96"
+          fill="none" stroke="#A85A34" stroke-width="16" stroke-linecap="round" />
+  </g>
+</svg>
