@@ -94,9 +94,18 @@
        Slogan oficial (Brand DS, cabeçalho) usado aqui como eyebrow: o
        primeiro texto que qualquer visitante lê, antes mesmo do H1 —
        posiciona a marca ("cuidamos do vínculo com o sócio") antes de
-       vender a transformação específica (o H1). Fundo sólido, nunca
-       gradiente (Creative Direction §16.5, anti-pattern #66). -->
+       vender a transformação específica (o H1). Fotografia real domina a
+       primeira dobra (Creative Direction §12.1) — ver assets/images/CREDITS.md
+       para curadoria/licença; scrim escuro sobre a foto garante contraste
+       AA para o texto, nunca decorativo (Creative Direction §16.5). -->
   <section class="hero">
+    <picture class="hero-media">
+      <source media="(min-width: 768px)" srcset="assets/images/hero/hero-comunidade-desktop.webp" type="image/webp">
+      <source media="(min-width: 768px)" srcset="assets/images/hero/hero-comunidade-desktop.jpg" type="image/jpeg">
+      <source srcset="assets/images/hero/hero-comunidade-mobile.webp" type="image/webp">
+      <img src="assets/images/hero/hero-comunidade-mobile.jpg" alt="Pessoas reunidas ao entardecer numa celebração de comunidade, luz dourada entre as árvores" fetchpriority="high">
+    </picture>
+    <div class="hero-scrim"></div>
     <div class="container text-center">
       <span class="ds-eyebrow">O seu maior ativo é o sócio ativo.</span>
       <h1 class="ds-display mt-3 mb-3">
@@ -203,7 +212,21 @@
     </div>
   </section>
 
-  <!-- 4. SEGMENTOS ATENDIDOS -->
+  <!-- 4. RESPIRO EDITORIAL — pausa de fotografia grande + frase curta entre
+       dois blocos densos (Funcionalidades e Segmentos), citação direta do
+       Creative Manifesto (docs/brand-system/CREATIVE_DIRECTION.md §2).
+       Nenhuma ação, nenhum CTA — só emoção, ver Creative Direction §12.3. -->
+  <section class="ds-breather">
+    <picture>
+      <source srcset="assets/images/sections/respiro-comunidade-desktop.webp" type="image/webp" media="(min-width: 768px)">
+      <source srcset="assets/images/sections/respiro-comunidade-desktop.jpg" type="image/jpeg" media="(min-width: 768px)">
+      <source srcset="assets/images/sections/respiro-comunidade-mobile.webp" type="image/webp">
+      <img src="assets/images/sections/respiro-comunidade-mobile.jpg" alt="Grupo de pessoas caminhando junto por um campo aberto ao entardecer" loading="lazy">
+    </picture>
+    <p class="ds-breather-quote">"Um clube não é feito de planilha. É feito de gente que aparece, que cuida, que continua."</p>
+  </section>
+
+  <!-- 5. SEGMENTOS ATENDIDOS -->
   <section class="ds-section" id="segmentos">
     <div class="container">
       <div class="section-heading">
@@ -212,31 +235,59 @@
       </div>
       <div class="row g-4">
         <div class="col-md-6 col-lg-3">
-          <div class="ds-quick-card h-100">
-            <div class="ds-qc-icon"><i class="bi bi-flower1"></i></div>
-            <h3 class="ds-qc-label">Clubes equestres e associações rurais</h3>
-            <p class="ds-qc-desc">Onde tudo começou — o nicho que hoje é gerido, em grande parte, por planilha e WhatsApp.</p>
+          <div class="ds-segment-card h-100">
+            <div class="ds-segment-media">
+              <picture>
+                <source srcset="assets/images/community/segmento-equestre-card.webp" type="image/webp">
+                <img src="assets/images/community/segmento-equestre-card.jpg" alt="Cavalo pastando em campo aberto durante o entardecer" loading="lazy" width="700" height="525">
+              </picture>
+            </div>
+            <div class="ds-segment-body">
+              <h3>Clubes equestres e associações rurais</h3>
+              <p class="ds-text-muted ds-text-sm mb-0">Onde tudo começou — o nicho que hoje é gerido, em grande parte, por planilha e WhatsApp.</p>
+            </div>
           </div>
         </div>
         <div class="col-md-6 col-lg-3">
-          <div class="ds-quick-card h-100">
-            <div class="ds-qc-icon"><i class="bi bi-trophy"></i></div>
-            <h3 class="ds-qc-label">Clubes recreativos e sociais</h3>
-            <p class="ds-qc-desc">Associados, eventos e mensalidade organizados sem depender de um "filho que entende de informática".</p>
+          <div class="ds-segment-card h-100">
+            <div class="ds-segment-media">
+              <picture>
+                <source srcset="assets/images/community/segmento-recreativo-card.webp" type="image/webp">
+                <img src="assets/images/community/segmento-recreativo-card.jpg" alt="Time amador comemorando junto em um campo esportivo" loading="lazy" width="700" height="525">
+              </picture>
+            </div>
+            <div class="ds-segment-body">
+              <h3>Clubes recreativos e sociais</h3>
+              <p class="ds-text-muted ds-text-sm mb-0">Associados, eventos e mensalidade organizados sem depender de um "filho que entende de informática".</p>
+            </div>
           </div>
         </div>
         <div class="col-md-6 col-lg-3">
-          <div class="ds-quick-card h-100">
-            <div class="ds-qc-icon"><i class="bi bi-briefcase"></i></div>
-            <h3 class="ds-qc-label">Entidades de classe</h3>
-            <p class="ds-qc-desc">Categoria de sócio, comunicação e cobrança recorrente, com a identidade da entidade sempre em destaque.</p>
+          <div class="ds-segment-card h-100">
+            <div class="ds-segment-media">
+              <picture>
+                <source srcset="assets/images/community/segmento-classe-card.webp" type="image/webp">
+                <img src="assets/images/community/segmento-classe-card.jpg" alt="Grupo conversando ao ar livre em um encontro de associação" loading="lazy" width="700" height="525">
+              </picture>
+            </div>
+            <div class="ds-segment-body">
+              <h3>Entidades de classe</h3>
+              <p class="ds-text-muted ds-text-sm mb-0">Categoria de sócio, comunicação e cobrança recorrente, com a identidade da entidade sempre em destaque.</p>
+            </div>
           </div>
         </div>
         <div class="col-md-6 col-lg-3">
-          <div class="ds-quick-card h-100">
-            <div class="ds-qc-icon"><i class="bi bi-house-heart"></i></div>
-            <h3 class="ds-qc-label">Associações de bairro e comunitárias</h3>
-            <p class="ds-qc-desc">Um painel simples para quem administra por vontade de servir a comunidade, não por profissão.</p>
+          <div class="ds-segment-card h-100">
+            <div class="ds-segment-media">
+              <picture>
+                <source srcset="assets/images/community/segmento-bairro-card.webp" type="image/webp">
+                <img src="assets/images/community/segmento-bairro-card.jpg" alt="Vizinhos colaborando juntos em um projeto comunitário ao ar livre" loading="lazy" width="700" height="525">
+              </picture>
+            </div>
+            <div class="ds-segment-body">
+              <h3>Associações de bairro e comunitárias</h3>
+              <p class="ds-text-muted ds-text-sm mb-0">Um painel simples para quem administra por vontade de servir a comunidade, não por profissão.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -246,8 +297,8 @@
     </div>
   </section>
 
-  <!-- 5. PROVA SOCIAL — respiro após três seções densas seguidas; único bloco
-       quase vazio da metade inferior da página (Creative Direction §12.3). -->
+  <!-- 6. PROVA SOCIAL — segundo respiro, mais textual/intimista que o bloco 4
+       (Creative Direction §12.3: alternância nunca é uniforme). -->
   <section class="ds-section ds-section-alt" id="prova-social">
     <div class="container ds-container-reading">
       <div class="section-heading">
@@ -267,7 +318,7 @@
     </div>
   </section>
 
-  <!-- 6. PLANOS -->
+  <!-- 7. PLANOS -->
   <section class="ds-section" id="planos">
     <div class="container">
       <div class="section-heading">
@@ -285,7 +336,7 @@
     </div>
   </section>
 
-  <!-- 7. FAQ -->
+  <!-- 8. FAQ -->
   <section class="ds-section ds-section-alt" id="faq">
     <div class="container ds-container-reading">
       <div class="section-heading">
@@ -357,7 +408,7 @@
     </div>
   </section>
 
-  <!-- 8. CTA FINAL -->
+  <!-- 9. CTA FINAL -->
   <section class="ds-section text-center" style="background:var(--brand-dark); color:#fff;">
     <div class="container ds-container-reading">
       <h2 class="mb-3">Pronto para modernizar a gestão da sua associação?</h2>

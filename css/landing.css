@@ -1,17 +1,42 @@
 /* css/landing.css — estilos específicos da Landing Page (index.html) */
 /* Não é parte do Design System reutilizável — apenas layout desta página. */
 
-/* Fundo sólido, nunca gradiente — Creative Direction §16.5, anti-pattern #66
-   ("hero com gradiente colorido genérico" é o clichê visual mais repetido
-   de SaaS). Terracota profundo sólido é tão confiante quanto um gradiente,
-   sem o clichê — mesma lógica de restrição de paleta da Stripe (§15.2). */
+/* Fotografia real domina a primeira dobra — Creative Direction §12.1
+   ("a primeira dobra deve ser dominada por fotografia real... mostrar
+   gente antes de mostrar interface"). Nunca gradiente decorativo sozinho
+   (§16.5, anti-pattern #66) — aqui o gradiente existe só como scrim de
+   contraste sobre a foto, função de acessibilidade (texto legível),
+   nunca decoração. Ver assets/images/CREDITS.md para a curadoria. */
 .hero {
-  background: var(--brand-dark);
+  position: relative;
+  overflow: hidden;
   color: #fff;
-  padding-block: clamp(3rem, 9vw, 6rem);
+  padding-block: clamp(3.5rem, 11vw, 7rem);
+}
+.hero-media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.hero-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 62%;
+  display: block;
+}
+.hero-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(28, 22, 17, 0.66);
+}
+.hero .container {
+  position: relative;
+  z-index: 2;
 }
 .hero .ds-eyebrow { color: var(--brand-tint); }
-.hero .ds-lead { color: rgba(255,255,255,0.82); }
+.hero .ds-lead { color: rgba(255,255,255,0.88); }
 
 .hero-cta {
   display: flex;
@@ -22,6 +47,93 @@
 @media (max-width: 575.98px) {
   .hero-cta .btn { width: 100%; }
 }
+
+/* ── DS-BREATHER — bloco de respiro editorial (Creative Direction §12.3:
+   "alternância entre blocos densos... e blocos de respiro quase vazios,
+   fotografia grande, uma frase curta, muito espaço") ─────────────────── */
+.ds-breather {
+  position: relative;
+  min-height: clamp(280px, 45vw, 420px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: #fff;
+}
+.ds-breather picture {
+  position: absolute;
+  inset: 0;
+}
+.ds-breather img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 40%;
+  display: block;
+}
+.ds-breather::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(28, 22, 17, 0.5);
+}
+.ds-breather-quote {
+  position: relative;
+  z-index: 1;
+  max-width: var(--container-reading);
+  margin-inline: auto;
+  padding-inline: var(--space-lg);
+  font-size: clamp(1.25rem, 2vw + 1rem, var(--text-2xl));
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  text-align: center;
+}
+
+/* ── DS-SEGMENT-CARD (fotografia como protagonista, Brand DS §6.4) ──── */
+.ds-segment-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
+}
+.ds-segment-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.ds-segment-media {
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--surface-alt);
+}
+.ds-segment-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform var(--transition-slow);
+}
+.ds-segment-card:hover .ds-segment-media img {
+  transform: scale(1.045);
+}
+.ds-segment-body {
+  padding: var(--space-lg);
+}
+.ds-segment-body h2,
+.ds-segment-body h3 {
+  margin-bottom: .35rem;
+}
+/* Sem regra de cor/tamanho em bloco para "p": pages/segmentos.html usa dois
+   parágrafos com ênfase diferente (descrição muted + "prova real" em
+   destaque) — cada um already carrega a classe utilitária certa
+   (ds-text-muted/ds-text-sm) explicitamente, no mesmo padrão do resto do
+   projeto, em vez de um seletor genérico que forçaria os dois a parecer
+   iguais. */
 
 .section-heading {
   max-width: var(--container-reading);
