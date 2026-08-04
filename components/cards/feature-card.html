@@ -2,9 +2,11 @@
   components/cards/feature-card.html
   Status: implementado — ver index.html (Home) e as páginas em pages/ para o markup real em produção. Este arquivo permanece como referência de padrão, não é carregado via data-component (ver docs/architecture).
 
-  Componente: Card de funcionalidade, usado dentro de sections/features.html.
-  Classes prontas em css/components.css (.ds-quick-card / .ds-qc-icon /
-  .ds-qc-label / .ds-qc-desc) — mesmo padrão dos "atalhos" do CCBMG.
+  Componente: Card de funcionalidade — .ds-quick-card ainda é o padrão certo
+  para grades de escolha (Segmentos, ver pages/segmentos.html), mas NÃO é
+  mais o padrão da seção Funcionalidades da Home (ver sections/features.html
+  para o porquê). Ali, use .ds-feature-row/.ds-feature-row-icon
+  (css/components.css) — ícone + título + uma linha, sem borda/sombra/fundo.
 -->
 <div class="col-md-6 col-lg-4">
   <div class="ds-quick-card">

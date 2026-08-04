@@ -1,9 +1,14 @@
 /* css/landing.css — estilos específicos da Landing Page (index.html) */
 /* Não é parte do Design System reutilizável — apenas layout desta página. */
 
+/* Fundo sólido, nunca gradiente — Creative Direction §16.5, anti-pattern #66
+   ("hero com gradiente colorido genérico" é o clichê visual mais repetido
+   de SaaS). Terracota profundo sólido é tão confiante quanto um gradiente,
+   sem o clichê — mesma lógica de restrição de paleta da Stripe (§15.2). */
 .hero {
-  background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
+  background: var(--brand-dark);
   color: #fff;
+  padding-block: clamp(3rem, 9vw, 6rem);
 }
 .hero .ds-eyebrow { color: var(--brand-tint); }
 .hero .ds-lead { color: rgba(255,255,255,0.82); }

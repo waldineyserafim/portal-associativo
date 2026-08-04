@@ -150,42 +150,60 @@
 .navbar-collapse .nav-link,
 .navbar-collapse .btn { padding-top: .75rem; padding-bottom: .75rem; }
 
-/* ── DS-STEP ("como funciona") ───────────────────────────── */
-.ds-step {
+/* ── DS-BENEFIT (benefícios — editorial, sem card) ───────────
+   Deliberadamente sem borda/sombra/fundo: Creative Direction §8.2.3
+   ("preferir espaço em branco a linha divisória") e §15.1 (Apple —
+   tipografia como hierarquia antes de decoração). O espaço entre colunas
+   (row g-*) já separa os três blocos, sem precisar de caixa. */
+.ds-benefit {
+  text-align: center;
+  padding-inline: var(--space-sm);
+}
+.ds-benefit-icon {
+  font-size: 1.75rem;
+  color: var(--brand);
+  margin-bottom: var(--space-sm);
+}
+.ds-benefit h3 {
+  margin-bottom: .35rem;
+}
+.ds-benefit p {
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ── DS-FEATURE-ROW (funcionalidades — lista calma, não grade de cards) ──
+   Creative Direction §12.2: "apresentar com calma, um de cada vez, nunca
+   uma grade densa". Ícone + texto lado a lado, respiro generoso entre
+   linhas — nenhuma borda, nenhuma sombra, nenhum fundo de card. */
+.ds-feature-row {
   display: flex;
   gap: var(--space-md);
   align-items: flex-start;
 }
-.ds-step-number {
+.ds-feature-row-icon {
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-full);
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
   background: var(--brand-light);
   color: var(--brand-dark);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: var(--text-md);
+  font-size: 1.15rem;
 }
-
-/* ── DS-STAT-STRIP (diferenciais compactos) ──────────────── */
-.ds-stat-strip {
-  display: grid;
-  gap: var(--space-lg);
-  grid-template-columns: 1fr;
+.ds-feature-row h3 {
+  margin-bottom: .2rem;
 }
-@media (min-width: 768px) {
-  .ds-stat-strip { grid-template-columns: repeat(4, 1fr); }
+.ds-feature-row p {
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  margin: 0;
 }
-.ds-stat {
-  display: flex;
-  gap: var(--space-sm);
-  align-items: flex-start;
-}
-.ds-stat i { color: var(--brand); font-size: 1.25rem; flex-shrink: 0; margin-top: 0.15rem; }
-.ds-stat span { font-size: var(--text-sm); color: var(--ink); line-height: 1.5; }
 
 /* ── DS-CASE (prova social — case real, não depoimento fabricado) ── */
 .ds-case {

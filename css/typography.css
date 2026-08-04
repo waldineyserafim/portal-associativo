@@ -11,6 +11,18 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.01em;
 }
 
+/* Escala mapeada aos tokens do sistema (nunca o tamanho "solto" padrão do
+   Bootstrap) — cresce com a tela, mobile-first, em vez de tamanho fixo igual
+   em qualquer viewport (Creative Direction §10.3-10.4, anti-pattern #86). */
+h2 {
+  font-size: clamp(1.375rem, 1.6vw + 1.05rem, var(--text-2xl));
+  line-height: 1.25;
+}
+h3 {
+  font-size: clamp(1.0625rem, 0.6vw + 0.95rem, var(--text-md));
+  line-height: 1.35;
+}
+
 .ds-eyebrow {
   display: inline-block;
   font-size: var(--text-xs);
@@ -24,6 +36,17 @@ h1, h2, h3, h4, h5, h6 {
   font-size: clamp(2rem, 4vw + 1rem, var(--text-4xl));
   font-weight: 800;
   line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+/* Título de página interna (não-hero) — um degrau abaixo do ds-display da
+   Home, mesma lógica de clamp mobile-first. Substitui o font-size inline
+   que cada página de pages/ vinha repetindo (nunca valor solto, Creative
+   Direction §17 checklist). */
+.ds-display-sm {
+  font-size: clamp(1.75rem, 2.4vw + 1.2rem, var(--text-3xl));
+  font-weight: 800;
+  line-height: 1.15;
   letter-spacing: -0.02em;
 }
 

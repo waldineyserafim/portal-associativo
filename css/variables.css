@@ -7,7 +7,7 @@
   --brand:         #A85A34; /* Terracota — primária */
   --brand-dark:    #7C4326; /* Terracota profundo */
   --brand-light:   #F1E1D3; /* Tinta clara de terracota — fundos de ícone/badge */
-  --brand-tint:    #D89A6A; /* Tinta clara de terracota — texto/eyebrow sobre fundo escuro */
+  --brand-tint:    #EAC49B; /* Terracota clara ("couro sob sol", Creative Direction §3.1) — texto/eyebrow sobre fundo escuro; ajustada para 4.79:1 contra --brand-dark (AA, Brand DS §12.1) */
 
   /* Neutros */
   --ink:           #211D18; /* Tinta */
@@ -42,7 +42,7 @@
   --space-lg:  1.5rem;
   --space-xl:  2rem;
   --space-2xl: 3rem;
-  --space-3xl: 5rem;
+  --space-3xl: clamp(3rem, 6vw + 1.5rem, 5rem); /* respiro entre seções — cresce com a tela (Creative Direction §10.4), nunca fixo em 80px no mobile */
 
   /* Bordas */
   --radius-sm:   6px;
