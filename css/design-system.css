@@ -1,0 +1,10 @@
+/* css/design-system.css — Portal Associativo Design System v1.0 */
+/* Ponto de entrada único do Design System. Importa os módulos na ordem
+   correta de cascata (tokens → tipografia → componentes → utilitários).
+   Carregar este arquivo em toda página do site.
+   landing.css é à parte: só entra nas páginas de marketing que precisam dele. */
+
+@import url("variables.css");
+@import url("typography.css");
+@import url("components.css");
+@import url("utilities.css");

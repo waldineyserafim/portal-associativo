@@ -1,0 +1,40 @@
+/* css/landing.css — estilos específicos da Landing Page (index.html) */
+/* Não é parte do Design System reutilizável — apenas layout desta página. */
+
+.hero {
+  background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
+  color: #fff;
+}
+.hero .ds-eyebrow { color: var(--accent); }
+.hero .ds-lead { color: rgba(255,255,255,0.82); }
+
+.hero-cta {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.hero-cta .btn { box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.15); }
+@media (max-width: 575.98px) {
+  .hero-cta .btn { width: 100%; }
+}
+
+.section-heading {
+  max-width: var(--container-reading);
+  margin-inline: auto;
+  text-align: center;
+  margin-bottom: var(--space-2xl);
+}
+
+.placeholder-block {
+  border: 1px dashed rgba(0,0,0,0.15);
+  border-radius: var(--radius-md);
+  background: var(--surface-alt);
+  color: var(--ink-muted);
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: var(--text-sm);
+  padding: var(--space-lg);
+}

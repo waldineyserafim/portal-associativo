@@ -1,0 +1,35 @@
+/* css/utilities.css — Portal Associativo Design System — Utilitários */
+/* Pequenas classes de apoio que o Bootstrap não cobre. Preferir utilitários
+   nativos do Bootstrap (d-flex, gap-*, py-*, etc.) sempre que existirem. */
+
+.ds-container-narrow  { max-width: var(--container-narrow); margin-inline: auto; }
+.ds-container-reading { max-width: var(--container-reading); margin-inline: auto; }
+
+.ds-radius-sm   { border-radius: var(--radius-sm)   !important; }
+.ds-radius-md   { border-radius: var(--radius-md)   !important; }
+.ds-radius-lg   { border-radius: var(--radius-lg)   !important; }
+.ds-radius-full { border-radius: var(--radius-full) !important; }
+
+.ds-shadow-sm { box-shadow: var(--shadow-sm) !important; }
+.ds-shadow-md { box-shadow: var(--shadow-md) !important; }
+.ds-shadow-lg { box-shadow: var(--shadow-lg) !important; }
+
+.ds-bg-brand       { background: var(--brand) !important; }
+.ds-bg-brand-light { background: var(--brand-light) !important; }
+.ds-bg-surface-alt { background: var(--surface-alt) !important; }
+
+/* Sticky footer (mesmo padrão do CCBMG — assets/css/custom.css) */
+html, body { height: 100%; }
+body        { min-height: 100dvh; display: flex; flex-direction: column; }
+main        { flex: 1 0 auto; }
+footer      { flex-shrink: 0; }
+
+/* Reduz movimento para quem preferir */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

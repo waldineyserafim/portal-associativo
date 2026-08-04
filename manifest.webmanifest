@@ -1,0 +1,19 @@
+{
+  "name": "Portal Associativo",
+  "short_name": "Portal Associativo",
+  "description": "Plataforma de gestão para clubes e associações.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1a2b6b",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "assets/images/icons/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
