@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Portal Associativo — O seu maior ativo é o sócio ativo</title>
+  <meta name="description" content="Menos burocracia para a diretoria, mais vínculo com o associado. O Portal Associativo organiza cadastro, mensalidades, eventos e comunicação num painel único que qualquer diretoria usa sozinha.">
+  <!-- PÁGINA DE PROPOSTA (nova Home em avaliação): noindex evita conteúdo
+       duplicado com index.html enquanto as duas coexistirem. Ao promover esta
+       página a Home oficial: remover a meta abaixo, adicionar canonical + OG
+       (copiar de index.html) e renomear o arquivo para index.html. -->
+  <meta name="robots" content="noindex">
+
+  <link rel="icon" type="image/svg+xml" href="assets/images/icons/favicon.svg">
+  <link rel="alternate icon" href="assets/images/icons/favicon-32.png">
+  <link rel="apple-touch-icon" href="assets/images/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#A85A34">
+
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/design-system.css?v=portal-2026-08b">
+  <link rel="stylesheet" href="css/landing.css?v=portal-2026-08b">
+  <link rel="stylesheet" href="css/landing-nova.css?v=portal-2026-08c">
+</head>
+<body>
+
+<a class="ds-skip-link" href="#conteudo-principal">Pular para o conteúdo</a>
+
+<!-- NAVBAR — mesma estrutura da Home atual (XA §4.1: sticky, até 6 itens +
+     CTA destacado). Único ajuste: o CTA de demonstração agora abre conversa
+     direta no WhatsApp (decisão desta proposta: todos os CTAs de conversão
+     apontam para o canal que efetivamente responde hoje). -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
+  <div class="container d-flex align-items-center justify-content-between flex-nowrap">
+    <a class="navbar-brand d-flex align-items-center fw-bold text-truncate" href="index_nova.html">
+      <img class="brand-logo" src="assets/images/brand/symbol/symbol-negative.svg" alt="" width="34" height="34">
+      <span class="brand-title">Portal Associativo</span>
+    </a>
+
+    <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#nav"
+            aria-controls="nav" aria-expanded="false" aria-label="Alternar navegação">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="nav">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
+        <li class="nav-item"><a class="nav-link" data-nav-link href="pages/funcionalidades.html">Funcionalidades</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav-link href="pages/segmentos.html">Segmentos</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav-link href="pages/planos.html">Planos</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav-link href="pages/sobre.html">Sobre</a></li>
+        <li class="nav-item"><a class="nav-link" data-nav-link href="#contato">Contato</a></li>
+        <li class="nav-item mt-2 mt-lg-0 ms-lg-2">
+          <a class="btn btn-accent w-100 w-lg-auto" href="https://wa.me/5531998923209?text=Ol%C3%A1!%20Quero%20agendar%20uma%20demonstra%C3%A7%C3%A3o%20do%20Portal%20Associativo%20para%20a%20minha%20associa%C3%A7%C3%A3o." target="_blank" rel="noopener">Agendar demonstração</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link ds-text-sm" data-nav-link href="pages/login.html">
+            <i class="bi bi-box-arrow-in-right me-1"></i>Login Master
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<main id="conteudo-principal">
+
+  <!-- 1. HERO — texto sobreposto à fotografia, um único bloco no mobile
+       (benchmark HiGestor/Associatec/Softaliza: imagem e mensagem juntas na
+       primeira dobra). Fotografia real de uma diretoria madura reunida em
+       volta de um notebook, luz natural, parede em terracota — comunica
+       liderança, organização e tecnologia usada com naturalidade pelas
+       personas reais do produto (Brand DS §3.1-3.3; Creative Direction §4.1:
+       "representação deliberadamente forte de pessoas 50+"). Curadoria e
+       licença em assets/images/CREDITS.md. O scrim é função de contraste,
+       verificado por cálculo sobre os pixels reais (ver landing-nova.css).
+       Copy vende transformação, não módulos (Brand DS §8.1); slogan oficial
+       como eyebrow, primeira linha lida da página. CTA primário único
+       (UX Constitution #1) + secundário subordinado; ambos → WhatsApp. -->
+  <section class="hero-nova">
+    <picture class="hero-nova-media">
+      <source media="(min-width: 992px)" srcset="assets/images/hero/hero-diretoria-desktop.webp" type="image/webp">
+      <source media="(min-width: 992px)" srcset="assets/images/hero/hero-diretoria-desktop.jpg" type="image/jpeg">
+      <source srcset="assets/images/hero/hero-diretoria-mobile.webp" type="image/webp">
+      <img src="assets/images/hero/hero-diretoria-mobile.jpg" alt="Diretoria de uma associação reunida em volta de uma mesa de madeira, acompanhando no notebook enquanto o presidente explica, em uma sala acolhedora de luz natural" fetchpriority="high" width="900" height="793">
+    </picture>
+    <div class="hero-nova-scrim"></div>
+    <div class="container">
+      <div class="hero-nova-copy">
+        <span class="ds-eyebrow">O seu maior ativo é o sócio ativo.</span>
+        <h1 class="ds-display mt-3 mb-3">Menos burocracia para a diretoria. Mais vínculo com o associado.</h1>
+        <p class="hero-nova-lead mb-2">
+          O Portal Associativo organiza cadastro, mensalidades, eventos e comunicação num painel
+          único que qualquer diretoria usa sozinha — com cobrança automática por PIX, boleto ou
+          cartão, aviso que chega a cada associado e a saúde financeira sempre à vista.
+        </p>
+        <div class="hero-cta">
+          <a href="https://wa.me/5531998923209?text=Ol%C3%A1!%20Quero%20agendar%20uma%20demonstra%C3%A7%C3%A3o%20do%20Portal%20Associativo%20para%20a%20minha%20associa%C3%A7%C3%A3o." class="btn btn-accent btn-lg" target="_blank" rel="noopener">
+            <i class="bi bi-calendar-check me-1"></i>Agendar demonstração
+          </a>
+          <a href="https://wa.me/5531998923209?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20o%20Portal%20Associativo." class="btn btn-outline-light btn-whatsapp-outline btn-lg" target="_blank" rel="noopener">
+            <i class="bi bi-whatsapp me-1"></i>Falar no WhatsApp
+          </a>
+        </div>
+        <p class="hero-nova-note mt-3 mb-0">Conversa direta com quem constrói o produto — sem compromisso e sem formulário antes.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Faixa "para quem é": responde em um segundo a pergunta que o
+       anti-pattern #78 manda nunca deixar em aberto. -->
+  <div class="hero-nova-publico">
+    Feito para <strong>presidentes, diretores, tesoureiros e secretárias</strong> de clubes e associações que hoje se viram com planilha, caderno e grupo de WhatsApp.
+  </div>
+
+  <!-- 2. TRANSFORMAÇÃO — benefícios por mudança de realidade, não lista
+       técnica (Brand DS §8.2). Quatro promessas concretas, cada uma o fim
+       de um incômodo real das personas (Creative Direction §12.2). -->
+  <section class="ds-section" id="beneficios">
+    <div class="container">
+      <div class="section-heading">
+        <span class="ds-eyebrow">Por que trocar a planilha pelo Portal</span>
+        <h2 class="mt-2">A associação profissional que a sua comunidade merece</h2>
+      </div>
+      <div class="row g-5">
+        <div class="col-md-6 col-lg-3 ds-benefit">
+          <div class="ds-benefit-icon"><i class="bi bi-shield-check"></i></div>
+          <h3>Menos burocracia</h3>
+          <p>Cadastro, mensalidade e histórico de cada associado num lugar só — nada de catar informação em três cadernos.</p>
+        </div>
+        <div class="col-md-6 col-lg-3 ds-benefit">
+          <div class="ds-benefit-icon"><i class="bi bi-cash-coin"></i></div>
+          <h3>Cobrança que se cobra sozinha</h3>
+          <p>PIX, boleto e cartão com aviso automático antes e depois do vencimento — a diretoria para de ligar atrás de pagamento.</p>
+        </div>
+        <div class="col-md-6 col-lg-3 ds-benefit">
+          <div class="ds-benefit-icon"><i class="bi bi-megaphone"></i></div>
+          <h3>Comunicação que chega</h3>
+          <p>Aviso por SMS e e-mail direto a cada associado — até quem nunca abre o grupo do WhatsApp fica sabendo.</p>
+        </div>
+        <div class="col-md-6 col-lg-3 ds-benefit">
+          <div class="ds-benefit-icon"><i class="bi bi-hourglass-split"></i></div>
+          <h3>Tempo de volta</h3>
+          <p>Menos retrabalho de digitar tudo três vezes — mais tempo para o que importa: o vínculo com quem faz o clube existir.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. PLATAFORMA EM CONTEXTO — aprendizado direto do benchmark
+       (HiGestor apresenta o produto em dispositivos; Softaliza mostra telas
+       reais em contexto). Aqui a experiência é desenhada em HTML/CSS a
+       partir das telas reais do produto em uso — nunca screenshot fabricado,
+       nunca "dashboard 3D flutuante" (anti-pattern #66). Conteúdo dos
+       painéis é ilustrativo. Um perfil por coluna: quem usa, o que vê,
+       o que ganha (Brand DS §3, uma persona por vez). -->
+  <section class="ds-section ds-section-alt" id="plataforma">
+    <div class="container">
+      <div class="section-heading">
+        <span class="ds-eyebrow">A plataforma</span>
+        <h2 class="mt-2">Cada pessoa vê exatamente o que precisa — e nada mais</h2>
+        <p class="ds-lead mt-3">No celular do associado ou no painel da diretoria, a régua é a mesma: ninguém precisa de treinamento para usar.</p>
+      </div>
+
+      <div class="device-stage mb-5" aria-hidden="true">
+        <!-- Celular: a experiência do associado (radicalmente simples,
+             Brand DS §9.10 — status sempre visível, uma ação óbvia) -->
+        <div class="device device-phone">
+          <div class="device-screen">
+            <div class="device-bar"><i class="bi bi-person-circle"></i> Minha área</div>
+            <div class="device-body">
+              <div class="device-card">
+                <div class="device-muted">Olá, João!</div>
+                <span class="device-status"><i class="bi bi-check-circle-fill"></i> Você está em dia até 14/09</span>
+              </div>
+              <div class="device-btn">Ver minha carteirinha</div>
+              <div class="device-card">
+                <strong>Próximo evento</strong>
+                <div class="device-muted">Cavalgada de primavera — dom, 20/09</div>
+                <div class="device-muted" style="color:var(--brand);font-weight:700;">Inscrever-se →</div>
+              </div>
+              <div class="device-card">
+                <strong>Benefícios de parceiros</strong>
+                <div class="device-muted">3 novos este mês</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Desktop: o painel da diretoria (números grandes primeiro,
+             Brand DS §9.1 — o "termômetro" antes de qualquer tabela) -->
+        <div class="device device-desktop">
+          <div class="device-screen">
+            <div class="device-bar"><i class="bi bi-clipboard-data"></i> Painel da diretoria</div>
+            <div class="device-body">
+              <div class="device-kpis">
+                <div class="device-kpi"><strong>128</strong><span>em dia</span></div>
+                <div class="device-kpi"><strong>9</strong><span>a vencer</span></div>
+                <div class="device-kpi"><strong>4</strong><span>pendentes</span></div>
+                <div class="device-kpi"><strong>R$ 3.840</strong><span>no mês</span></div>
+              </div>
+              <div class="device-card">
+                <strong>Atenção primeiro</strong>
+                <div class="device-row"><span>Maria Santos</span><span class="device-status warn">vence em 3 dias</span></div>
+                <div class="device-row"><span>Pedro Lima</span><span class="device-status warn">vence em 5 dias</span></div>
+                <div class="device-row"><span>Ana Costa</span><span class="device-status"><i class="bi bi-check-circle-fill"></i> pagou hoje</span></div>
+              </div>
+              <div class="device-card">
+                <strong>Aviso enviado</strong>
+                <div class="device-muted">Assembleia de outubro — entregue a 137 associados por SMS e e-mail</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="perfil-card">
+            <div class="ds-benefit-icon"><i class="bi bi-person-badge"></i></div>
+            <h3>Para o associado</h3>
+            <p class="ds-text-muted ds-text-sm mb-0">Sabe se está em dia sem perguntar a ninguém, paga em dois toques por PIX, boleto ou cartão e carrega a carteirinha no celular.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="perfil-card">
+            <div class="ds-benefit-icon"><i class="bi bi-clipboard-check"></i></div>
+            <h3>Para a secretaria</h3>
+            <p class="ds-text-muted ds-text-sm mb-0">Cadastra uma vez, no lugar certo. O aviso sai dali mesmo para todos os associados — sem redigitar em planilha, caderno e grupo.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="perfil-card">
+            <div class="ds-benefit-icon"><i class="bi bi-wallet2"></i></div>
+            <h3>Para a presidência e o financeiro</h3>
+            <p class="ds-text-muted ds-text-sm mb-0">Quem pagou, quem falta e quanto entrou — em números grandes, na primeira tela. Cada pagamento com histórico completo para prestar contas.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. FUNCIONALIDADES — lista calma de resultados (Creative Direction
+       §12.2: um de cada vez, nunca grade densa de ícones). -->
+  <section class="ds-section" id="funcionalidades">
+    <div class="container ds-container-reading">
+      <div class="section-heading">
+        <span class="ds-eyebrow">O que muda no seu dia a dia</span>
+        <h2 class="mt-2">Resultado, não lista de módulo técnico</h2>
+      </div>
+      <div class="row g-4 g-lg-5">
+        <div class="col-md-6 ds-feature-row">
+          <div class="ds-feature-row-icon"><i class="bi bi-people"></i></div>
+          <div>
+            <h3>Você sabe quem está em dia, na hora, sem abrir planilha</h3>
+            <p>Cadastro e histórico de cada associado sempre à mão.</p>
+          </div>
+        </div>
+        <div class="col-md-6 ds-feature-row">
+          <div class="ds-feature-row-icon"><i class="bi bi-cash-coin"></i></div>
+          <div>
+            <h3>Nenhuma renovação se perde por aviso que não chegou</h3>
+            <p>Cobrança automática por PIX, boleto ou cartão.</p>
+          </div>
+        </div>
+        <div class="col-md-6 ds-feature-row">
+          <div class="ds-feature-row-icon"><i class="bi bi-calendar-event"></i></div>
+          <div>
+            <h3>Evento lotado sem grupo de WhatsApp brigando por confirmação</h3>
+            <p>Inscrição em dois passos, confirmação na hora.</p>
+          </div>
+        </div>
+        <div class="col-md-6 ds-feature-row">
+          <div class="ds-feature-row-icon"><i class="bi bi-megaphone"></i></div>
+          <div>
+            <h3>O aviso chega até quem nunca abre o grupo do WhatsApp</h3>
+            <p>Comunicação por SMS e e-mail, direto pra cada associado.</p>
+          </div>
+        </div>
+        <div class="col-md-6 ds-feature-row">
+          <div class="ds-feature-row-icon"><i class="bi bi-tag"></i></div>
+          <div>
+            <h3>Associados compram e vendem entre si, dentro do clube</h3>
+            <p>Classificados com moderação simples da diretoria.</p>
+          </div>
+        </div>
+        <div class="col-md-6 ds-feature-row">
+          <div class="ds-feature-row-icon"><i class="bi bi-gift"></i></div>
+          <div>
+            <h3>Todo associado enxerga um motivo pra continuar associado</h3>
+            <p>Benefícios de parceiros, visíveis direto no painel.</p>
+          </div>
+        </div>
+      </div>
+      <div class="text-center mt-5">
+        <a href="pages/funcionalidades.html" class="btn btn-outline-primary">Ver todas as funcionalidades</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. RESPIRO EDITORIAL — pausa entre blocos densos, citação direta do
+       Creative Manifesto (Creative Direction §2 e §12.3). Sem CTA. -->
+  <section class="ds-breather">
+    <picture>
+      <source srcset="assets/images/sections/respiro-comunidade-desktop.webp" type="image/webp" media="(min-width: 768px)">
+      <source srcset="assets/images/sections/respiro-comunidade-desktop.jpg" type="image/jpeg" media="(min-width: 768px)">
+      <source srcset="assets/images/sections/respiro-comunidade-mobile.webp" type="image/webp">
+      <img src="assets/images/sections/respiro-comunidade-mobile.jpg" alt="Grupo de pessoas caminhando junto por um campo aberto ao entardecer" loading="lazy">
+    </picture>
+    <p class="ds-breather-quote">"Um clube não é feito de planilha. É feito de gente que aparece, que cuida, que continua."</p>
+  </section>
+
+  <!-- 6. SEGMENTOS — fotografia como protagonista (Brand DS §6.4). -->
+  <section class="ds-section" id="segmentos">
+    <div class="container">
+      <div class="section-heading">
+        <span class="ds-eyebrow">Segmentos atendidos</span>
+        <h2 class="mt-2">Feito para diferentes tipos de associação</h2>
+      </div>
+      <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+          <div class="ds-segment-card h-100">
+            <div class="ds-segment-media">
+              <picture>
+                <source srcset="assets/images/community/segmento-equestre-card.webp" type="image/webp">
+                <img src="assets/images/community/segmento-equestre-card.jpg" alt="Cavalo pastando em campo aberto durante o entardecer" loading="lazy" width="700" height="525">
+              </picture>
+            </div>
+            <div class="ds-segment-body">
+              <h3>Clubes equestres e associações rurais</h3>
+              <p class="ds-text-muted ds-text-sm mb-0">Onde tudo começou — o nicho que hoje é gerido, em grande parte, por planilha e WhatsApp.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="ds-segment-card h-100">
+            <div class="ds-segment-media">
+              <picture>
+                <source srcset="assets/images/community/segmento-recreativo-card.webp" type="image/webp">
+                <img src="assets/images/community/segmento-recreativo-card.jpg" alt="Time amador comemorando junto em um campo esportivo" loading="lazy" width="700" height="525">
+              </picture>
+            </div>
+            <div class="ds-segment-body">
+              <h3>Clubes recreativos e sociais</h3>
+              <p class="ds-text-muted ds-text-sm mb-0">Associados, eventos e mensalidade organizados sem depender de um "filho que entende de informática".</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="ds-segment-card h-100">
+            <div class="ds-segment-media">
+              <picture>
+                <source srcset="assets/images/community/segmento-classe-card.webp" type="image/webp">
+                <img src="assets/images/community/segmento-classe-card.jpg" alt="Duas associadas conversando animadamente ao ar livre em um encontro de associação" loading="lazy" width="700" height="525">
+              </picture>
+            </div>
+            <div class="ds-segment-body">
+              <h3>Entidades de classe</h3>
+              <p class="ds-text-muted ds-text-sm mb-0">Categoria de sócio, comunicação e cobrança recorrente, com a identidade da entidade sempre em destaque.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="ds-segment-card h-100">
+            <div class="ds-segment-media">
+              <picture>
+                <source srcset="assets/images/community/segmento-bairro-card.webp" type="image/webp">
+                <img src="assets/images/community/segmento-bairro-card.jpg" alt="Vizinhos colaborando juntos em um projeto comunitário ao ar livre" loading="lazy" width="700" height="525">
+              </picture>
+            </div>
+            <div class="ds-segment-body">
+              <h3>Associações de bairro e comunitárias</h3>
+              <p class="ds-text-muted ds-text-sm mb-0">Um painel simples para quem administra por vontade de servir a comunidade, não por profissão.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="text-center mt-4">
+        <a href="pages/segmentos.html" class="btn btn-outline-primary">Ver todos os segmentos</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. CUSTOMIZAÇÃO / EVOLUÇÃO — seção nova pedida nesta proposta.
+       Comunica flexibilidade como maturidade de produto (módulos
+       habilitáveis + white label reais, Brand DS §10) e parceria próxima —
+       nunca "desenvolvimento sob encomenda" nem software inacabado. -->
+  <section class="ds-section ds-section-alt" id="evolucao">
+    <div class="container ds-container-reading">
+      <div class="section-heading">
+        <span class="ds-eyebrow">Uma plataforma que acompanha</span>
+        <h2 class="mt-2">O Portal evolui junto com a sua associação</h2>
+        <p class="ds-lead mt-3">Nenhuma associação é igual à outra — e o produto foi arquitetado desde o início para respeitar isso.</p>
+      </div>
+      <div class="evolucao-item">
+        <div class="ds-feature-row-icon"><i class="bi bi-puzzle"></i></div>
+        <div>
+          <h3>Módulos conforme a sua realidade</h3>
+          <p class="ds-text-muted mb-0">Cada entidade ativa só o que faz sentido para si — leilões para o clube equestre, classificados para a associação de bairro, eventos para todo mundo. Nada de pagar por tela que ninguém usa.</p>
+        </div>
+      </div>
+      <div class="evolucao-item">
+        <div class="ds-feature-row-icon"><i class="bi bi-palette"></i></div>
+        <div>
+          <h3>A marca é a da sua associação</h3>
+          <p class="ds-text-muted mb-0">Nome, logotipo, cores e domínio próprios — o portal parece do clube, não de uma empresa de software. Quem entra sente que chegou na associação, não num sistema.</p>
+        </div>
+      </div>
+      <div class="evolucao-item">
+        <div class="ds-feature-row-icon"><i class="bi bi-chat-dots"></i></div>
+        <div>
+          <h3>Atendimento de gente próxima</h3>
+          <p class="ds-text-muted mb-0">Quando a sua realidade pedir um ajuste, você conversa direto com quem constrói o produto — pelo WhatsApp, sem protocolo nem fila. Personalizações e novos módulos nascem da necessidade real das associações que usam a plataforma todos os dias.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. CASO REAL — prova social por relato institucional nomeado
+       (Brand DS §8.4: depoimento com cargo e contexto; anti-pattern #69:
+       nunca anônimo). Foco em resultado e implantação, nunca em
+       pioneirismo/estágio comercial.
+       ⚠️ IMPORTANTE — VALIDAR ANTES DE PUBLICAR: o texto abaixo é uma
+       proposta de redação baseada em fatos reais de uso da plataforma pelo
+       CCBMG. Precisa ser lido, ajustado e aprovado por escrito pelo
+       Presidente antes de a página ir ao ar — e o nome próprio dele deve
+       substituir o cargo genérico no <cite> abaixo quando autorizado.
+       Fotografia real do presidente/clube entra aqui na mesma ocasião
+       (assets/images/testimonials/, ver README daquela pasta). -->
+  <section class="ds-section" id="caso-real">
+    <div class="container ds-container-reading">
+      <div class="section-heading">
+        <span class="ds-eyebrow">Quem já utiliza</span>
+        <h2 class="mt-2">Caso real: Clube do Cavalo de Bonfim MG</h2>
+      </div>
+      <div class="depoimento">
+        <blockquote>
+          "A gente cuidava de tudo em planilha e caderno, e cobrança era ligação atrás de
+          ligação. A implantação do Portal foi mais simples do que a diretoria esperava — os
+          associados que já existiam na planilha entraram no sistema e, em poucos dias, o
+          pessoal já pagava sozinho pelo PIX. Hoje eu abro o painel e sei na hora quem está em
+          dia e quanto entrou no mês, sem depender de ninguém. Sobrou tempo pra cuidar do que
+          importa, que é o clube. Pelo que resolve pra diretoria, o investimento compensa."
+        </blockquote>
+        <div class="depoimento-autor">
+          <div class="depoimento-autor-simbolo"><i class="bi bi-quote"></i></div>
+          <div>
+            <cite class="fw-bold d-block" style="font-style:normal;">Presidência do Clube do Cavalo de Bonfim MG</cite>
+            <span class="ds-text-sm ds-text-muted">Associação equestre — Bonfim, Minas Gerais</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. PLANOS — preço transparente é diferencial estrutural
+       (Brand DS §1.7.3; anti-pattern #47/#70). -->
+  <section class="ds-section ds-section-alt" id="planos">
+    <div class="container">
+      <div class="section-heading">
+        <span class="ds-eyebrow">Planos</span>
+        <h2 class="mt-2">Preço sempre visível, sem letra miúda</h2>
+        <p class="ds-lead mt-3">
+          Veja o que cada plano inclui e fale com a gente para uma proposta no mesmo dia — sem
+          compromisso e sem formulário de vendas na frente do número.
+        </p>
+      </div>
+      <div class="text-center">
+        <a href="pages/planos.html" class="btn btn-primary btn-lg">Ver planos completos</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. FAQ — as dúvidas mais ansiosas, nas palavras do público real
+       (Brand DS §8.5), incluindo a objeção de implantação identificada no
+       benchmark (padrão de falha do setor: implantação de meses). -->
+  <section class="ds-section" id="faq">
+    <div class="container ds-container-reading">
+      <div class="section-heading">
+        <span class="ds-eyebrow">Dúvidas</span>
+        <h2 class="mt-2">Perguntas frequentes</h2>
+      </div>
+      <div class="accordion" id="faqAccordion">
+        <div class="accordion-item">
+          <h3 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+              Preciso saber de tecnologia para usar?
+            </button>
+          </h3>
+          <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+            <div class="accordion-body">Se a sua diretoria sabe usar WhatsApp, ela sabe usar o Portal Associativo. Não existe tela de configuração técnica como ponto de entrada — só o que você precisa para o dia a dia.</div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h3 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq7">
+              Quanto tempo leva para começar a usar?
+            </button>
+          </h3>
+          <div id="faq7" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body">Dias, não meses. A gente ajuda a trazer os associados da sua planilha atual para o Portal, e a diretoria já começa com tudo dentro do sistema — sem digitar do zero e sem projeto de implantação demorado.</div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h3 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+              E se eu errar um cadastro?
+            </button>
+          </h3>
+          <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body">Dá para corrigir sem drama. O Portal avisa em tempo real quando um campo está errado — nunca deixa você descobrir o erro só depois de salvar.</div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h3 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+              Meus dados e os dos associados estão seguros?
+            </button>
+          </h3>
+          <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body">Sim. Os dados ficam em infraestrutura própria da associação dentro da plataforma, nunca compartilhados entre clubes, e nenhuma informação financeira fica escondida do associado.</div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h3 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+              Quanto custa e tem taxa escondida?
+            </button>
+          </h3>
+          <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body">Não tem taxa escondida. O que cada plano inclui está sempre visível em <a href="pages/planos.html">Planos e preços</a> — nunca atrás de um formulário de vendas.</div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h3 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+              Dá para migrar da planilha que eu já uso hoje?
+            </button>
+          </h3>
+          <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body">Dá sim. A gente ajuda a trazer os associados que já existem na sua planilha para o Portal, sem você precisar digitar tudo de novo do zero.</div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h3 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq6">
+              O associado precisa baixar um aplicativo?
+            </button>
+          </h3>
+          <div id="faq6" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body">Não. O Portal funciona direto no navegador do celular, sem instalar nada — quem quiser um atalho na tela inicial pode adicionar em poucos toques.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11. CONTATO — seção nova pedida nesta proposta. O formulário monta a
+       mensagem e abre a conversa no WhatsApp (canal real de atendimento
+       hoje); poucos campos (anti-pattern #79). -->
+  <section class="ds-section ds-section-alt" id="contato">
+    <div class="container">
+      <div class="section-heading">
+        <span class="ds-eyebrow">Contato</span>
+        <h2 class="mt-2">Fale com a gente</h2>
+        <p class="ds-lead mt-3">Conte rapidinho como é a sua associação — a resposta vem de quem constrói o produto.</p>
+      </div>
+      <div class="row g-5 justify-content-center">
+        <div class="col-lg-6">
+          <form id="form-contato" novalidate>
+            <div class="mb-3">
+              <label for="contato-nome" class="form-label fw-bold">Seu nome</label>
+              <input type="text" class="form-control form-control-lg" id="contato-nome" name="nome" required>
+              <div class="invalid-feedback">Escreva seu nome para a gente saber com quem fala.</div>
+            </div>
+            <div class="mb-3">
+              <label for="contato-associacao" class="form-label fw-bold">Nome da associação</label>
+              <input type="text" class="form-control form-control-lg" id="contato-associacao" name="associacao" required>
+              <div class="invalid-feedback">Conte qual é a sua associação.</div>
+            </div>
+            <div class="mb-3">
+              <label for="contato-mensagem" class="form-label fw-bold">O que você quer resolver?</label>
+              <textarea class="form-control form-control-lg" id="contato-mensagem" name="mensagem" rows="4" placeholder="Ex.: hoje a cobrança é toda por planilha e boleto avulso…" required></textarea>
+              <div class="invalid-feedback">Conte em uma frase o que quer resolver.</div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg w-100">
+              <i class="bi bi-whatsapp me-1"></i>Enviar pelo WhatsApp
+            </button>
+            <p class="ds-text-sm ds-text-muted mt-2 mb-0">A mensagem abre pronta no seu WhatsApp — você revisa antes de enviar.</p>
+          </form>
+        </div>
+        <div class="col-lg-4">
+          <div class="contato-canal">
+            <div class="ds-feature-row-icon"><i class="bi bi-whatsapp"></i></div>
+            <div>
+              <h3 class="h6 fw-bold mb-1">WhatsApp</h3>
+              <p class="ds-text-muted ds-text-sm mb-0"><a href="https://wa.me/5531998923209?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20o%20Portal%20Associativo." target="_blank" rel="noopener">+55 31 99892-3209</a><br>Canal mais rápido — resposta em horário comercial.</p>
+            </div>
+          </div>
+          <!-- E-MAIL OFICIAL DO PRODUTO — AINDA NÃO CONFIGURADO.
+               Quando a caixa oficial existir: (1) descomentar o bloco
+               abaixo preenchendo o endereço real; (2) atualizar DEST_EMAIL
+               em js/forms.js (ver docs/roadmap/README.md, pendência da
+               Fase 2). Nenhum e-mail fictício deve ser exibido até lá.
+          <div class="contato-canal">
+            <div class="ds-feature-row-icon"><i class="bi bi-envelope"></i></div>
+            <div>
+              <h3 class="h6 fw-bold mb-1">E-mail</h3>
+              <p class="ds-text-muted ds-text-sm mb-0"><a href="mailto:INSERIR-EMAIL-OFICIAL">INSERIR-EMAIL-OFICIAL</a></p>
+            </div>
+          </div>
+          -->
+          <div class="contato-canal">
+            <div class="ds-feature-row-icon"><i class="bi bi-calendar-check"></i></div>
+            <div>
+              <h3 class="h6 fw-bold mb-1">Demonstração guiada</h3>
+              <p class="ds-text-muted ds-text-sm mb-0">Meia hora, no seu horário, mostrando o Portal com casos do dia a dia da sua associação — <a href="https://wa.me/5531998923209?text=Ol%C3%A1!%20Quero%20agendar%20uma%20demonstra%C3%A7%C3%A3o%20do%20Portal%20Associativo%20para%20a%20minha%20associa%C3%A7%C3%A3o." target="_blank" rel="noopener">agendar pelo WhatsApp</a>.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12. CTA FINAL — convite calmo, arquétipo Cuidador nunca pressiona
+       (Creative Direction §12.2). -->
+  <section class="ds-section text-center cta-final" style="background:var(--brand-dark); color:#fff;">
+    <div class="container ds-container-reading">
+      <h2 class="mb-3">Pronto para tirar a sua associação da planilha?</h2>
+      <p class="ds-text-md mb-4" style="opacity:.85;">
+        Sem pressão e sem contador regressivo — quando fizer sentido para o seu clube, a gente está aqui.
+      </p>
+      <div class="hero-cta justify-content-center">
+        <a href="https://wa.me/5531998923209?text=Ol%C3%A1!%20Quero%20agendar%20uma%20demonstra%C3%A7%C3%A3o%20do%20Portal%20Associativo%20para%20a%20minha%20associa%C3%A7%C3%A3o." class="btn btn-accent btn-lg" target="_blank" rel="noopener">
+          <i class="bi bi-calendar-check me-1"></i>Agendar demonstração
+        </a>
+        <a href="https://wa.me/5531998923209?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20o%20Portal%20Associativo." class="btn btn-outline-light btn-whatsapp-outline btn-lg" target="_blank" rel="noopener">
+          <i class="bi bi-whatsapp me-1"></i>Falar no WhatsApp
+        </a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER — assinatura institucional com o slogan (XA §4.5) + CNPJ como
+     elemento discreto de confiança institucional, nunca destaque comercial. -->
+<footer class="py-5 border-top" style="background:var(--brand-dark);">
+  <div class="container text-white">
+    <div class="d-flex align-items-center gap-2 pb-4 mb-4 border-bottom border-light border-opacity-10">
+      <img src="assets/images/brand/symbol/symbol-negative.svg" alt="" width="28" height="28">
+      <div>
+        <div class="fw-bold ds-text-sm">Portal Associativo</div>
+        <div class="ds-text-xs" style="opacity:.7;">O seu maior ativo é o sócio ativo.</div>
+      </div>
+    </div>
+    <div class="row g-4 mb-4">
+      <div class="col-6 col-md-3">
+        <h3 class="ds-text-sm fw-bold text-uppercase mb-3" style="opacity:.65;">Produto</h3>
+        <ul class="list-unstyled ds-text-sm">
+          <li class="mb-2"><a class="link-light link-opacity-75 text-decoration-none" href="pages/funcionalidades.html">Funcionalidades</a></li>
+          <li class="mb-2"><a class="link-light link-opacity-75 text-decoration-none" href="pages/segmentos.html">Segmentos</a></li>
+          <li class="mb-2"><a class="link-light link-opacity-75 text-decoration-none" href="pages/planos.html">Planos</a></li>
+        </ul>
+      </div>
+      <div class="col-6 col-md-3">
+        <h3 class="ds-text-sm fw-bold text-uppercase mb-3" style="opacity:.65;">Empresa</h3>
+        <ul class="list-unstyled ds-text-sm">
+          <li class="mb-2"><a class="link-light link-opacity-75 text-decoration-none" href="pages/sobre.html">Sobre</a></li>
+          <li class="mb-2"><a class="link-light link-opacity-75 text-decoration-none" href="#contato">Contato</a></li>
+        </ul>
+      </div>
+      <div class="col-6 col-md-3">
+        <h3 class="ds-text-sm fw-bold text-uppercase mb-3" style="opacity:.65;">Recursos</h3>
+        <ul class="list-unstyled ds-text-sm">
+          <li class="mb-2"><a class="link-light link-opacity-75 text-decoration-none" href="pages/documentacao.html">Documentação</a></li>
+          <li class="mb-2"><a class="link-light link-opacity-75 text-decoration-none" href="#faq">Perguntas frequentes</a></li>
+        </ul>
+      </div>
+      <div class="col-6 col-md-3">
+        <h3 class="ds-text-sm fw-bold text-uppercase mb-3" style="opacity:.65;">Legal e acesso</h3>
+        <ul class="list-unstyled ds-text-sm">
+          <li class="mb-2"><a class="link-light link-opacity-75 text-decoration-none" href="pages/privacidade.html">Privacidade</a></li>
+          <li class="mb-2"><a class="link-light link-opacity-75 text-decoration-none" href="pages/termos.html">Termos de uso</a></li>
+          <li class="mb-2"><a class="link-light link-opacity-75 text-decoration-none" href="pages/login.html">Login Master</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="text-center ds-text-xs pt-3 border-top border-light border-opacity-10" style="opacity:.65;">
+      © <span data-current-year></span> Portal Associativo. Todos os direitos reservados.<br>
+      Desenvolvido por <u>Serafim Technologies</u> · CNPJ 20.831.789/0001-30
+    </div>
+  </div>
+</footer>
+
+<script src="js/bootstrap.bundle.min.js"></script>
+<script type="module" src="js/app.js"></script>
+<script type="module">
+  // Formulário de contato → abre conversa no WhatsApp com a mensagem pronta.
+  // Mesmo padrão de validação Bootstrap de js/forms.js, trocando o transporte
+  // mailto (sem caixa oficial ainda) pelo canal real de atendimento.
+  const WHATSAPP = "5531998923209";
+  const form = document.getElementById("form-contato");
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (!form.checkValidity()) {
+      form.classList.add("was-validated");
+      const firstInvalid = form.querySelector(":invalid");
+      if (firstInvalid) firstInvalid.focus();
+      return;
+    }
+    const data = Object.fromEntries(new FormData(form).entries());
+    const texto = `Olá! Sou ${data.nome}, da ${data.associacao}. ${data.mensagem}`;
+    window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(texto)}`, "_blank", "noopener");
+  });
+</script>
+</body>
+</html>
