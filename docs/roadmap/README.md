@@ -11,6 +11,7 @@ Alinhado ao roadmap geral da plataforma (ver `CLAUDE.md` do projeto CCBMG):
 | 2.3 | Direção de Arte — 2ª iteração (Design Review): Hero trocado por completo (foto antiga lia como registro de evento, sem gente identificável, competia com o texto) e reestruturado em layout de duas colunas (texto + foto, nunca mais foto de fundo com scrim); `segmento-classe-card` recortado para remover crachá de evento e etiqueta de roupa legíveis; título de Benefícios trocado de "Menos ansiedade" para "Menos burocracia" (nomeia o adversário real, Brand DS §1.1); ícone quebrado (`bi-handshake`, inexistente no Bootstrap Icons) corrigido para `bi-gift`; seção "Quem já usa" reescrita para focar em resultado obtido, nunca pioneirismo (removida toda menção a "primeiro cliente"/"produção") — **este commit** |
 | 2.4 | Proposta de nova Home (`index_nova.html` + `css/landing-nova.css`) — reconstrução completa a partir de benchmark de HiGestor/Associatec/Softaliza: hero com texto sobreposto (contraste AA verificado por cálculo), copy de transformação, seção "Plataforma em contexto" (dispositivos em CSS por perfil), seção Customização/Evolução, caso real com relato da presidência do CCBMG (**pendente de aprovação por escrito do Presidente antes de publicar**), seção Contato (formulário → WhatsApp; e-mail oficial pendente, ver comentário no HTML), CTAs → WhatsApp +55 31 99892-3209, CNPJ no rodapé. Home atual (`index.html`) intocada; página com `noindex` até ser promovida — **este commit** |
 | 2.5 | Nova Home — 3ª iteração (conversão): hero v3 com primeira dobra completa no mobile (fundo terracota sólido, foto integrada como cartão + chip de UI real, chips de credibilidade), benefícios reescritos na perspectiva do presidente, nova seção "Tudo em um único lugar" (6 categorias com benefício + módulos como chips, substituindo a lista de funcionalidades soltas), demonstração com smartphone + notebook + desktop e 4 perfis ("o que esse usuário consegue fazer"), Customização com "parceria de mandato em mandato", caso real reformatado como história (contexto → problema → solução → resultado + citação, ainda **pendente de aprovação por escrito do Presidente**) — **este commit** |
+| 2.6 | Nova Home — 4ª iteração (estratégia de produto): Home encurtada de 12 para 10 seções e ~23% mais baixa no mobile (hero −29%); primeira dobra do smartphone reconstruída (slogan, título, descrição, dois CTAs e foto integrada cabem em uma tela); chip de UI com números fabricados removido do hero (fotografia pura); faixa "para quem é" substituída pela faixa de ecossistema (12 públicos, não só a diretoria); "Plataforma completa" e "Demonstração" fundidas numa seção só; mockups de dispositivo trocados por molduras neutras preparadas para screenshot real (nenhum dashboard fictício); Contato e CTA final fundidos; "Login Master" removido da navegação pública; logotipo das páginas internas apontando para a nova Home; CTAs → WhatsApp em todo o site; `pages/planos.html` reestruturada em 5 planos (Site Institucional → Comunidade → **Gestão** → Plataforma → Customizado) com "a partir de R$ 49,90/mês"; corrigido bug real de rolagem horizontal no mobile (`row g-5` dentro de `.container`) na nova Home e em `pages/funcionalidades.html`, e ícone inexistente `bi-handshake` naquela página — **este commit** |
 | 3 | Páginas de Marketplace / segmentos específicos, se fizer sentido divulgar publicamente |
 | 4 | Divulgação de app/aplicativo (quando existir) |
 | 5 | Painel Master migra para este repositório/domínio; `js/firebase.js` passa a ser usado de fato; área autenticada nasce aqui |
@@ -18,15 +19,20 @@ Alinhado ao roadmap geral da plataforma (ver `CLAUDE.md` do projeto CCBMG):
 
 ## Não fazer antes da hora
 
-- Não publicar número de preço em reais em `/planos` sem validação de negócio
-  — a página já existe e mostra o que cada plano inclui, mas o valor
-  permanece deliberadamente fora até a precificação estar fechada (ver nota
-  na própria página e em `docs/brand-system/README.md`).
+- Não publicar valor individual por plano em `/planos` sem validação de
+  negócio. Desde a 4ª iteração a página publica a porta de entrada
+  (**"a partir de R$ 49,90 por mês"**, decisão comercial do dono do produto)
+  e o que cada um dos 5 planos inclui; o valor de cada degrau continua
+  deliberadamente fora até a precificação estar fechada (ver nota na própria
+  página e em `docs/brand-system/README.md`).
 - Não mover o Painel Master para cá antes da Fase 5.
 
 ## Pendências antes de publicar (Fase 2)
 
 - [ ] Trocar `DEST_EMAIL` em `js/forms.js` por uma caixa de e-mail real.
 - [ ] Preencher CNPJ/endereço legal em `pages/termos.html` e `pages/privacidade.html`, se a empresa decidir publicá-los.
-- [ ] Fechar precificação real para `pages/planos.html` (ver acima).
+- [ ] Fechar o valor de cada um dos 5 planos para `pages/planos.html` (ver acima — o "a partir de R$ 49,90" já está publicado).
+- [ ] Aprovação por escrito do Presidente do CCBMG para o relato do caso real na Home (ver comentário em `index_nova.html`).
+- [ ] Substituir as molduras neutras da seção "Tudo em um único lugar" por screenshots reais do produto (`assets/images/product/`).
+- [ ] Decidir o destino de `pages/demonstracao.html`: com todos os CTAs indo para o WhatsApp, a página deixou de ser referenciada pela navegação.
 - [ ] Substituir `apple-touch-icon`/OG image por artes finais revisadas, se ainda não validadas.
