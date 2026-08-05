@@ -1,7 +1,8 @@
 # Créditos e licenças — fotografia
 
 Todas as fotos abaixo são licenciadas sob a [Unsplash License](https://unsplash.com/license)
-— uso livre, inclusive comercial, sem exigir atribuição. Os créditos ficam
+ou a [licença da Pexels](https://www.pexels.com/license/) — ambas de uso
+livre, inclusive comercial, sem exigir atribuição. Os créditos ficam
 registrados aqui mesmo assim, por boa prática e para rastreabilidade.
 
 **Por que fotografia de banco de imagens, e não fotografia própria**: os
@@ -17,11 +18,11 @@ mesmo aspect ratio, mesma pasta.
 
 | Arquivo | Foto original | Fotógrafo(a) | Usada em |
 |---|---|---|---|
-| `hero/hero-comunidade-*` | [unsplash.com/photos/HeI4wIZLUsk](https://unsplash.com/photos/HeI4wIZLUsk) | Toledo Fotografia ([@toledofotografia_](https://unsplash.com/@toledofotografia_)) — São Paulo, Brasil | `index.html` — Hero |
+| `hero/hero-comunidade-*` | [pexels.com/photo/16934845](https://www.pexels.com/photo/people-at-a-social-gathering-in-a-park-16934845/) | Samuel Peter ([@newmanphotographs](https://www.pexels.com/@newmanphotographs)) — licença Pexels, uso comercial livre | `index.html` — Hero |
 | `sections/respiro-comunidade-*` | [unsplash.com/photos/MVT0Nz9YClY](https://unsplash.com/photos/MVT0Nz9YClY) | Arthur Hickinbotham ([@arthurhick](https://unsplash.com/@arthurhick)) | `index.html` — seção de respiro editorial, entre Funcionalidades e Segmentos |
 | `community/segmento-equestre-card.*` | [unsplash.com/photos/T0kXMgwCpck](https://unsplash.com/photos/T0kXMgwCpck) | Oleksii Rozanov ([@rozanovz](https://unsplash.com/@rozanovz)) | `index.html` + `pages/segmentos.html` — card "Clubes equestres e associações rurais" |
 | `community/segmento-recreativo-card.*` | [unsplash.com/photos/XlkgzIEzpJQ](https://unsplash.com/photos/XlkgzIEzpJQ) | Aiden Craver ([@slaiden](https://unsplash.com/@slaiden)) | `index.html` + `pages/segmentos.html` — card "Clubes recreativos e sociais" |
-| `community/segmento-classe-card.*` | [unsplash.com/photos/bxiOjnbjRM0](https://unsplash.com/photos/bxiOjnbjRM0) | Small Group Network | `index.html` + `pages/segmentos.html` — card "Entidades de classe" |
+| `community/segmento-classe-card.*` | [unsplash.com/photos/bxiOjnbjRM0](https://unsplash.com/photos/bxiOjnbjRM0) | Small Group Network — recortada para excluir crachá de evento e tag de roupa legíveis no enquadramento original (ver 2ª rodada abaixo) | `index.html` + `pages/segmentos.html` — card "Entidades de classe" |
 | `community/segmento-bairro-card.*` | [unsplash.com/photos/c9xGzxR8ego](https://unsplash.com/photos/c9xGzxR8ego) | Haberdoedas | `index.html` + `pages/segmentos.html` — card "Associações de bairro e comunitárias" |
 
 ## Critério de curadoria aplicado
@@ -40,6 +41,37 @@ antes de ser baixada — descartadas nesta rodada, e por quê:
   — vetadas explicitamente pelo briefing e pelo Creative Direction §4.8.
 - Fotos Unsplash+ (pagas) — descartadas mesmo quando visualmente boas, por
   não serem gratuitas.
+
+### 2ª rodada — Design Review do Hero (troca completa)
+
+O Hero original (foto de festa junina de rua) foi identificado, nesta
+revisão, como o problema central da Home: lia como registro de evento, sem
+pessoa claramente identificável em foco, e competia visualmente com o
+título mesmo com scrim escuro por trás do texto. Foi completamente
+substituído — critério de curadoria desta rodada, incluindo achados que
+descartaram candidatos fortes na aparência mas problemáticos em resolução
+real:
+
+- Fotos de eventos/conferência com crachá de identificação legível (nome
+  da pessoa + nome do evento) — encontrado repetidamente no acervo de um
+  mesmo fotógrafo de retiro religioso ("Small Group Network"); mesmo
+  quando a cena em si era genuína e calorosa, o crachá lido de perto
+  identifica um evento de terceiro real, o que a Home não pode carregar.
+  Isso também obrigou recortar `segmento-classe-card` (mesmo fotógrafo,
+  mesmo problema) para excluir o crachá e uma etiqueta "Patagonia" visível
+  na roupa, mantendo só as duas pessoas em conversa.
+- Foto de "reunião comunitária" com bandeira de campanha política real
+  ("GIRMAY") e máscaras de pandemia visíveis ao fundo — audiência sentada
+  olhando para frente também não comunica "pessoas interagindo
+  naturalmente", e sim "plateia de palestra".
+- Fotos de grupo jovem em pose de ensaio/estilo "influencer" (círculo
+  visto de baixo, gesto de "paz e amor" para câmera, logo de marca de
+  streetwear na roupa) — exatamente o "elenco homogêneo jovem e urbano"
+  que o Creative Direction §4.1 pede para nunca usar como padrão único.
+- Foto de confraternização comunitária com embalagens de marca (Kirkland,
+  Reynolds, Breyers) visíveis na mesa — mantida, mas recortada para
+  excluir completamente a mesa e qualquer embalagem, preservando só o
+  grupo em conversa/risada sob as árvores.
 
 ## Tratamento visual aplicado
 

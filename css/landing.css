@@ -3,47 +3,35 @@
 
 /* Fotografia real domina a primeira dobra — Creative Direction §12.1
    ("a primeira dobra deve ser dominada por fotografia real... mostrar
-   gente antes de mostrar interface"). Nunca gradiente decorativo sozinho
-   (§16.5, anti-pattern #66) — aqui o gradiente existe só como scrim de
-   contraste sobre a foto, função de acessibilidade (texto legível),
-   nunca decoração. Ver assets/images/CREDITS.md para a curadoria. */
+   gente antes de mostrar interface"). Layout em duas colunas (texto +
+   foto), não foto de fundo com scrim: a Design Review de 2ª iteração
+   encontrou que o scrim escuro fazia o fundo "competir" com o título e
+   reduzia a legibilidade do slogan — a mesma exigência de contraste AA
+   fica estruturalmente resolvida ao tirar o texto de cima da foto, em vez
+   de escurecer a foto para caber texto por cima dela (Experience
+   Architecture §5.1: "Desktop: hero ganha texto e imagem lado a lado").
+   Ver assets/images/CREDITS.md para a curadoria/tratamento da foto. */
 .hero {
-  position: relative;
-  overflow: hidden;
-  color: #fff;
-  padding-block: clamp(3.5rem, 11vw, 7rem);
+  padding-block: clamp(2.5rem, 7vw, 5.5rem);
+  background: var(--surface);
 }
 .hero-media {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
 }
 .hero-media img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 62%;
+  height: auto;
   display: block;
 }
-.hero-scrim {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: rgba(28, 22, 17, 0.66);
-}
-.hero .container {
-  position: relative;
-  z-index: 2;
-}
-.hero .ds-eyebrow { color: var(--brand-tint); }
-.hero .ds-lead { color: rgba(255,255,255,0.88); }
 
 .hero-cta {
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
 }
-.hero-cta .btn { box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.15); }
+.hero-cta .btn { box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.08); }
 @media (max-width: 575.98px) {
   .hero-cta .btn { width: 100%; }
 }

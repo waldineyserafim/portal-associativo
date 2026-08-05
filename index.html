@@ -96,48 +96,62 @@
        posiciona a marca ("cuidamos do vínculo com o sócio") antes de
        vender a transformação específica (o H1). Fotografia real domina a
        primeira dobra (Creative Direction §12.1) — ver assets/images/CREDITS.md
-       para curadoria/licença; scrim escuro sobre a foto garante contraste
-       AA para o texto, nunca decorativo (Creative Direction §16.5). -->
+       para curadoria/licença/tratamento. Texto e foto lado a lado, nunca foto
+       de fundo com texto por cima (Experience Architecture §5.1) — garante
+       legibilidade total do slogan/título sem precisar escurecer a foto. -->
   <section class="hero">
-    <picture class="hero-media">
-      <source media="(min-width: 768px)" srcset="assets/images/hero/hero-comunidade-desktop.webp" type="image/webp">
-      <source media="(min-width: 768px)" srcset="assets/images/hero/hero-comunidade-desktop.jpg" type="image/jpeg">
-      <source srcset="assets/images/hero/hero-comunidade-mobile.webp" type="image/webp">
-      <img src="assets/images/hero/hero-comunidade-mobile.jpg" alt="Pessoas reunidas ao entardecer numa celebração de comunidade, luz dourada entre as árvores" fetchpriority="high">
-    </picture>
-    <div class="hero-scrim"></div>
-    <div class="container text-center">
-      <span class="ds-eyebrow">O seu maior ativo é o sócio ativo.</span>
-      <h1 class="ds-display mt-3 mb-3">
-        Sua associação organizada, sem depender de planilha, WhatsApp e boleto avulso
-      </h1>
-      <p class="ds-lead ds-container-reading mx-auto mb-4">
-        O Portal Associativo reúne associados, financeiro, eventos e comunicação num painel
-        único — simples o bastante para qualquer diretoria eleita usar sozinha, sem treinamento
-        e sem medo de errar.
-      </p>
-      <div class="hero-cta justify-content-center">
-        <a href="pages/demonstracao.html" class="btn btn-accent btn-lg">
-          <i class="bi bi-play-circle me-1"></i>Solicitar demonstração
-        </a>
-        <a href="pages/planos.html" class="btn btn-outline-light btn-lg">
-          <i class="bi bi-list-check me-1"></i>Ver planos e preços
-        </a>
+    <div class="container">
+      <div class="row align-items-center g-4 g-lg-5">
+        <div class="col-lg-6 order-2 order-lg-1 text-center text-lg-start">
+          <span class="ds-eyebrow">O seu maior ativo é o sócio ativo.</span>
+          <h1 class="ds-display mt-3 mb-3">
+            Sua associação organizada, sem depender de planilha, WhatsApp e boleto avulso
+          </h1>
+          <p class="ds-lead mb-4">
+            O Portal Associativo reúne associados, financeiro, eventos e comunicação num painel
+            único — simples o bastante para qualquer diretoria eleita usar sozinha, sem treinamento
+            e sem medo de errar.
+          </p>
+          <div class="hero-cta justify-content-center justify-content-lg-start">
+            <a href="pages/demonstracao.html" class="btn btn-primary btn-lg">
+              <i class="bi bi-play-circle me-1"></i>Solicitar demonstração
+            </a>
+            <a href="pages/planos.html" class="btn btn-outline-primary btn-lg">
+              <i class="bi bi-list-check me-1"></i>Ver planos e preços
+            </a>
+          </div>
+        </div>
+        <div class="col-lg-6 order-1 order-lg-2">
+          <picture class="hero-media">
+            <source media="(min-width: 992px)" srcset="assets/images/hero/hero-comunidade-desktop.webp" type="image/webp">
+            <source media="(min-width: 992px)" srcset="assets/images/hero/hero-comunidade-desktop.jpg" type="image/jpeg">
+            <source srcset="assets/images/hero/hero-comunidade-mobile.webp" type="image/webp">
+            <img src="assets/images/hero/hero-comunidade-mobile.jpg" alt="Diretor conversando com um grupo diverso de associados ao ar livre, todos sorrindo, num encontro real da comunidade" fetchpriority="high" width="1000" height="503">
+          </picture>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- 2. BENEFÍCIOS — editorial, sem card (respiro depois do Hero denso) -->
+  <!-- 2. BENEFÍCIOS — editorial, sem card (respiro depois do Hero denso).
+       Título revisado na 2ª iteração de Direção de Arte: "menos ansiedade"
+       nomeava um sentimento, não o benefício em si — a Design Review
+       encontrou que o corpo deste primeiro item já descrevia burocracia
+       (buscar informação em três lugares), não ansiedade. "Menos
+       burocracia" nomeia diretamente o adversário que o Brand Design
+       System já descreve em §1.1 ("perseguindo boleto vencido,
+       atualizando planilha"), mantendo a mesma estrutura tríade
+       "menos X, mais Y, mais Z" definida em §8.2. -->
   <section class="ds-section" id="beneficios">
     <div class="container">
       <div class="section-heading">
         <span class="ds-eyebrow">Por que trocar a planilha pelo Portal</span>
-        <h2 class="mt-2">Menos ansiedade, mais controle, mais tempo</h2>
+        <h2 class="mt-2">Menos burocracia, mais controle, mais tempo</h2>
       </div>
       <div class="row g-5">
         <div class="col-md-4 ds-benefit">
           <div class="ds-benefit-icon"><i class="bi bi-shield-check"></i></div>
-          <h3>Menos ansiedade</h3>
+          <h3>Menos burocracia</h3>
           <p>Você sempre sabe quem está em dia — sem catar informação em três lugares diferentes.</p>
         </div>
         <div class="col-md-4 ds-benefit">
@@ -199,7 +213,7 @@
           </div>
         </div>
         <div class="col-md-6 ds-feature-row">
-          <div class="ds-feature-row-icon"><i class="bi bi-handshake"></i></div>
+          <div class="ds-feature-row-icon"><i class="bi bi-gift"></i></div>
           <div>
             <h3>Todo associado enxerga um motivo pra continuar associado</h3>
             <p>Benefícios de parceiros, visíveis direto no painel.</p>
@@ -267,7 +281,7 @@
             <div class="ds-segment-media">
               <picture>
                 <source srcset="assets/images/community/segmento-classe-card.webp" type="image/webp">
-                <img src="assets/images/community/segmento-classe-card.jpg" alt="Grupo conversando ao ar livre em um encontro de associação" loading="lazy" width="700" height="525">
+                <img src="assets/images/community/segmento-classe-card.jpg" alt="Duas associadas conversando animadamente ao ar livre em um encontro de associação" loading="lazy" width="700" height="525">
               </picture>
             </div>
             <div class="ds-segment-body">
@@ -298,21 +312,27 @@
   </section>
 
   <!-- 6. PROVA SOCIAL — segundo respiro, mais textual/intimista que o bloco 4
-       (Creative Direction §12.3: alternância nunca é uniforme). -->
+       (Creative Direction §12.3: alternância nunca é uniforme). Reescrito na
+       2ª iteração de Direção de Arte: "primeiro clube em produção" soava
+       pioneirismo/MVP, não confiança — o foco agora é o resultado obtido,
+       nunca o estágio comercial do produto (nunca "primeiro", "produção",
+       "piloto"). Depoimento nomeado e específico (Brand DS §8.4), sem
+       fotografia de pessoa porque não há consentimento de uso de imagem do
+       Clube do Cavalo de Bonfim MG nesta fase — ver assets/images/testimonials/README.md. -->
   <section class="ds-section ds-section-alt" id="prova-social">
     <div class="container ds-container-reading">
       <div class="section-heading">
         <span class="ds-eyebrow">Quem já usa</span>
-        <h2 class="mt-2">Primeiro clube em produção real</h2>
+        <h2 class="mt-2">Uma associação que já modernizou a gestão</h2>
       </div>
       <div class="ds-case text-center">
-        <span class="ds-case-badge"><i class="bi bi-patch-check"></i>Cliente real, não estudo de caso fictício</span>
+        <span class="ds-case-badge"><i class="bi bi-patch-check"></i>Caso real, resultado real</span>
         <h3 class="h4 fw-bold mt-3 mb-3">Clube do Cavalo de Bonfim MG</h3>
         <p class="ds-lead mb-0">
-          Foi o primeiro clube a sair da planilha e do boleto avulso para o Portal Associativo.
-          Hoje os associados pagam por PIX, boleto ou cartão, veem o próprio status na hora, e a
-          diretoria acompanha associados, financeiro e eventos em um painel único — sem depender
-          de grupo de WhatsApp para saber se está tudo em ordem.
+          A diretoria trocou planilha, caderno e boleto avulso por um painel único: hoje sabe, em
+          segundos, quem está em dia, quanto entrou no mês e quais eventos têm inscrição aberta.
+          Os associados pagam por PIX, boleto ou cartão e veem o próprio status na hora — sem
+          precisar perguntar no grupo do WhatsApp.
         </p>
       </div>
     </div>
@@ -325,9 +345,9 @@
         <span class="ds-eyebrow">Planos</span>
         <h2 class="mt-2">Preço sempre visível, sem letra miúda</h2>
         <p class="ds-lead mt-3">
-          O Portal Associativo está em fase de expansão para novos clubes além do primeiro
-          cliente em produção. Veja o que cada plano inclui e fale com a gente para uma proposta
-          no mesmo dia — sem compromisso.
+          O Portal Associativo já roda numa associação real e está em fase de expansão para
+          novos clubes. Veja o que cada plano inclui e fale com a gente para uma proposta no
+          mesmo dia — sem compromisso.
         </p>
       </div>
       <div class="text-center">
