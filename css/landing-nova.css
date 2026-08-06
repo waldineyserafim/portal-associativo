@@ -226,14 +226,19 @@
   padding: 0.2rem 0.6rem;
 }
 
-/* ── DISPOSITIVOS — PLACEHOLDERS PREPARADOS PARA SCREENSHOT REAL ─────────
-   Nenhum dashboard inventado, nenhum número fabricado (anti-pattern #66).
-   Dentro de cada moldura há apenas o nome real da tela do produto e blocos
-   neutros de estrutura — a "silhueta" da interface, no mesmo espírito de um
-   skeleton screen (Brand DS §13.1).
-   SUBSTITUIÇÃO FUTURA: quando houver screenshot real aprovado, trocar o
-   conteúdo interno de .device-screen por <img> — as molduras permanecem,
-   sem nenhuma mudança de layout. */
+/* ── DISPOSITIVOS — SCREENSHOTS REAIS DO PRODUTO ─────────────────────────
+   Cada moldura exibe uma captura real das telas do Portal em produção
+   (CCBMG, uso aprovado pela diretoria; dados pessoais fictícios — LGPD).
+   As classes .sk/.sk-cta/.device-bar abaixo eram os skeletons usados antes
+   dos screenshots e permanecem para eventual reuso em novas molduras que
+   ainda não tenham captura aprovada. */
+.device-screen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
 .device-stage {
   display: flex;
   align-items: flex-end;

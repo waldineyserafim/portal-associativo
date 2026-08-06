@@ -67,11 +67,13 @@ Alinhado ao roadmap geral da plataforma (ver `CLAUDE.md` do projeto CCBMG):
   apontado para o Cloudflare Email Routing — decisão de negócio, não
   urgente.
 
-- **DMARC ausente até esta revisão.** `_dmarc.portalassociativo.com.br` não
-  existia — autorizado e em configuração (ago/2026): `v=DMARC1; p=none;
-  rua=mailto:contato@portalassociativo.com.br` (modo monitoramento, sem
-  risco de bloquear e-mail legítimo). Atualizar este item para `[x]` quando
-  a propagação for confirmada.
+- [x] **DMARC configurado (ago/2026).** `_dmarc.portalassociativo.com.br`
+  → `v=DMARC1; p=none; rua=mailto:contato@portalassociativo.com.br` — modo
+  monitoramento, propagação confirmada em 3 resolvedores (local, Google,
+  Cloudflare). Item fechado, não é mais débito; mantido aqui como histórico.
+  Evolução futura opcional: subir para `p=quarantine`/`p=reject` depois de
+  revisar alguns relatórios agregados e confirmar que nenhum envio legítimo
+  está sendo sinalizado como falho.
 
 - **Código morto removido (ago/2026):** pasta `components/` inteira (16
   arquivos, nunca carregados por nenhuma página — `data-component` não é
