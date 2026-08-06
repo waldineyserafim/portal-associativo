@@ -18,10 +18,11 @@ apresentação de planos e funcionalidades, captação de leads (demonstração/
 contato) e, futuramente, o Painel Master — sem acoplar esse conteúdo de
 marketing ao deploy do sistema operacional de nenhum cliente.
 
-Nesta fase inicial, o objetivo é **a fundação**: estrutura de pastas,
-Design System, convenções de código e uma landing page estrutural (sem copy
-definitivo) — pronta para receber conteúdo real nas próximas fases. Ver
-[docs/roadmap/](docs/roadmap/).
+**Em produção desde ago/2026**, em `https://portalassociativo.com.br/`:
+Design System consolidado, Home e páginas internas com copy final (4
+iterações de Direção de Arte/Conversão), formulários funcionais, domínio
+próprio com DNS/HTTPS/e-mail configurados. Ver [docs/roadmap/](docs/roadmap/)
+para o histórico completo por fase e as pendências reais em aberto.
 
 ---
 
@@ -47,36 +48,37 @@ Visitante → Portal Associativo (marketing, SEO, planos, contato)
 portal-associativo/
 ├── assets/
 │   ├── images/
-│   │   ├── brand/          # logo, og-cover — a definir (docs/brand-system)
-│   │   ├── icons/          # favicon.svg
-│   │   └── illustrations/  # ilustrações da landing (a definir)
+│   │   ├── brand/          # logo, og-cover — definitivos (docs/brand-system)
+│   │   ├── icons/          # favicon.svg e ícones de app, definitivos
+│   │   └── illustrations/  # ainda sem conteúdo (não usado pela landing atual)
 │   └── fonts/               # fontes customizadas (hoje herda a font-stack do sistema/Bootstrap)
-├── components/               # referência de markup reutilizável — PLACEHOLDERS,
-│   ├── layout/                # ainda sem conteúdo definitivo (ver docs/architecture
-│   ├── navigation/             # sobre por que não são "incluídos" via JS)
-│   ├── sections/
-│   ├── cards/
-│   └── forms/
 ├── css/
 │   ├── design-system.css     # ponto de entrada — importa os 4 abaixo
 │   ├── variables.css         # tokens (cor, espaçamento, raio, sombra, z-index)
 │   ├── typography.css
 │   ├── components.css        # átomos do DS (.ds-card, .ds-badge, .ds-alert…)
-│   ├── landing.css           # estilos específicos da landing page
+│   ├── landing.css           # estilos compartilhados da landing (Home + páginas internas)
+│   ├── landing-nova.css      # estilos exclusivos da Home (hero-v5, categorias, dispositivos…)
 │   ├── utilities.css
 │   ├── bootstrap.min.css     # vendorizado (Bootstrap 5.3.3)
 ├── js/
-│   ├── app.js                 # bootstrap de cada página
-│   ├── components.js          # loader de fragmentos HTML não críticos (fetch)
+│   ├── app.js                 # bootstrap de cada página (nav ativa + ano do rodapé)
 │   ├── firebase.js            # SDK do Firebase compartilhado — preparado, não usado ainda
+│   ├── forms.js                # formulários → mailto: (js/forms.js)
 │   ├── utils.js                # helpers puros
 │   └── bootstrap.bundle.min.js
 ├── pages/                    # páginas internas (login, contato, demonstração…)
 ├── docs/                     # documentação interna (brand, DS, arquitetura, UX/UI, roadmap…)
 ├── index.html                 # home — precisa ficar na raiz (requisito do GitHub Pages)
+├── CNAME                      # domínio próprio do GitHub Pages (portalassociativo.com.br)
 ├── robots.txt / sitemap.xml / manifest.webmanifest
 └── README.md
 ```
+
+> `components/` (sistema de fragmentos HTML via `fetch()`) existiu na fase de
+> fundação, nunca chegou a ser usado por nenhuma página real e foi removido
+> em ago/2026 — ver "Por que não há sistema de include/template" em
+> [docs/architecture/](docs/architecture/).
 
 ---
 
@@ -102,11 +104,14 @@ com GitHub Pages "puro".
 O repositório é servido diretamente pelo GitHub Pages a partir da branch de
 produção (raiz). Não há passo de build:
 
-1. Configurar o domínio (custom domain) nas configurações do repositório no
-   GitHub Pages quando o domínio definitivo for decidido (hoje as URLs
-   absolutas usam o placeholder `portalassociativo.com.br` — ver
-   [docs/seo/](docs/seo/)).
-2. Fazer `git push` — o GitHub Pages publica automaticamente.
+1. Domínio já configurado: `portalassociativo.com.br` (registro.br como
+   registrador, DNS no Cloudflare, arquivo `CNAME` na raiz deste repo,
+   GitHub Pages com HTTPS obrigatório) — ver [docs/seo/](docs/seo/) e o
+   histórico de go-live em [docs/roadmap/](docs/roadmap/).
+2. Fazer `git push` na branch de produção — o GitHub Pages publica
+   automaticamente (build costuma levar menos de 1 min; o proxy do
+   Cloudflare pode levar até ~10 min adicionais para refletir por causa de
+   cache de borda — ver Débito técnico em [docs/roadmap/](docs/roadmap/)).
 
 ### Rodando localmente
 
@@ -144,13 +149,11 @@ estilos específicos de uma página isolados em seu próprio arquivo
 (`landing.css`), nunca misturados em `components.css`.
 
 **JavaScript:** ES Modules, uma responsabilidade por arquivo
-(`utils.js` = funções puras, `components.js` = infraestrutura de
-carregamento, `app.js` = orquestração por página), sem frameworks, sem
-classes desnecessárias — funções exportadas individualmente.
-
-**Componentes (`components/`):** cada arquivo é markup de referência com um
-cabeçalho de comentário explicando status, propósito e convenções — ver
-qualquer arquivo em `components/` como exemplo do padrão a seguir.
+(`utils.js` = funções puras, `forms.js` = envio de formulário, `app.js` =
+orquestração por página), sem frameworks, sem classes desnecessárias —
+funções exportadas individualmente. Antes de adicionar um export novo em
+`utils.js`, confirmar que ele é realmente usado por alguma página — a
+limpeza de ago/2026 removeu três funções que nunca chegaram a ser chamadas.
 
 **Estrutura:** uma página HTML = um arquivo autocontido (navbar/footer
 inline, como no CCBMG) para conteúdo crítico de SEO/primeira renderização —
@@ -160,16 +163,15 @@ ver justificativa em [docs/architecture/](docs/architecture/).
 
 ## Roadmap
 
-Ver [docs/roadmap/](docs/roadmap/) para o detalhamento por fase.
+A tabela de fases detalhada, com o histórico de cada commit relevante e as
+pendências reais em aberto, vive só em [docs/roadmap/](docs/roadmap/) — não
+duplicada aqui, para não haver duas fontes de verdade divergentes.
 
-| Fase | Escopo |
-|---|---|
-| 1 | Fundação (este commit): estrutura, Design System, landing estrutural |
-| 2 | Conteúdo definitivo: copy, marca, formulários funcionais |
-| 3 | Páginas de segmento/marketplace, se fizer sentido publicamente |
-| 4 | Divulgação do aplicativo |
-| 5 | Painel Master migra para este domínio/repositório |
-| 6 | Páginas institucionais sobre IA e automações da plataforma |
+Resumo de alto nível: fundação (Fase 1) → conteúdo definitivo e go-live em
+produção (Fase 2, **onde o projeto está hoje**) → páginas de
+segmento/marketplace (Fase 3) → divulgação do aplicativo (Fase 4) → Painel
+Master migra para este domínio (Fase 5) → páginas institucionais sobre IA e
+automações (Fase 6).
 
 ---
 

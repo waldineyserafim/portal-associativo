@@ -1,41 +1,6 @@
 /* css/landing.css — estilos específicos da Landing Page (index.html) */
 /* Não é parte do Design System reutilizável — apenas layout desta página. */
 
-/* Fotografia real domina a primeira dobra — Creative Direction §12.1
-   ("a primeira dobra deve ser dominada por fotografia real... mostrar
-   gente antes de mostrar interface"). Layout em duas colunas (texto +
-   foto), não foto de fundo com scrim: a Design Review de 2ª iteração
-   encontrou que o scrim escuro fazia o fundo "competir" com o título e
-   reduzia a legibilidade do slogan — a mesma exigência de contraste AA
-   fica estruturalmente resolvida ao tirar o texto de cima da foto, em vez
-   de escurecer a foto para caber texto por cima dela (Experience
-   Architecture §5.1: "Desktop: hero ganha texto e imagem lado a lado").
-   Ver assets/images/CREDITS.md para a curadoria/tratamento da foto. */
-.hero {
-  padding-block: clamp(2.5rem, 7vw, 5.5rem);
-  background: var(--surface);
-}
-.hero-media {
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  box-shadow: var(--shadow-md);
-}
-.hero-media img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.hero-cta {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-.hero-cta .btn { box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.08); }
-@media (max-width: 575.98px) {
-  .hero-cta .btn { width: 100%; }
-}
-
 /* ── DS-BREATHER — bloco de respiro editorial (Creative Direction §12.3:
    "alternância entre blocos densos... e blocos de respiro quase vazios,
    fotografia grande, uma frase curta, muito espaço") ─────────────────── */
@@ -128,18 +93,4 @@
   margin-inline: auto;
   text-align: center;
   margin-bottom: var(--space-2xl);
-}
-
-.placeholder-block {
-  border: 1px dashed rgba(0,0,0,0.15);
-  border-radius: var(--radius-md);
-  background: var(--surface-alt);
-  color: var(--ink-muted);
-  min-height: 160px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  font-size: var(--text-sm);
-  padding: var(--space-lg);
 }

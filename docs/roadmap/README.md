@@ -34,10 +34,10 @@ Alinhado ao roadmap geral da plataforma (ver `CLAUDE.md` do projeto CCBMG):
 - [x] `DEST_EMAIL` em `js/forms.js` e o bloco de e-mail em `index.html` publicados com `contato@portalassociativo.com.br` — recebimento via Cloudflare Email Routing (encaminha para caixa real da equipe), testado e confirmado em produção.
 - [ ] Preencher CNPJ/endereço legal em `pages/termos.html` e `pages/privacidade.html`, se a empresa decidir publicá-los.
 - [ ] Fechar o valor de cada um dos 5 planos para `pages/planos.html` (ver acima — o "a partir de R$ 49,90" já está publicado).
-- [ ] Aprovação por escrito do Presidente do CCBMG para o relato do caso real na Home (ver comentário em `index.html`).
+- [x] Aprovação do Presidente do CCBMG para o relato do caso real na Home — confirmada (ago/2026, ver comentário em `index.html`). Falta só material não-bloqueante: nome próprio no `<cite>` e fotografia real (`assets/images/testimonials/`).
 - [ ] Substituir as molduras neutras da seção "Tudo em um único lugar" por screenshots reais do produto (`assets/images/product/`).
-- [ ] Decidir o destino de `pages/demonstracao.html` e `pages/contato.html`: seguem sendo o canal formal por e-mail (rodapé + páginas dedicadas), enquanto todo CTA de conversão do site vai para o WhatsApp (padrão consolidado em ago/2026 — ver Débito técnico abaixo sobre consistência).
-- [ ] Substituir `apple-touch-icon`/OG image por artes finais revisadas, se ainda não validadas.
+- [x] Padrão "CTA de conversão = WhatsApp, e-mail = canal formal via rodapé/página dedicada" consolidado em todo o site (ago/2026): os 3 CTAs de corpo de página que ainda apontavam para `demonstracao.html`/`contato.html` foram corrigidos para WhatsApp; e-mail permanece só no rodapé (abaixo do WhatsApp, nas 8 páginas com rodapé completo) e nas duas páginas dedicadas.
+- [x] `apple-touch-icon`/OG image — já marcados como artes finais em `docs/brand-system/README.md`; item aqui era redundante, removido.
 
 ## Débito técnico
 
@@ -55,3 +55,32 @@ Alinhado ao roadmap geral da plataforma (ver `CLAUDE.md` do projeto CCBMG):
   fazendo bypass de cache para HTML — mantém os benefícios do proxy sem o
   atraso de deploy. HTTPS, Email Routing e o Verified Domain do GitHub
   **não são afetados** por essa escolha (MX/TXT nunca passam pelo proxy).
+
+- **E-mail enviado "como" `contato@portalassociativo.com.br` pode mostrar "via gmail.com".**
+  O envio (responder um e-mail recebido, por exemplo) usa o "Send mail as"
+  do Gmail via SMTP relay — sem DKIM próprio do domínio para esse fluxo,
+  então o cabeçalho DKIM ainda assina como `gmail.com`, e alguns clientes
+  (principalmente Gmail-para-Gmail) mostram essa anotação discreta ao lado
+  do remetente. Não afeta entrega nem é considerado spam — é só estético.
+  Resolução definitiva exigiria uma caixa real no domínio com DKIM próprio
+  (Google Workspace pago ou Zoho Mail grátis), o que trocaria o MX hoje
+  apontado para o Cloudflare Email Routing — decisão de negócio, não
+  urgente.
+
+- **DMARC ausente até esta revisão.** `_dmarc.portalassociativo.com.br` não
+  existia — autorizado e em configuração (ago/2026): `v=DMARC1; p=none;
+  rua=mailto:contato@portalassociativo.com.br` (modo monitoramento, sem
+  risco de bloquear e-mail legítimo). Atualizar este item para `[x]` quando
+  a propagação for confirmada.
+
+- **Código morto removido (ago/2026):** pasta `components/` inteira (16
+  arquivos, nunca carregados por nenhuma página — `data-component` não é
+  usado em lugar nenhum do site), `js/components.js` (o loader desses
+  fragmentos) e sua importação em `js/app.js`, três funções nunca usadas em
+  `js/utils.js` (`formatCurrencyBRL`, `onlyDigits`, `debounce`), e seletores
+  órfãos em `css/landing.css` (`.hero`, `.hero-media`, `.hero-cta`,
+  `.placeholder-block` — a Home usa `hero-v5`/`landing-nova.css` desde a
+  promoção de `index_nova.html`). Validado localmente (Chrome headless, sem
+  erros de console) antes do commit: navegação ativa e ano do rodapé
+  continuam funcionando em todas as páginas. Item fechado, não é mais débito
+  — registrado aqui só como histórico da limpeza.

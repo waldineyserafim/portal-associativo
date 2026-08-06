@@ -43,32 +43,38 @@ build step não oferece include nativo de HTML. Duas opções foram
 consideradas para reduzir duplicação de navbar/footer entre páginas:
 
 1. **Duplicar o HTML em cada página** (abordagem do CCBMG hoje).
-2. **Carregar fragmentos via `fetch()` em runtime** (`js/components.js`,
-   já implementado neste projeto).
+2. **Carregar fragmentos via `fetch()` em runtime** — chegou a ser
+   implementado (`js/components.js` + pasta `components/`), mas nenhuma
+   página real chegou a usar `data-component`: todo o site foi construído
+   com HTML inline desde a 1ª landing page. Em ago/2026, com o produto já
+   em produção e a duplicação de markup comprovadamente não sendo um
+   problema real, esse sistema (código morto — nunca executado por nenhuma
+   página) foi removido.
 
-**Decisão:** para conteúdo crítico de SEO/primeira renderização (navbar,
-footer, hero da landing), o HTML fica **inline em cada página** — igual ao
-CCBMG. Fragmentos carregados via `fetch()` atrasam a pintura inicial, podem
-gerar layout shift e são um risco (ainda que pequeno) para crawlers que não
-executam JS. `js/components.js` continua disponível para fragmentos **não
-críticos** (ex.: modais, blocos opcionais) onde esse custo não importa.
-
-Isso é uma pequena divergência da lista de exemplo do briefing original
-(que sugeria os componentes de `components/` sendo "carregados"), mas evita
-comprometer o principal objetivo de negócio deste produto — SEO — por uma
-conveniência de DX. Os arquivos em `components/*.html` continuam existindo
-como referência de markup a ser copiado para as páginas.
+**Decisão final, confirmada pelo uso real:** todo o HTML — navbar, footer,
+hero, seções — fica **inline em cada página**, igual ao CCBMG. Isso evita
+atraso de pintura inicial, layout shift e o risco (ainda que pequeno) de
+crawlers que não executam JS não verem o conteúdo — tudo isso seria custo
+real de um sistema de fragmentos, para um ganho de DX que a prática mostrou
+não valer a pena neste projeto.
 
 ## Formulários (contato / demonstração)
 
-Sem backend próprio neste projeto (por definição do escopo). **Decisão adotada
-nesta fase**: `js/forms.js` monta um link `mailto:` com os dados do formulário
+Sem backend próprio neste projeto (por definição do escopo). **Decisão
+adotada**: `js/forms.js` monta um link `mailto:` com os dados do formulário
 já preenchidos no corpo da mensagem e abre o cliente de e-mail do usuário —
 funciona 100% estático, sem depender de serviço de terceiro (Formspree/
 Web3Forms) nem de Cloud Function própria. O endereço de destino
 (`contato@portalassociativo.com.br`, constante `DEST_EMAIL` em `js/forms.js`)
-é um placeholder de domínio — **precisa apontar para uma caixa real antes da
-publicação**.
+é uma caixa real desde ago/2026: recebimento via Cloudflare Email Routing
+(MX/SPF/DKIM configurados na zona do domínio), com encaminhamento
+confirmado por teste real para a caixa da equipe. Envio "como"
+`contato@portalassociativo.com.br` (ex.: responder um e-mail recebido) usa
+o recurso "Send mail as" do Gmail via SMTP relay — sem DKIM próprio do
+domínio para esse fluxo específico, então alguns clientes de e-mail podem
+mostrar uma anotação discreta "via gmail.com" no remetente (não afeta
+entrega, é só cosmético; ver `docs/roadmap/README.md`, Débito técnico, para
+o caminho de melhoria caso vire prioridade).
 
 Se o volume de leads justificar substituir esse fluxo por um serviço de
 formulário de terceiros ou por uma Cloud Function própria no futuro, a troca
