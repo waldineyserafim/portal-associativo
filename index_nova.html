@@ -65,58 +65,79 @@
 
 <main id="conteudo-principal">
 
-  <!-- 1. HERO — primeira dobra do smartphone em UMA tela: slogan, título,
-       descrição curta, CTA principal, CTA secundário e a fotografia
-       integrada ao layout (nunca uma tela inteira de imagem antes da
-       mensagem). Copy vende transformação, não módulo (Brand DS §8.1);
-       um CTA primário, o secundário subordinado (UX Constitution #1).
-       Fotografia real, sem nenhum dado ou interface fabricada por cima
-       (Creative Direction §12.1). -->
-  <section class="hero-v4">
-    <div class="container">
-      <div class="row align-items-center g-4">
-        <div class="col-lg-6">
-          <span class="ds-eyebrow">O seu maior ativo é o sócio ativo.</span>
-          <h1 class="mt-2">Tire a burocracia das costas da diretoria</h1>
-          <p class="hero-v4-lead">
-            Uma única plataforma para organizar associados, mensalidades, eventos e
-            comunicação — e devolver o tempo da diretoria para o que importa.
-          </p>
-          <div class="hero-cta">
-            <a href="https://wa.me/5531998923209?text=Ol%C3%A1!%20Quero%20agendar%20uma%20demonstra%C3%A7%C3%A3o%20do%20Portal%20Associativo%20para%20a%20minha%20associa%C3%A7%C3%A3o." class="btn btn-accent btn-lg" target="_blank" rel="noopener">
-              <i class="bi bi-calendar-check me-1"></i>Agendar demonstração
-            </a>
-            <a href="https://wa.me/5531998923209?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20o%20Portal%20Associativo." class="btn btn-outline-light btn-whatsapp-outline btn-lg" target="_blank" rel="noopener">
-              <i class="bi bi-whatsapp me-1"></i>Fale conosco agora
-            </a>
-          </div>
-          <ul class="hero-chips">
-            <li><i class="bi bi-check-circle-fill"></i>Cobrança automática por PIX</li>
-            <li><i class="bi bi-check-circle-fill"></i>Portal do Associado</li>
-            <li><i class="bi bi-check-circle-fill"></i>Atendimento pelo WhatsApp</li>
-          </ul>
+  <!-- 1. HERO v5 (iteração final) — texto e fotografia numa única
+       composição: a foto é o cenário da mensagem, atrás de um degradê na
+       cor da marca (contraste do pior pixel da zona de texto verificado
+       por cálculo — ver landing-nova.css e anti-pattern #76). Slogan,
+       título, descrição e os dois CTAs aparecem imediatamente; a foto se
+       revela na base (mobile) / à direita (desktop). Copy vende
+       transformação, não módulo (Brand DS §8.1); um CTA primário único
+       (UX Constitution #1). -->
+  <section class="hero-v5">
+    <div class="hero-v5-bg" aria-hidden="true">
+      <picture>
+        <source srcset="assets/images/hero/hero-diretoria-desktop.webp" type="image/webp" media="(min-width: 992px)">
+        <source srcset="assets/images/hero/hero-diretoria-desktop.jpg" type="image/jpeg" media="(min-width: 992px)">
+        <source srcset="assets/images/hero/hero-diretoria-mobile.webp" type="image/webp">
+        <img src="assets/images/hero/hero-diretoria-mobile.jpg" alt="" fetchpriority="high" width="900" height="793">
+      </picture>
+      <div class="hero-v5-scrim"></div>
+    </div>
+    <div class="container hero-v5-conteudo">
+      <div class="hero-v5-texto">
+        <span class="ds-eyebrow">O seu maior ativo é o sócio ativo.</span>
+        <h1 class="mt-2">Tire a burocracia das costas da diretoria</h1>
+        <p class="hero-v5-lead">
+          Associados, mensalidades, eventos e comunicação organizados numa única
+          plataforma — e a diretoria com tempo para o clube.
+        </p>
+        <div class="hero-cta">
+          <a href="https://wa.me/5531998923209?text=Ol%C3%A1!%20Quero%20agendar%20uma%20demonstra%C3%A7%C3%A3o%20do%20Portal%20Associativo%20para%20a%20minha%20associa%C3%A7%C3%A3o." class="btn btn-accent btn-lg" target="_blank" rel="noopener">
+            <i class="bi bi-calendar-check me-1"></i>Agendar demonstração
+          </a>
+          <a href="https://wa.me/5531998923209?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20o%20Portal%20Associativo." class="btn btn-outline-light btn-whatsapp-outline btn-lg" target="_blank" rel="noopener">
+            <i class="bi bi-whatsapp me-1"></i>Fale conosco agora
+          </a>
         </div>
-        <div class="col-lg-6">
-          <picture class="hero-v4-foto">
-            <source srcset="assets/images/hero/hero-diretoria-desktop.webp" type="image/webp">
-            <img src="assets/images/hero/hero-diretoria-desktop.jpg" alt="Diretoria de uma associação reunida em volta de uma mesa de madeira, acompanhando no notebook enquanto o presidente explica, em uma sala acolhedora de luz natural" fetchpriority="high" width="1600" height="800">
-          </picture>
-        </div>
+        <ul class="hero-chips">
+          <li><i class="bi bi-check-circle-fill"></i>Cobrança automática por PIX</li>
+          <li><i class="bi bi-check-circle-fill"></i>Portal do Associado</li>
+          <li><i class="bi bi-check-circle-fill"></i>Atendimento pelo WhatsApp</li>
+        </ul>
       </div>
     </div>
   </section>
 
-  <!-- Faixa do ecossistema — responde "para quem é" em um segundo
-       (anti-pattern #78) SEM reduzir o produto à diretoria: a plataforma
-       conecta todo mundo que gira em torno da associação. -->
+  <!-- Faixa do ecossistema — responde "para quem é" (anti-pattern #78)
+       sem reduzir o produto à diretoria. Iteração final: 12 chips iguais
+       viraram 3 grupos com hierarquia — o ponto não é listar usuários, é
+       dizer que toda a comunidade usa a mesma plataforma. -->
   <div class="ecossistema">
-    <strong>Uma plataforma, a associação inteira dentro dela</strong>
-    <ul>
-      <li>Presidente</li><li>Diretoria</li><li>Secretaria</li><li>Financeiro</li>
-      <li>Associados</li><li>Parceiros</li><li>Patrocinadores</li><li>Compradores</li>
-      <li>Vendedores</li><li>Expositores</li><li>Visitantes</li><li>Comunidade</li>
-    </ul>
-    <p>Cada um entra com o próprio acesso, enxerga o que é seu e resolve sozinho — sem passar tudo pela secretaria.</p>
+    <span class="ecossistema-rotulo">Uma plataforma, a associação inteira dentro dela</span>
+    <div class="ecossistema-grupos">
+      <div class="eco-grupo">
+        <i class="bi bi-clipboard-data" aria-hidden="true"></i>
+        <div>
+          <strong>Quem administra</strong>
+          <span>Presidência, diretoria, secretaria e financeiro</span>
+        </div>
+      </div>
+      <div class="eco-grupo">
+        <i class="bi bi-people" aria-hidden="true"></i>
+        <div>
+          <strong>Quem participa</strong>
+          <span>Associados, visitantes e a comunidade</span>
+        </div>
+      </div>
+      <div class="eco-grupo">
+        <i class="bi bi-shop" aria-hidden="true"></i>
+        <div>
+          <strong>Quem movimenta</strong>
+          <span>Parceiros, patrocinadores, expositores, compradores e vendedores</span>
+        </div>
+      </div>
+    </div>
+    <p class="ecossistema-fecho">Cada um com o próprio acesso, vendo o que é seu — todos no mesmo lugar.</p>
   </div>
 
   <!-- 2. POR QUE EU DEVERIA ME IMPORTAR — benefício como fim de um
@@ -128,26 +149,27 @@
         <span class="ds-eyebrow">Por que trocar a planilha pelo Portal</span>
         <h2 class="mt-2">O que muda para quem responde pela associação</h2>
       </div>
+      <!-- 2×2 no mobile: quatro incômodos numa tela, copy de uma frase. -->
       <div class="row g-4 g-lg-5">
-        <div class="col-md-6 col-lg-3 ds-benefit">
+        <div class="col-6 col-lg-3 ds-benefit">
           <div class="ds-benefit-icon"><i class="bi bi-shield-check"></i></div>
           <h3>Você nunca é pego de surpresa</h3>
-          <p>Quem está em dia, quem venceu e quanto entrou no mês, na primeira tela — prestação de contas deixa de ser mutirão.</p>
+          <p>Quem está em dia e quanto entrou no mês, na primeira tela.</p>
         </div>
-        <div class="col-md-6 col-lg-3 ds-benefit">
+        <div class="col-6 col-lg-3 ds-benefit">
           <div class="ds-benefit-icon"><i class="bi bi-cash-coin"></i></div>
           <h3>A receita para de vazar</h3>
-          <p>A mensalidade se cobra sozinha por PIX, boleto ou cartão, com aviso antes e depois do vencimento.</p>
+          <p>Mensalidade cobrada sozinha por PIX, boleto ou cartão, com aviso no vencimento.</p>
         </div>
-        <div class="col-md-6 col-lg-3 ds-benefit">
+        <div class="col-6 col-lg-3 ds-benefit">
           <div class="ds-benefit-icon"><i class="bi bi-megaphone"></i></div>
           <h3>O aviso da diretoria chega</h3>
-          <p>Assembleia, evento ou cobrança não dependem mais de quem viu ou não viu o grupo de WhatsApp.</p>
+          <p>Comunicado por SMS e e-mail — sem depender de quem viu o grupo.</p>
         </div>
-        <div class="col-md-6 col-lg-3 ds-benefit">
+        <div class="col-6 col-lg-3 ds-benefit">
           <div class="ds-benefit-icon"><i class="bi bi-people"></i></div>
           <h3>A comunidade fica mais viva</h3>
-          <p>Associado que paga fácil, se inscreve em evento e usa os benefícios dos parceiros é associado que continua.</p>
+          <p>Pagar fácil, participar de evento, usar benefício — motivos para continuar sócio.</p>
         </div>
       </div>
     </div>
@@ -164,7 +186,7 @@
       <div class="section-heading">
         <span class="ds-eyebrow">Tudo em um único lugar</span>
         <h2 class="mt-2">Uma plataforma completa para administrar a associação inteira</h2>
-        <p class="ds-lead mt-3">Da mensalidade ao leilão, do cadastro ao site do clube. Cada pessoa vê só o que precisa — e ninguém precisa de treinamento.</p>
+        <p class="ds-lead mt-3">Da mensalidade ao leilão, do cadastro ao site do clube — cada pessoa vê só o que precisa.</p>
       </div>
 
       <!-- MOLDURAS PREPARADAS PARA SCREENSHOT REAL — nenhum dashboard
@@ -305,7 +327,7 @@
         <h2 class="mt-2">Feito para diferentes tipos de associação</h2>
       </div>
       <div class="row g-4">
-        <div class="col-md-6 col-lg-3">
+        <div class="col-6 col-lg-3">
           <div class="ds-segment-card h-100">
             <div class="ds-segment-media">
               <picture>
@@ -315,11 +337,11 @@
             </div>
             <div class="ds-segment-body">
               <h3>Clubes equestres e associações rurais</h3>
-              <p class="ds-text-muted ds-text-sm mb-0">Onde tudo começou — o nicho hoje gerido, em grande parte, por planilha e WhatsApp.</p>
+              <p class="ds-text-muted ds-text-sm mb-0">Onde tudo começou — o nicho hoje gerido por planilha e WhatsApp.</p>
             </div>
           </div>
         </div>
-        <div class="col-md-6 col-lg-3">
+        <div class="col-6 col-lg-3">
           <div class="ds-segment-card h-100">
             <div class="ds-segment-media">
               <picture>
@@ -329,11 +351,11 @@
             </div>
             <div class="ds-segment-body">
               <h3>Clubes recreativos e sociais</h3>
-              <p class="ds-text-muted ds-text-sm mb-0">Associados, eventos e mensalidade organizados sem depender de um "filho que entende de informática".</p>
+              <p class="ds-text-muted ds-text-sm mb-0">Sócios, eventos e mensalidade sem depender de quem "entende de informática".</p>
             </div>
           </div>
         </div>
-        <div class="col-md-6 col-lg-3">
+        <div class="col-6 col-lg-3">
           <div class="ds-segment-card h-100">
             <div class="ds-segment-media">
               <picture>
@@ -343,11 +365,11 @@
             </div>
             <div class="ds-segment-body">
               <h3>Entidades de classe</h3>
-              <p class="ds-text-muted ds-text-sm mb-0">Categoria de sócio, comunicação e cobrança recorrente, com a identidade da entidade em destaque.</p>
+              <p class="ds-text-muted ds-text-sm mb-0">Categoria de sócio, comunicação e cobrança com a marca da entidade.</p>
             </div>
           </div>
         </div>
-        <div class="col-md-6 col-lg-3">
+        <div class="col-6 col-lg-3">
           <div class="ds-segment-card h-100">
             <div class="ds-segment-media">
               <picture>
@@ -357,7 +379,7 @@
             </div>
             <div class="ds-segment-body">
               <h3>Associações de bairro e comunitárias</h3>
-              <p class="ds-text-muted ds-text-sm mb-0">Um painel simples para quem administra por vontade de servir, não por profissão.</p>
+              <p class="ds-text-muted ds-text-sm mb-0">Painel simples para quem administra por vontade de servir.</p>
             </div>
           </div>
         </div>
@@ -424,29 +446,30 @@
         <span class="ds-eyebrow">Quem já utiliza</span>
         <h2 class="mt-2">A história do Clube do Cavalo de Bonfim MG</h2>
       </div>
+      <!-- 2×2 no mobile: a história inteira numa tela, um ato por card. -->
       <div class="row g-3 mb-4">
-        <div class="col-md-6 col-lg-3">
+        <div class="col-6 col-lg-3">
           <div class="historia-step">
             <span class="ds-eyebrow">O contexto</span>
-            <p>Um clube equestre no interior de Minas, com diretoria voluntária: associados, mensalidades e eventos controlados em planilha, caderno e grupo de WhatsApp.</p>
+            <p>Clube equestre no interior de Minas, diretoria voluntária — tudo em planilha, caderno e grupo de WhatsApp.</p>
           </div>
         </div>
-        <div class="col-md-6 col-lg-3">
+        <div class="col-6 col-lg-3">
           <div class="historia-step">
             <span class="ds-eyebrow">O problema</span>
-            <p>Cobrar era ligação atrás de ligação, ninguém sabia ao certo quem estava em dia, e cada prestação de contas virava mutirão de conferência manual.</p>
+            <p>Cobrança por ligação, ninguém sabia quem estava em dia, prestação de contas em mutirão.</p>
           </div>
         </div>
-        <div class="col-md-6 col-lg-3">
+        <div class="col-6 col-lg-3">
           <div class="historia-step">
             <span class="ds-eyebrow">A solução</span>
-            <p>Os associados saíram da planilha para o Portal em dias, não meses. A mensalidade passou a ser cobrada sozinha, com aviso antes e depois do vencimento.</p>
+            <p>Associados no Portal em dias, não meses. Mensalidade cobrada sozinha, com aviso no vencimento.</p>
           </div>
         </div>
-        <div class="col-md-6 col-lg-3">
+        <div class="col-6 col-lg-3">
           <div class="historia-step">
             <span class="ds-eyebrow">O resultado</span>
-            <p>Cada associado vê o próprio status na hora e paga pelo celular. A diretoria abre o painel e sabe, em segundos, quem está em dia e quanto entrou no mês.</p>
+            <p>Cada associado paga pelo celular; a diretoria abre o painel e sabe na hora quem está em dia.</p>
           </div>
         </div>
       </div>

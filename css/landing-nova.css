@@ -4,52 +4,83 @@
    página precisa. Nenhuma classe daqui é usada por index.html. */
 
 /* ══════════════════════════════════════════════════════════════════════
-   HERO v4 — 4ª iteração (estratégia de produto): a primeira dobra do
-   smartphone precisa caber praticamente em UMA tela e conter, nesta ordem,
-   logotipo (navbar) → slogan → título → descrição → CTA principal → CTA
-   secundário → imagem integrada ao layout.
+   HERO v5 — iteração final: texto e fotografia numa ÚNICA composição.
+   A foto é o cenário da mensagem (Creative Direction §12.1: "a primeira
+   dobra deve ser dominada por fotografia real"), atrás de um scrim em
+   degradê da própria cor da marca — nunca preto genérico. A legibilidade
+   não é estimada: o pior pixel da zona de texto foi verificado por cálculo
+   sobre os pixels reais da imagem composta com o degradê (ver nota de
+   verificação no fim deste bloco) — anti-pattern #76 tratado como
+   requisito de engenharia, não de bom senso.
 
-   O que mudou em relação à v3 e por quê:
-   • Altura reduzida ~30%: padding menor, lead de 2-3 linhas (era 6), linha
-     de apoio abaixo dos CTAs eliminada, foto em proporção 2:1 (era vertical
-     no mobile) — "nunca reduzir espaçamento pra caber mais coisa; se não
-     cabe, o problema é excesso de conteúdo" (Creative Direction §8.2.4):
-     por isso cortamos CONTEÚDO, não respiro.
-   • O chip de "interface" com números (128 em dia / R$ 3.840) foi REMOVIDO:
-     era dado fabricado sobre uma fotografia real — proibido nesta iteração
-     e incoerente com "confiança se constrói, não se declara" (Brand DS
-     §1.4). Sobra fotografia pura (Creative Direction §12.1).
-   • Fundo sólido terracota profundo: contraste garantido por cor chapada
-     (branco sobre #7C4326 = 8,7:1 — Brand DS §12.1), sem scrim sobre foto
-     (anti-pattern #76). ══════════════════════════════════════════════ */
-.hero-v4 {
+   Mobile: degradê vertical — quase sólido onde vivem slogan, título, CTAs
+   e chips; a foto se revela na base do bloco, tingida de terracota (mesmo
+   "tom" do tratamento fotográfico do projeto, Creative Direction §3.1).
+   Desktop: degradê horizontal — coluna de texto à esquerda, pessoas
+   visíveis à direita.
+
+   VERIFICAÇÃO DE CONTRASTE (recalcular se trocar foto ou stops):
+   pior pixel da zona de texto (branco #fff sobre foto+scrim), varredura em
+   390×546 e 1440×540 sobre os JPEGs reais — mobile 5,22:1 (zona até 79% da
+   altura, chips terminam em 75%) · desktop 5,29:1 (coluna até 46% da
+   largura). AA exige 4,5:1 (Brand DS §12.1). */
+.hero-v5 {
+  position: relative;
   background: var(--brand-dark);
   color: #fff;
-  padding-block: clamp(1.25rem, 3vw, 3.5rem);
+  overflow: hidden;
 }
-.hero-v4 .ds-eyebrow { color: var(--brand-tint); }
-.hero-v4 h1 {
+.hero-v5-bg {
+  position: absolute;
+  inset: 0;
+}
+.hero-v5-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+  display: block;
+}
+.hero-v5-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+    rgba(124,67,38,0.97) 0%,
+    rgba(124,67,38,0.94) 60%,
+    rgba(124,67,38,0.82) 78%,
+    rgba(124,67,38,0.32) 100%);
+}
+.hero-v5-conteudo {
+  position: relative;
+  z-index: 1;
+  padding-top: clamp(1.5rem, 4vw, 4rem);
+  /* padding inferior = a janela onde a foto se revela no mobile */
+  padding-bottom: clamp(8.5rem, 30vw, 10rem);
+}
+.hero-v5 .ds-eyebrow { color: var(--brand-tint); }
+.hero-v5 h1 {
   color: #fff;
   font-size: clamp(1.75rem, 3vw + 1rem, 2.875rem);
   font-weight: 800;
   line-height: 1.12;
   letter-spacing: -0.02em;
   margin-bottom: 0.6rem;
+  text-wrap: balance;
 }
-.hero-v4-lead {
+.hero-v5-lead {
   font-size: clamp(var(--text-base), 0.6vw + .95rem, var(--text-md));
-  color: rgba(255,255,255,0.92);
+  color: rgba(255,255,255,0.95);
   line-height: 1.5;
-  max-width: 33rem;
+  max-width: 30rem;
   margin-bottom: 1rem;
 }
 .hero-cta { display: flex; gap: 0.6rem; flex-wrap: wrap; }
-.hero-cta .btn { box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.15); }
+.hero-cta .btn { box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.18); }
 @media (max-width: 575.98px) {
   .hero-cta .btn { width: 100%; }
 }
-/* Credibilidade discreta: fatos verificáveis do produto, uma linha só —
-   nunca selo decorativo (Brand DS §1.4). */
+/* Credibilidade discreta: três fatos verificáveis, uma linha — nunca selo
+   decorativo (Brand DS §1.4). */
 .hero-chips {
   display: flex;
   flex-wrap: wrap;
@@ -58,69 +89,80 @@
   margin: 0.75rem 0 0;
   list-style: none;
   font-size: var(--text-sm);
-  color: rgba(255,255,255,0.85);
+  color: #fff;
 }
 .hero-chips i { color: var(--brand-tint); margin-right: 0.3rem; }
 
-/* Fotografia integrada — nunca uma dobra inteira de imagem antes da
-   mensagem. No mobile ela entra depois dos CTAs, em proporção deitada. */
-.hero-v4-foto {
-  display: block;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  box-shadow: var(--shadow-lg);
-  margin-top: 1rem;
-}
-.hero-v4-foto img {
-  width: 100%;
-  height: 100%;
-  aspect-ratio: 2 / 1;
-  object-fit: cover;
-  display: block;
-}
 @media (min-width: 992px) {
-  .hero-v4-foto { margin-top: 0; }
-  .hero-v4-foto img { aspect-ratio: 3 / 2; }
+  .hero-v5-bg img { object-position: 70% center; }
+  .hero-v5-scrim {
+    background: linear-gradient(90deg,
+      rgba(124,67,38,0.97) 0%,
+      rgba(124,67,38,0.93) 40%,
+      rgba(124,67,38,0.48) 68%,
+      rgba(124,67,38,0.14) 100%);
+  }
+  .hero-v5-conteudo {
+    min-height: clamp(430px, 52vh, 540px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: 3.5rem;
+  }
+  .hero-v5-texto { max-width: 46%; }
 }
 
-/* Faixa do ecossistema — responde "para quem é" (anti-pattern #78) sem
-   restringir à diretoria: a plataforma conecta a associação inteira.
-   Contraste conferido: branco puro sobre --brand = 5,0:1 e sobre o fundo do
-   chip = 6,1:1 (AA, Brand DS §12.1). Hierarquia aqui é feita por tamanho e
-   peso, nunca por opacidade — opacidade sobre terracota derruba o contraste
-   abaixo de 4,5:1. */
+/* ── FAIXA DO ECOSSISTEMA — "a associação inteira dentro dela" ───────────
+   Iteração final: sai a nuvem de 12 chips do mesmo tamanho (sem
+   hierarquia, leitura cansativa); entram 3 grupos com ícone + papel +
+   pessoas — comunica "toda a comunidade na mesma plataforma" em três
+   olhadas, não em doze (Lei de Hick; anti-pattern #78 continua atendido).
+   Contraste: branco puro sobre --brand = 5,0:1; sobre o fundo do grupo
+   (mistura com --brand-dark) ≥ 5,4:1 (AA, Brand DS §12.1) — hierarquia por
+   peso e tamanho, nunca por opacidade. */
 .ecossistema {
   background: var(--brand);
   color: #fff;
-  padding: var(--space-md) var(--space-md);
+  padding: var(--space-lg) 0;
   text-align: center;
 }
-.ecossistema strong {
+.ecossistema-rotulo {
   display: block;
   font-size: var(--text-sm);
+  font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-md);
 }
-.ecossistema ul {
+.ecossistema-grupos {
+  display: grid;
+  gap: 0.6rem;
+  max-width: 64rem;
+  margin-inline: auto;
+  padding-inline: var(--space-md);
+}
+@media (min-width: 768px) {
+  .ecossistema-grupos { grid-template-columns: repeat(3, 1fr); }
+}
+.eco-grupo {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.35rem;
-  list-style: none;
-  padding: 0;
-  margin: 0 auto;
-  max-width: 60rem;
+  align-items: flex-start;
+  gap: 0.75rem;
+  text-align: left;
+  background: rgba(124,67,38,0.40);
+  border-radius: var(--radius-md);
+  padding: 0.7rem 0.9rem;
 }
-.ecossistema li {
-  background: rgba(124,67,38,0.45);
-  border-radius: var(--radius-full);
-  padding: 0.2rem 0.7rem;
-  font-size: var(--text-sm);
-  font-weight: 600;
+.eco-grupo > i {
+  font-size: 1.35rem;
+  color: var(--brand-tint);
+  line-height: 1.2;
+  flex-shrink: 0;
 }
-.ecossistema p {
-  margin: 0.6rem 0 0;
+.eco-grupo strong { display: block; margin-bottom: 0.1rem; }
+.eco-grupo span { font-size: var(--text-sm); line-height: 1.4; display: block; }
+.ecossistema-fecho {
+  margin: var(--space-md) 0 0;
   font-size: var(--text-sm);
 }
 
@@ -134,6 +176,11 @@
   background: rgba(255,255,255,0.12) !important;
   border-color: #fff !important;
   color: #fff !important;
+}
+
+/* ── BENEFÍCIOS — grade 2×2 no mobile (copy curta, um incômodo por item) */
+@media (max-width: 767.98px) {
+  #beneficios .ds-benefit h3 { font-size: var(--text-base); }
 }
 
 /* ── TUDO EM UM ÚNICO LUGAR — categorias de funcionalidades ──────────────
@@ -179,10 +226,10 @@
 }
 
 /* ── DISPOSITIVOS — PLACEHOLDERS PREPARADOS PARA SCREENSHOT REAL ─────────
-   Nenhum dashboard inventado, nenhum número fabricado (exigência desta
-   iteração; anti-pattern #66). Dentro de cada moldura há apenas o nome real
-   da tela do produto e blocos neutros de estrutura — a "silhueta" da
-   interface, no mesmo espírito de um skeleton screen (Brand DS §13.1).
+   Nenhum dashboard inventado, nenhum número fabricado (anti-pattern #66).
+   Dentro de cada moldura há apenas o nome real da tela do produto e blocos
+   neutros de estrutura — a "silhueta" da interface, no mesmo espírito de um
+   skeleton screen (Brand DS §13.1).
    SUBSTITUIÇÃO FUTURA: quando houver screenshot real aprovado, trocar o
    conteúdo interno de .device-screen por <img> — as molduras permanecem,
    sem nenhuma mudança de layout. */
@@ -284,15 +331,16 @@
 .evolucao-item h3 { font-size: var(--text-md); margin-bottom: 0.25rem; }
 .evolucao-item p { font-size: var(--text-sm); }
 
-/* ── CASO REAL COMO HISTÓRIA (contexto → problema → solução → resultado) */
+/* ── CASO REAL COMO HISTÓRIA (grade 2×2 no mobile, copy curta) ────────── */
 .historia-step {
   height: 100%;
   background: var(--surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: var(--space-md) var(--space-lg);
+  padding: var(--space-md);
   box-shadow: var(--shadow-sm);
 }
+@media (min-width: 992px) { .historia-step { padding: var(--space-md) var(--space-lg); } }
 .historia-step .ds-eyebrow { display: block; margin-bottom: 0.3rem; }
 .historia-step p { color: var(--ink-muted); font-size: var(--text-sm); margin: 0; }
 .depoimento {
@@ -320,6 +368,13 @@
   color: var(--brand-dark);
   font-size: 20px;
   flex-shrink: 0;
+}
+
+/* ── SEGMENTOS — grade 2×2 no mobile (foto continua protagonista, texto
+   curto de apoio; 4 cards empilhados eram a seção mais alta da página) ── */
+@media (max-width: 767.98px) {
+  #segmentos .ds-segment-body { padding: var(--space-md); }
+  #segmentos .ds-segment-body h3 { font-size: var(--text-base); }
 }
 
 /* ── PLANOS (resumo na Home; detalhe vive em pages/planos.html) ────────── */
