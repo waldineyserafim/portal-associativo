@@ -31,7 +31,7 @@ Alinhado ao roadmap geral da plataforma (ver `CLAUDE.md` do projeto CCBMG):
 
 ## Pendências antes de publicar (Fase 2)
 
-- [ ] Trocar `DEST_EMAIL` em `js/forms.js` por uma caixa de e-mail real.
+- [x] `DEST_EMAIL` em `js/forms.js` e o bloco de e-mail em `index.html` publicados com `contato@portalassociativo.com.br` — recebimento via Cloudflare Email Routing (encaminha para caixa real da equipe), testado e confirmado em produção.
 - [ ] Preencher CNPJ/endereço legal em `pages/termos.html` e `pages/privacidade.html`, se a empresa decidir publicá-los.
 - [ ] Fechar o valor de cada um dos 5 planos para `pages/planos.html` (ver acima — o "a partir de R$ 49,90" já está publicado).
 - [ ] Aprovação por escrito do Presidente do CCBMG para o relato do caso real na Home (ver comentário em `index_nova.html`).
