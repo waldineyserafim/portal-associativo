@@ -1,7 +1,8 @@
-/* css/landing-nova.css — estilos exclusivos de index_nova.html (proposta de
-   nova Home). Carregado JUNTO com landing.css (que continua servindo a Home
-   atual sem nenhuma alteração) — este arquivo só adiciona o que a nova
-   página precisa. Nenhuma classe daqui é usada por index.html. */
+/* css/landing-nova.css — estilos exclusivos da Home (index.html, promovida
+   da proposta index_nova em ago/2026). Carregado JUNTO com landing.css, que
+   segue fornecendo as classes compartilhadas (.ds-breather, .ds-segment-card,
+   .section-heading); o bloco .hero antigo de landing.css ficou sem uso após a
+   promoção. */
 
 /* ══════════════════════════════════════════════════════════════════════
    HERO v5 — iteração final: texto e fotografia numa ÚNICA composição.
