@@ -1,0 +1,11 @@
+/* shared/layouts/admin-shell.css — composição de página administrativa
+   (como sidebar + conteúdo se combinam), distinta de shared/components/
+   (átomos isolados). Hoje é só um alias documentado sobre as classes de
+   sidebar.css (.ds-sidebar + .ds-admin-main já formam o shell sozinhas) —
+   fica aqui como o lugar certo para crescer quando um segundo padrão de
+   composição (ex.: shell sem sidebar, layout de duas colunas) existir. */
+
+.ds-admin-shell {
+  display: flex;
+  min-height: 100vh;
+}

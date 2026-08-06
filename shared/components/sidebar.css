@@ -1,0 +1,94 @@
+/* shared/components/sidebar.css — sidebar de navegação para telas
+   administrativas (Painel Master e equivalentes de qualquer tenant).
+
+   Extraído do CSS inline de admin_master.html (CCBMG), tokenizado. Todo
+   var() tem fallback explícito — funciona mesmo num tenant que não
+   declarou os tokens do Portal Associativo (ver shared/README.md). */
+
+.ds-sidebar {
+  width: 220px;
+  min-height: 100vh;
+  background: var(--brand-dark, #7C4326);
+  color: #fff;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: var(--z-sticky, 1000);
+  display: flex;
+  flex-direction: column;
+}
+
+.ds-sidebar-brand {
+  padding: var(--space-sm, 0.5rem) var(--space-lg, 1.5rem);
+  font-size: var(--text-md, 1.125rem);
+  font-weight: 700;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm, 0.5rem);
+}
+
+.ds-sidebar-section {
+  padding: var(--space-md, 1rem) var(--space-lg, 1.5rem) var(--space-xs, 0.25rem);
+  font-size: var(--text-xs, 0.7rem);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.65;
+}
+
+.ds-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm, 0.5rem);
+  padding: var(--space-sm, 0.5rem) var(--space-lg, 1.5rem);
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  transition: background var(--transition-fast, 0.12s ease), color var(--transition-fast, 0.12s ease);
+}
+.ds-sidebar-link:hover,
+.ds-sidebar-link:focus-visible {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+.ds-sidebar-link.is-active {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-weight: 600;
+}
+/* Cor de "sair"/perigo sobre fundo de marca escuro — token local, não
+   existe (ainda) um --danger calibrado para contraste sobre fundo escuro
+   no design system oficial. Ver shared/components/README.md. */
+.ds-sidebar-link.is-danger {
+  color: var(--sidebar-danger, #ffb4a8);
+}
+
+.ds-sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: calc(var(--z-sticky, 1000) - 1);
+}
+
+.ds-admin-main {
+  margin-left: 220px;
+  padding: var(--space-xl, 2rem);
+  min-height: 100vh;
+  background: var(--surface-alt, #F5F0E6);
+}
+
+@media (max-width: 767.98px) {
+  .ds-sidebar {
+    transform: translateX(-100%);
+    transition: transform var(--transition-base, 0.2s ease);
+  }
+  .ds-sidebar.is-open {
+    transform: translateX(0);
+  }
+  .ds-sidebar.is-open ~ .ds-sidebar-overlay {
+    display: block;
+  }
+  .ds-admin-main {
+    margin-left: 0;
+  }
+}

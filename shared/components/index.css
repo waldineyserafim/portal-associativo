@@ -1,0 +1,7 @@
+/* shared/components/index.css — ponto de entrada único, mesmo padrão de
+   css/design-system.css do Portal Associativo (agregador de @import). */
+
+@import url("./sidebar.css");
+@import url("./kpi-card.css");
+@import url("./data-table.css");
+@import url("./modal.css");

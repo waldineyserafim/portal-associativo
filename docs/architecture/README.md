@@ -81,6 +81,16 @@ formulário de terceiros ou por uma Cloud Function própria no futuro, a troca
 fica isolada em `js/forms.js` — os formulários em si (`pages/contato.html`,
 `pages/demonstracao.html`) não precisam mudar de estrutura.
 
+## Núcleo compartilhado da plataforma (`shared/`) — ago/2026
+
+O Portal Associativo passou a hospedar, em `shared/`, o núcleo de código reutilizável pela plataforma inteira: autenticação/Firebase, resolução de tenant, módulos habilitados, auditoria, utilitários e componentes visuais (sidebar, KPI card, tabela de dados, modal). Qualquer tenant — hoje só o CCBMG, futuramente outros — consome via `import` cross-origin de URL absoluta (`https://portalassociativo.com.br/shared/...`), sem duplicar nada localmente.
+
+Contrato completo, política de versionamento e o que nunca entra no núcleo: ver `shared/README.md` neste mesmo repositório. Contexto de por que isso existe e como se encaixa no roadmap multi-tenant mais amplo: `docs/SAAS_MULTITENANT.md` no repositório do CCBMG (documento pré-existente, com um modelo de arquitetura ligeiramente diferente — resolução dinâmica por domínio num único app — que este núcleo complementa sem substituir; ver a seção "Reconciliação" no plano de implementação desta fase).
+
+Decisão de design que vale registrar aqui: `shared/core/tenant/tenant-context.js` expõe `getTenant()` como **assíncrona** mesmo hoje, quando a resolução é só ler um arquivo de config local (`tenant.config.js`) declarado por cada tenant. Isso é proposital — quando a resolução dinâmica por domínio existir de fato, só o corpo interno dessa função muda; nenhum consumidor precisa ser reescrito.
+
+Este núcleo **não inclui**, deliberadamente: vocabulário de papel de nenhum tenant específico, qualquer efeito colateral automático disparado só por importar um módulo, schema de catálogo/negócio de um tenant, ou caminho de redirecionamento hardcoded — tudo isso é responsabilidade do site consumidor, nunca do núcleo.
+
 ## Convenções herdadas do CCBMG
 
 - Prefixo `ds-` para classes do Design System (`ds-card`, `ds-badge`, …).

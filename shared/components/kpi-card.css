@@ -1,0 +1,31 @@
+/* shared/components/kpi-card.css — cartão de indicador (número grande +
+   rótulo), usado em dashboards administrativos.
+
+   Extraído do CSS inline de admin_master.html (CCBMG). Diferença
+   deliberada: --kpi-value usa --text-3xl (degrau real da escala
+   tipográfica) em vez do "2rem" hardcoded que existia inline. */
+
+.ds-kpi-card {
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--border-subtle, rgba(33, 29, 24, 0.08));
+  border-radius: var(--radius-md, 12px);
+  box-shadow: var(--shadow-sm, 0 1px 4px rgba(0, 0, 0, 0.08));
+  padding: var(--space-lg, 1.5rem);
+}
+
+.ds-kpi-value {
+  font-size: var(--text-3xl, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--ink, #211D18);
+}
+.ds-kpi-value.ds-kpi-success { color: var(--success, #3F7D5C); }
+.ds-kpi-value.ds-kpi-warn    { color: var(--warning, #B8863B); }
+.ds-kpi-value.ds-kpi-danger  { color: var(--danger, #A23B2E); }
+
+.ds-kpi-label {
+  font-size: var(--text-sm, 0.8rem);
+  color: var(--ink-muted, #6B6156);
+  margin-top: var(--space-xs, 0.25rem);
+}

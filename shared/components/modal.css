@@ -1,0 +1,25 @@
+/* shared/components/modal.css — reskin de .modal-content Bootstrap. O
+   comportamento (abrir/fechar, backdrop, foco) permanece 100% do
+   Bootstrap — os dois repos já carregam bootstrap.bundle.min.js, isto só
+   troca a aparência. z-index não precisa de sobrescrita: o Bootstrap já
+   usa 1050/1055 por padrão, e --z-modal já vale exatamente 1050 nos dois
+   design systems. */
+
+.ds-modal .modal-content {
+  border: none;
+  border-radius: var(--radius-lg, 16px);
+  box-shadow: var(--shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.12));
+}
+.ds-modal .modal-header,
+.ds-modal .modal-footer {
+  border-color: var(--border-subtle, rgba(33, 29, 24, 0.08));
+  padding: var(--space-lg, 1.5rem);
+}
+.ds-modal .modal-body {
+  padding: var(--space-lg, 1.5rem);
+}
+.ds-modal .modal-title {
+  font-size: var(--text-md, 1.125rem);
+  font-weight: 700;
+  color: var(--ink, #211D18);
+}
