@@ -34,7 +34,24 @@ Alinhado ao roadmap geral da plataforma (ver `CLAUDE.md` do projeto CCBMG):
 - [x] `DEST_EMAIL` em `js/forms.js` e o bloco de e-mail em `index.html` publicados com `contato@portalassociativo.com.br` — recebimento via Cloudflare Email Routing (encaminha para caixa real da equipe), testado e confirmado em produção.
 - [ ] Preencher CNPJ/endereço legal em `pages/termos.html` e `pages/privacidade.html`, se a empresa decidir publicá-los.
 - [ ] Fechar o valor de cada um dos 5 planos para `pages/planos.html` (ver acima — o "a partir de R$ 49,90" já está publicado).
-- [ ] Aprovação por escrito do Presidente do CCBMG para o relato do caso real na Home (ver comentário em `index_nova.html`).
+- [ ] Aprovação por escrito do Presidente do CCBMG para o relato do caso real na Home (ver comentário em `index.html`).
 - [ ] Substituir as molduras neutras da seção "Tudo em um único lugar" por screenshots reais do produto (`assets/images/product/`).
-- [ ] Decidir o destino de `pages/demonstracao.html`: com todos os CTAs indo para o WhatsApp, a página deixou de ser referenciada pela navegação.
+- [ ] Decidir o destino de `pages/demonstracao.html` e `pages/contato.html`: seguem sendo o canal formal por e-mail (rodapé + páginas dedicadas), enquanto todo CTA de conversão do site vai para o WhatsApp (padrão consolidado em ago/2026 — ver Débito técnico abaixo sobre consistência).
 - [ ] Substituir `apple-touch-icon`/OG image por artes finais revisadas, se ainda não validadas.
+
+## Débito técnico
+
+- **DNS do site proxied no Cloudflare (nuvem laranja) → cache de até 10 min em cada deploy.**
+  Migramos a DNS de `portalassociativo.com.br` para o Cloudflare (Email Routing,
+  ago/2026) e os registros A/AAAA/CNAME do site ficaram com o proxy
+  (`Proxied`) ativo — o que dá CDN/WAF/analytics, mas também passou a
+  cachear HTML na borda, fazendo cada deploy novo demorar até ~10 min para
+  aparecer publicamente (`age`/`cf-ray` nos headers confirmam isso).
+  Decisão registrada em ago/2026: **manter como está por enquanto**
+  (fase de iteração rápida do produto) em vez de reconfigurar agora.
+  Quando revisitar, duas opções: (1) trocar os registros para "DNS only"
+  (nuvem cinza) — simples, sem cache, mas perde CDN/WAF/analytics; ou
+  (2) manter `Proxied` e criar uma Cache Rule (Caching → Cache Rules)
+  fazendo bypass de cache para HTML — mantém os benefícios do proxy sem o
+  atraso de deploy. HTTPS, Email Routing e o Verified Domain do GitHub
+  **não são afetados** por essa escolha (MX/TXT nunca passam pelo proxy).
