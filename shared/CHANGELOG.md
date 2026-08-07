@@ -2,6 +2,16 @@
 
 Sem build/hash automático (sem bundler, por decisão de arquitetura — ver `README.md`). Versão é manual, incrementada aqui a cada publicação relevante, e replicada na query string (`?v=`) usada pelos tenants.
 
+## 2026.08.1 — Fase 1: firebase.js do CCBMG passa a consumir o núcleo de verdade
+
+3 correções de compatibilidade encontradas ao ligar o `firebase.js` real do CCBMG (não mais só a PoC isolada) ao núcleo — sem elas, o refactor quebraria login de admin/master em produção.
+
+**Corrigido:**
+- `core/auth/session.js` — `requireAuth({requiredRole})` agora aceita `string | string[]` (checagem por inclusão, cada item passado por `mapRole`), reproduzindo o comportamento real do `firebase.js` do CCBMG (17 de suas 21 páginas com `requireAuth` passam `requiredRole` como array).
+- `utils/images.js` — `createImageUploader(...)`'s `uploadImageFile` agora aceita `autoCompress` (alias de `compress`) e repassa `maxWidth`/`maxHeight`/`targetKB` para `compressImage()` quando informados — antes esses valores eram silenciosamente ignorados.
+
+**Sem mudança de comportamento, só documentação:** `tenant-context.js` já previa `branding?: object` no shape de retorno desde a Fase 0; nenhum tenant usa ainda.
+
 ## 2026.08.0 — Fase 0: primeira publicação
 
 Criação do núcleo compartilhado, extraído do `firebase.js` do CCBMG (649 linhas, monolítico) separando mecanismo genérico de regra de negócio específica do clube.

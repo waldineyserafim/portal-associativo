@@ -61,7 +61,7 @@ export function createAuthSession({
 
   /**
    * @param {object} options
-   * @param {string} [options.requiredRole] — se informado, só esse papel passa.
+   * @param {string|string[]} [options.requiredRole] — se informado, só esse(s) papel(is) passa(m) (inclusão, não igualdade — um único papel resolvido só precisa bater com um item da lista).
    * @param {string} options.loginUrl — obrigatório; para onde vai quem não está logado.
    * @param {string} [options.unauthorizedUrl] — para onde vai quem está logado mas sem o papel exigido (default: loginUrl).
    * @param {string[]} [options.readOnlyRoles=[]] — papéis que disparam o banner de "somente leitura".
@@ -95,9 +95,12 @@ export function createAuthSession({
       }
       cacheRole(role);
 
-      if (requiredRole && role !== requiredRole) {
-        window.location.href = unauthorizedUrl || loginUrl;
-        return;
+      if (requiredRole) {
+        const allowed = (Array.isArray(requiredRole) ? requiredRole : [requiredRole]).map(mapRole);
+        if (!allowed.includes(role)) {
+          window.location.href = unauthorizedUrl || loginUrl;
+          return;
+        }
       }
 
       window.__userRole = role;

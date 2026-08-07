@@ -53,18 +53,26 @@ export async function compressImage(file, opts = {}) {
  * @param {File} file
  * @param {string} pathBase — prefixo do path no Storage (ex.: "tenants/org_bonfim/cms/banners").
  * @param {(pct: number) => void} [onProgress]
- * @param {{compress?: boolean, maxSizeMB?: number}} [opts]
+ * @param {{compress?: boolean, autoCompress?: boolean, maxSizeMB?: number, maxWidth?: number, maxHeight?: number, targetKB?: number}} [opts]
+ *   `autoCompress` é alias de `compress` (nome usado pelo firebase.js do CCBMG); `maxWidth`/`maxHeight`/`targetKB`
+ *   são repassados direto para `compressImage()` quando informados.
  * @returns {Promise<{url: string, path: string}>}
  */
 export function createImageUploader(storage) {
   return async function uploadImageFile(file, pathBase, onProgress, opts = {}) {
-    const { compress = true, maxSizeMB = 5 } = opts;
+    const { compress, autoCompress, maxSizeMB = 5, maxWidth, maxHeight, targetKB } = opts;
+    const shouldCompress = autoCompress ?? compress ?? true;
 
     if (file.size > maxSizeMB * 1024 * 1024) {
       throw new Error(`Arquivo maior que ${maxSizeMB}MB.`);
     }
 
-    const toUpload = compress ? await compressImage(file) : file;
+    const compressOpts = {};
+    if (maxWidth !== undefined) compressOpts.maxWidth = maxWidth;
+    if (maxHeight !== undefined) compressOpts.maxHeight = maxHeight;
+    if (targetKB !== undefined) compressOpts.targetKB = targetKB;
+
+    const toUpload = shouldCompress ? await compressImage(file, compressOpts) : file;
     const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
     const path = `${pathBase}/${Date.now()}.${ext}`;
     const storageRef = ref(storage, path);
