@@ -2,7 +2,9 @@
 
 Sem build/hash automático (sem bundler, por decisão de arquitetura — ver `README.md`). Versão é manual, incrementada aqui a cada publicação relevante, e replicada na query string (`?v=`) usada pelos tenants.
 
-## 2026.08.1 — Fase 1: firebase.js do CCBMG passa a consumir o núcleo de verdade
+## 2026.08.2 — Fase 1: firebase.js do CCBMG passa a consumir o núcleo de verdade
+
+(A versão `2026.08.1` existiu por poucos minutos e foi pulada: o próprio deploy foi checado com uma requisição prematura, antes do build do GitHub Pages terminar, e o Cloudflare cacheou essa resposta antiga por até 4h sob aquela query string exata. Conteúdo idêntico ao descrito abaixo, só sob uma URL nova para evitar servir a versão cacheada por engano.)
 
 3 correções de compatibilidade encontradas ao ligar o `firebase.js` real do CCBMG (não mais só a PoC isolada) ao núcleo — sem elas, o refactor quebraria login de admin/master em produção.
 
