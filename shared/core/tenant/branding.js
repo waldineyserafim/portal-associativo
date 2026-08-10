@@ -80,7 +80,11 @@ export function createBrandingResolver({ db, getOrgId, orgCollection = "organiza
       document.documentElement.style.setProperty("--brand-dark", branding.corSecundaria);
     }
 
-    const displayName = branding.nomeCurto || branding.nome;
+    // [data-tenant-name] é o nome exibido na navbar do portal público — usa o
+    // nome completo (nomeCurto é um campo distinto, para exibições que
+    // legitimamente precisam de um rótulo curto, ex.: tabela de organizações
+    // do Painel Master; não deve ser confundido com o nome de exibição público).
+    const displayName = branding.nome || branding.nomeCurto;
     if (displayName) {
       document.querySelectorAll("[data-tenant-name]").forEach((el) => { el.textContent = displayName; });
     }

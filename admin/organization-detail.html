@@ -13,8 +13,8 @@
   <link href="../css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="../css/design-system.css?v=portal-2026-08b">
-  <link rel="stylesheet" href="../shared/layouts/admin-shell.css?v=2026.08.4">
-  <link rel="stylesheet" href="../shared/components/index.css?v=2026.08.4">
+  <link rel="stylesheet" href="../shared/layouts/admin-shell.css?v=2026.08.5">
+  <link rel="stylesheet" href="../shared/components/index.css?v=2026.08.5">
 </head>
 <body>
 
@@ -41,7 +41,7 @@
     <div id="provisioningBanner" class="ds-card ds-card-body mb-4 d-none"></div>
 
     <div id="detailArea">
-      <ul class="nav nav-tabs mb-4" id="orgTabs" role="tablist">
+      <ul class="nav nav-tabs mb-4 flex-wrap" id="orgTabs" role="tablist">
         <li class="nav-item" role="presentation">
           <button class="nav-link active" id="tab-dados-btn" data-bs-toggle="tab" data-bs-target="#tab-dados" type="button" role="tab">Dados</button>
         </li>
@@ -521,7 +521,7 @@
   } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
   import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-functions.js";
   import { getApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-  import { createImageUploader } from "../shared/utils/images.js?v=2026.08.4";
+  import { createImageUploader } from "../shared/utils/images.js?v=2026.08.5";
 
   const functionsApi = getFunctions(getApp(), "us-central1");
   const fnProvisionOrganization = httpsCallable(functionsApi, "provisionOrganization");

@@ -72,6 +72,15 @@
 
 .ds-admin-main {
   margin-left: 220px;
+  /* .ds-admin-shell é flex; .ds-sidebar é position:fixed (fora do fluxo), então
+     este é o único filho em fluxo — mas sem width/min-width explícitos ele
+     herda o min-width:auto padrão de flex item (= tamanho do conteúdo mais
+     largo) e cresce além da viewport em vez de respeitar o espaço disponível,
+     quebrando inclusive o overflow-x:auto de qualquer componente interno
+     (ex.: .ds-table-card). width fixa o espaço real disponível; min-width:0
+     permite encolher abaixo do conteúdo quando necessário. */
+  width: calc(100% - 220px);
+  min-width: 0;
   padding: var(--space-xl, 2rem);
   min-height: 100vh;
   background: var(--surface-alt, #F5F0E6);
@@ -118,6 +127,7 @@
   }
   .ds-admin-main {
     margin-left: 0;
+    width: 100%;
   }
   .ds-admin-topbar {
     display: flex;

@@ -2,7 +2,14 @@
 
 Sem build/hash automático (sem bundler, por decisão de arquitetura — ver `README.md`). Versão é manual, incrementada aqui a cada publicação relevante, e replicada na query string (`?v=`) usada pelos tenants.
 
-## 2026.08.4 — Fase 3.5: identidade do tenant e domínios
+## 2026.08.5 — Correções pré-Auditoria Final RC1
+
+**Corrigido:**
+- `core/tenant/branding.js` — `applyBranding()` aplicava `nomeCurto` em `[data-tenant-name]` (navbar do portal público), quando deveria usar `nome` (nome completo da organização). `nomeCurto` continua existindo e sendo usado normalmente onde é o campo certo (ex.: tabela de organizações do Painel Master) — só o consumidor de `[data-tenant-name]` mudou de prioridade: `branding.nome || branding.nomeCurto` (era `branding.nomeCurto || branding.nome`).
+- `components/sidebar.css` — `.ds-admin-main` não tinha `width`/`min-width` explícitos; como filho de `.ds-admin-shell` (flex) com `.ds-sidebar` fora do fluxo (`position:fixed`), herdava o `min-width:auto` padrão de flex item (= tamanho do conteúdo mais largo) e crescia além da viewport em qualquer página com conteúdo largo — isso também impedia `overflow-x:auto` de componentes internos (ex.: `.ds-table-card`) de funcionar, porque o pai nunca ficava mais estreito que o conteúdo. Adicionado `width: calc(100% - 220px)` + `min-width: 0` (e `width: 100%` no breakpoint mobile, onde a sidebar fica off-canvas). Achado sistêmico: 36 de 45 combinações página×viewport testadas tinham overflow horizontal antes desta correção, incluindo desktop largo (1920px).
+- `components/data-table.css` — `.ds-table-card` usava `overflow: hidden`, que **escondia** colunas/ações fora da largura disponível em vez de permitir rolagem — trocado para `overflow-x: auto` (mantendo `overflow-y: hidden` pelo cantos arredondados). Consequência do bug acima: mesmo com essa correção sozinha, o pai (`.ds-admin-main`) continuava forçando a página inteira a rolar; as duas correções juntas resolvem o problema de ponta a ponta.
+
+
 
 **Adicionado:**
 - `core/tenant/branding.js` — `createBrandingResolver({db, getOrgId, ...})` → `getOrgBranding()`, `applyBranding()`. Lê `organizations/{orgId}/public/branding` (projeção curada e segura mantida por Cloud Function no CCBMG — nunca `organizations/{orgId}` direto, que carrega campos não-públicos desde a Fase 3.4), mesmo padrão de cache em `sessionStorage` de `modules.js`. `applyBranding()` só sobrescreve favicon/cores/`[data-tenant-name]`/`[data-tenant-logo]` quando o campo correspondente existe — HTML/CSS estático de um tenant continua valendo como fallback quando o branding está vazio ou indisponível. Não roda sozinha ao importar (ver regra "O que NUNCA vai para o núcleo" — quem decide chamar automaticamente é o `firebase.js` de cada tenant, nunca o núcleo).
