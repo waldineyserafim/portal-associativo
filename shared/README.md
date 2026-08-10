@@ -26,14 +26,14 @@ Este diretório é a **origem única** de código reutilizável pela plataforma 
 2. Importar o que precisar do núcleo, sempre com a versão fixada na query string:
    ```html
    <script type="module">
-     import { getTenant } from "https://portalassociativo.com.br/shared/core/tenant/tenant-context.js?v=2026.08.6";
-     import { initTenantFirebase } from "https://portalassociativo.com.br/shared/core/auth/firebase-init.js?v=2026.08.6";
+     import { getTenant } from "https://portalassociativo.com.br/shared/core/tenant/tenant-context.js?v=2026.08.7";
+     import { initTenantFirebase } from "https://portalassociativo.com.br/shared/core/auth/firebase-init.js?v=2026.08.7";
    </script>
    ```
 
 3. Para os componentes visuais (CSS puro, sem dependência de JS além do Bootstrap que o site já carrega):
    ```html
-   <link rel="stylesheet" href="https://portalassociativo.com.br/shared/components/index.css?v=2026.08.6">
+   <link rel="stylesheet" href="https://portalassociativo.com.br/shared/components/index.css?v=2026.08.7">
    ```
 
 ## Versionamento — por que a query string `?v=` é obrigatória

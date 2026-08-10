@@ -2,6 +2,11 @@
 
 Sem build/hash automático (sem bundler, por decisão de arquitetura — ver `README.md`). Versão é manual, incrementada aqui a cada publicação relevante, e replicada na query string (`?v=`) usada pelos tenants.
 
+## 2026.08.7 — Propagação de versão nos @import de components/index.css
+
+**Corrigido:**
+- `components/index.css` — seus `@import url(...)` (sidebar.css, kpi-card.css, data-table.css, modal.css, pagination.css, toast.css) não carregavam a query string `?v=`. Consequência real, descoberta ao validar a correção da 2026.08.6: bumpar a versão de `index.css` na tag `<link>` gerava uma URL nova (cache-busted) para o `index.css` em si, mas o CONTEÚDO desses 6 arquivos importados continuava sendo buscado numa URL estável — vulnerável a ficar preso no cache de borda de 4h do Cloudflare por até 4h, mesmo depois de qualquer correção neles ser publicada. `@import` agora carrega a mesma versão do arquivo que o referencia; ao bumpar a versão do núcleo dali pra frente, as duas coisas precisam mudar juntas (nota deixada no próprio arquivo).
+
 ## 2026.08.6 — Correção de sequência sobre a 2026.08.5
 
 **Corrigido:**

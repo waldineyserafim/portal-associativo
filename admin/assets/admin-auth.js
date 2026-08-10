@@ -12,10 +12,10 @@
 // (owner/administrator/operator) — só este arquivo mudou; as 8 páginas que
 // chamam requirePlatformAccess() continuam exatamente iguais.
 
-import { initTenantFirebase } from "../../shared/core/auth/firebase-init.js?v=2026.08.6";
-import { createRoleResolver } from "../../shared/core/auth/roles.js?v=2026.08.6";
-import { createAuthSession } from "../../shared/core/auth/session.js?v=2026.08.6";
-import { createAuditLogger } from "../../shared/core/tenant/audit.js?v=2026.08.6";
+import { initTenantFirebase } from "../../shared/core/auth/firebase-init.js?v=2026.08.7";
+import { createRoleResolver } from "../../shared/core/auth/roles.js?v=2026.08.7";
+import { createAuthSession } from "../../shared/core/auth/session.js?v=2026.08.7";
+import { createAuditLogger } from "../../shared/core/tenant/audit.js?v=2026.08.7";
 
 // Mesmo projeto Firebase do CCBMG (clubecavalobonfim) — decisão já tomada e
 // documentada desde a criação do Portal Associativo: a plataforma inteira

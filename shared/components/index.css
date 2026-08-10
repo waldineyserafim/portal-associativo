@@ -1,9 +1,16 @@
 /* shared/components/index.css — ponto de entrada único, mesmo padrão de
-   css/design-system.css do Portal Associativo (agregador de @import). */
+   css/design-system.css do Portal Associativo (agregador de @import).
 
-@import url("./sidebar.css");
-@import url("./kpi-card.css");
-@import url("./data-table.css");
-@import url("./modal.css");
-@import url("./pagination.css");
-@import url("./toast.css");
+   IMPORTANTE: os @import abaixo precisam da MESMA query string ?v= usada
+   quando este arquivo é referenciado (ex.: index.css?v=2026.08.7) — sem
+   isso, bumpar a versão de index.css não força o refresh dos arquivos
+   importados, que ficam presos numa URL estável vulnerável ao cache de
+   borda de 4h do Cloudflare (achado real, ver CHANGELOG 2026.08.7). Ao
+   incrementar a versão do núcleo, atualize as duas coisas juntas. */
+
+@import url("./sidebar.css?v=2026.08.7");
+@import url("./kpi-card.css?v=2026.08.7");
+@import url("./data-table.css?v=2026.08.7");
+@import url("./modal.css?v=2026.08.7");
+@import url("./pagination.css?v=2026.08.7");
+@import url("./toast.css?v=2026.08.7");
