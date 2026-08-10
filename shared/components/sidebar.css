@@ -81,6 +81,13 @@
      permite encolher abaixo do conteúdo quando necessário. */
   width: calc(100% - 220px);
   min-width: 0;
+  /* width/min-width sozinhos só corrigem o tamanho da CAIXA do próprio
+     elemento — com overflow:visible (padrão), um filho ainda mais largo
+     (tabela sem wrap, badge, texto longo) continua empurrando o
+     scrollWidth do documento inteiro pra além da viewport. overflow-x:auto
+     faz .ds-admin-main conter/rolar esse excesso localmente, sem afetar a
+     sidebar fixa nem a página inteira. */
+  overflow-x: auto;
   padding: var(--space-xl, 2rem);
   min-height: 100vh;
   background: var(--surface-alt, #F5F0E6);

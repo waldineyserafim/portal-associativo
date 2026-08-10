@@ -2,6 +2,11 @@
 
 Sem build/hash automático (sem bundler, por decisão de arquitetura — ver `README.md`). Versão é manual, incrementada aqui a cada publicação relevante, e replicada na query string (`?v=`) usada pelos tenants.
 
+## 2026.08.6 — Correção de sequência sobre a 2026.08.5
+
+**Corrigido:**
+- `components/sidebar.css` — a correção `width`/`min-width` da 2026.08.5 fixou o tamanho da CAIXA de `.ds-admin-main`, mas não impedia um filho intrinsecamente mais largo (ex.: linha de botões, badge, grade de módulos) de continuar empurrando `document.documentElement.scrollWidth` além da viewport — `overflow:visible` (padrão) deixa o conteúdo vazar visualmente mesmo com a caixa do pai já do tamanho certo. Adicionado `overflow-x: auto` em `.ds-admin-main`: contém/rola esse excesso localmente (sidebar fixa e resto da página não são afetados). Confirmado com medição real (Playwright, autenticado, 5 viewports × 9 páginas): 36/45 combinações com overflow antes desta correção completa.
+
 ## 2026.08.5 — Correções pré-Auditoria Final RC1
 
 **Corrigido:**
