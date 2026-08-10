@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Nova Organização — Painel Master · Portal Associativo</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/images/icons/favicon.svg">
+  <link rel="apple-touch-icon" href="../assets/images/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#A85A34">
+  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../css/design-system.css?v=portal-2026-08b">
+  <link rel="stylesheet" href="../shared/layouts/admin-shell.css">
+  <link rel="stylesheet" href="../shared/components/index.css">
+  <style>
+    .ds-step-list { list-style: none; margin: 0; padding: 0; }
+    .ds-step-list li {
+      display: flex; align-items: center; gap: var(--space-sm, 0.5rem);
+      padding: var(--space-sm, 0.5rem) 0;
+      border-bottom: 1px solid var(--border-subtle, rgba(33,29,24,0.08));
+      font-size: var(--text-sm, 0.875rem);
+    }
+    .ds-step-list li:last-child { border-bottom: none; }
+    .ds-step-icon { width: 1.25rem; text-align: center; flex-shrink: 0; }
+    .ds-step-icon .spinner-border { width: 0.9rem; height: 0.9rem; }
+  </style>
+</head>
+<body>
+
+<div class="ds-admin-shell">
+  <main class="ds-admin-main">
+    <div class="mb-4">
+      <a href="./organizations.html" class="ds-text-sm ds-text-muted d-block mb-1"><i class="bi bi-arrow-left me-1"></i>Organizações</a>
+      <h1 class="h4 mb-0">Nova organização</h1>
+      <p class="ds-text-sm ds-text-muted mb-0">Provisionamento automático — cria o ambiente completo em um passo só.</p>
+    </div>
+
+    <!-- Formulário -->
+    <div id="formArea" class="ds-card ds-card-body" style="max-width: 640px;">
+      <div class="row g-3">
+        <div class="col-12"><h6 class="ds-text-muted mb-0">Organização</h6><hr class="mt-1"></div>
+        <div class="col-md-8">
+          <label class="form-label">Nome *</label>
+          <input class="form-control" id="orgNome" placeholder="Ex: Clube do Cavalo Bonfim MG" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Identificador (slug) *</label>
+          <input class="form-control" id="orgSlug" placeholder="org_bonfim" required>
+          <div class="form-text ds-text-xs">Gerado automaticamente — edite se quiser outro.</div>
+        </div>
+
+        <div class="col-12 mt-2"><h6 class="ds-text-muted mb-0">Primeiro Organization Master</h6><hr class="mt-1"></div>
+        <div class="col-md-6">
+          <label class="form-label">Nome *</label>
+          <input class="form-control" id="masterNome" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">E-mail *</label>
+          <input class="form-control" id="masterEmail" type="email" required>
+          <div class="form-text ds-text-xs">Recebe um convite por e-mail para definir a própria senha — nunca uma conta reaproveitada da equipe da plataforma.</div>
+        </div>
+
+        <div class="col-12 mt-2"><h6 class="ds-text-muted mb-0">Plano</h6><hr class="mt-1"></div>
+        <div class="col-12">
+          <label class="form-label">Plano *</label>
+          <select class="form-select" id="orgPlan" required>
+            <option value="">Carregando planos…</option>
+          </select>
+        </div>
+
+        <div id="formErrMsg" class="col-12 alert alert-danger py-2 small d-none"></div>
+
+        <div class="col-12 d-flex justify-content-end">
+          <button class="btn btn-primary" id="btnProvisionar">
+            <i class="bi bi-rocket-takeoff me-1"></i>Provisionar organização
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progresso ao vivo -->
+    <div id="progressArea" class="ds-card ds-card-body d-none" style="max-width: 640px;">
+      <h6 class="mb-3">Provisionando <strong id="progressOrgNome"></strong>…</h6>
+      <ul class="ds-step-list" id="stepList"></ul>
+      <div id="progressResult" class="mt-3 d-none"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/bootstrap.bundle.min.js"></script>
+<script type="module">
+  import { requirePlatformAccess, db } from "./assets/admin-auth.js";
+  import { renderAdminNav } from "./assets/admin-nav.js";
+  import { collection, getDocs, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+  import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-functions.js";
+  import { getApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+
+  const STEP_LABELS = {
+    organization: "Organização",
+    masterAccount: "Primeiro Organization Master",
+    modules: "Módulos do plano",
+    billing: "Estrutura de Billing Provider",
+    branding: "Configurações básicas (idioma, fuso, moeda)",
+    storage: "Armazenamento (não requer ação)",
+    cms: "Conteúdo institucional inicial",
+  };
+  const STEP_ORDER = Object.keys(STEP_LABELS);
+
+  const functionsApi = getFunctions(getApp(), "us-central1");
+  const fnProvisionOrganization = httpsCallable(functionsApi, "provisionOrganization");
+
+  requirePlatformAccess({
+    onRole: () => {
+      renderAdminNav({ active: "organizations" });
+      loadPlans();
+      wireSlugAutofill();
+    },
+  });
+
+  async function loadPlans() {
+    const select = document.getElementById("orgPlan");
+    try {
+      const snap = await getDocs(collection(db, "systemPlans"));
+      const plans = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      select.innerHTML = plans.length
+        ? plans.map((p) => `<option value="${p.id}">${p.label || p.id}</option>`).join("")
+        : '<option value="">Nenhum plano cadastrado — crie um em Planos primeiro</option>';
+    } catch (e) {
+      select.innerHTML = '<option value="">Erro ao carregar planos</option>';
+      console.error(e);
+    }
+  }
+
+  function slugify(nome) {
+    return nome
+      .normalize("NFD").replace(/\p{Diacritic}/gu, "")
+      .toLowerCase().trim()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "");
+  }
+
+  function wireSlugAutofill() {
+    const nomeInput = document.getElementById("orgNome");
+    const slugInput = document.getElementById("orgSlug");
+    let slugEditedByHand = false;
+    slugInput.addEventListener("input", () => { slugEditedByHand = true; });
+    nomeInput.addEventListener("input", () => {
+      if (!slugEditedByHand) slugInput.value = slugify(nomeInput.value);
+    });
+  }
+
+  document.getElementById("btnProvisionar").addEventListener("click", async () => {
+    const nome = document.getElementById("orgNome").value.trim();
+    const orgId = document.getElementById("orgSlug").value.trim();
+    const planId = document.getElementById("orgPlan").value;
+    const masterNome = document.getElementById("masterNome").value.trim();
+    const masterEmail = document.getElementById("masterEmail").value.trim().toLowerCase();
+    const errMsg = document.getElementById("formErrMsg");
+    errMsg.classList.add("d-none");
+
+    if (!nome || !orgId || !planId || !masterNome || !masterEmail) {
+      errMsg.textContent = "Preencha todos os campos obrigatórios.";
+      errMsg.classList.remove("d-none");
+      return;
+    }
+
+    const btn = document.getElementById("btnProvisionar");
+    btn.disabled = true;
+    btn.textContent = "Provisionando…";
+
+    // Gerado no cliente e passado pra callable — permite assinar o doc de
+    // execução via onSnapshot ANTES da callable retornar (ela só resolve
+    // quando os 7 passos terminam), pro progresso ao vivo estilo "log de
+    // deploy" em vez de um spinner cego até o fim.
+    const runId = doc(collection(db, "provisioningRuns")).id;
+
+    try {
+      showProgressShell(nome);
+      const stopWatching = watchRun(runId);
+      const result = await fnProvisionOrganization({
+        orgId, nome, planId,
+        master: { email: masterEmail, nome: masterNome },
+        runId,
+      });
+      stopWatching();
+      renderFinalStatus(result.data, orgId);
+    } catch (e) {
+      errMsg.textContent = "Erro: " + e.message;
+      errMsg.classList.remove("d-none");
+      document.getElementById("formArea").classList.remove("d-none");
+      document.getElementById("progressArea").classList.add("d-none");
+      btn.disabled = false;
+      btn.textContent = "Provisionar organização";
+    }
+  });
+
+  function showProgressShell(nome) {
+    document.getElementById("formArea").classList.add("d-none");
+    document.getElementById("progressArea").classList.remove("d-none");
+    document.getElementById("progressOrgNome").textContent = nome;
+    document.getElementById("stepList").innerHTML = STEP_ORDER.map((key) => `
+      <li data-step="${key}">
+        <span class="ds-step-icon"><div class="spinner-border spinner-border-sm text-muted" role="status"></div></span>
+        <span>${STEP_LABELS[key]}</span>
+      </li>
+    `).join("");
+  }
+
+  function renderSteps(steps) {
+    (steps || []).forEach((step) => {
+      const li = document.querySelector(`li[data-step="${step.name}"]`);
+      if (!li) return;
+      const icon = li.querySelector(".ds-step-icon");
+      if (step.status === "ok") {
+        icon.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i>';
+      } else if (step.status === "skipped") {
+        icon.innerHTML = '<i class="bi bi-dash-circle text-muted"></i>';
+      } else if (step.status === "error") {
+        icon.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i>';
+        if (!li.querySelector(".ds-step-error")) {
+          const errSpan = document.createElement("div");
+          errSpan.className = "ds-text-xs text-danger ms-4 ds-step-error";
+          errSpan.textContent = step.error || "Falhou";
+          li.appendChild(errSpan);
+        }
+      }
+      // status "running" implícito (passo ainda não apareceu no array) — mantém o spinner.
+    });
+  }
+
+  // Assina o doc de execução ao vivo (onSnapshot) assim que ele existir —
+  // como o runId já é conhecido de antemão (gerado no cliente), a inscrição
+  // começa antes mesmo da callable retornar, dando o efeito de "log de
+  // deploy" em vez de um spinner cego até o fim.
+  function watchRun(runId) {
+    const unsubscribe = onSnapshot(doc(db, "provisioningRuns", runId), (snap) => {
+      if (!snap.exists()) return;
+      renderSteps(snap.data().steps);
+    }, (err) => {
+      console.warn("watchRun: falha ao observar progresso ao vivo (resultado final ainda chega pela própria chamada):", err.message);
+    });
+    return unsubscribe;
+  }
+
+  function renderFinalStatus(result, orgId) {
+    renderSteps(result.steps);
+
+    const resultBox = document.getElementById("progressResult");
+    resultBox.classList.remove("d-none");
+    if (result.status === "completed") {
+      let emailNote = "";
+      if (result.readyForInvite) {
+        emailNote = result.emailSent
+          ? "<p class=\"ds-text-sm mb-0\">Convite enviado por e-mail ao novo Organization Master.</p>"
+          : `<p class="ds-text-sm mb-2">Não foi possível enviar o e-mail de convite. Copie o link e envie manualmente:</p>
+             <div class="input-group mb-2"><input class="form-control form-control-sm" readonly value="${result.resetLink || ""}"></div>`;
+      }
+      resultBox.innerHTML = `
+        <div class="alert alert-success">Organização provisionada com sucesso.</div>
+        ${emailNote}
+        <a href="./organization-detail.html?id=${encodeURIComponent(orgId)}" class="btn btn-primary btn-sm mt-2">Abrir organização</a>
+      `;
+    } else {
+      resultBox.innerHTML = `
+        <div class="alert alert-warning">Provisionamento incompleto — alguns passos falharam. Abra a organização e use "Reprocessar" depois de corrigir o problema.</div>
+        <a href="./organization-detail.html?id=${encodeURIComponent(orgId)}" class="btn btn-primary btn-sm mt-2">Abrir organização</a>
+      `;
+    }
+  }
+</script>
+</body>
+</html>

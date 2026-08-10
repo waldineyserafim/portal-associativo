@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Auditoria — Painel Master · Portal Associativo</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/images/icons/favicon.svg">
+  <link rel="apple-touch-icon" href="../assets/images/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#A85A34">
+  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../css/design-system.css?v=portal-2026-08b">
+  <link rel="stylesheet" href="../shared/layouts/admin-shell.css">
+  <link rel="stylesheet" href="../shared/components/index.css">
+</head>
+<body>
+
+<div class="ds-admin-shell">
+  <main class="ds-admin-main">
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+      <h1 class="h4 mb-0">Auditoria</h1>
+      <button class="btn btn-outline-secondary btn-sm" id="btnCarregarMais">
+        <i class="bi bi-arrow-clockwise me-1"></i>Carregar mais 200
+      </button>
+    </div>
+
+    <div class="row g-2 mb-3">
+      <div class="col-md-6">
+        <input type="search" class="form-control" id="searchInput" placeholder="Buscar por usuário, organização ou ação…">
+      </div>
+      <div class="col-6 col-md-3">
+        <select class="form-select" id="filterOrg">
+          <option value="">Todas as organizações</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="ds-table-card">
+      <div class="text-center py-4 ds-text-muted ds-text-sm" id="loading">Carregando…</div>
+      <table class="ds-table d-none" id="tbl">
+        <thead>
+          <tr><th>Data/Hora</th><th>Usuário</th><th>Organização</th><th>Ação</th><th>Detalhes</th></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div id="paginationContainer" class="px-3 pb-3"></div>
+    </div>
+    <p class="ds-text-xs ds-text-muted mt-2" id="loadedInfo"></p>
+  </main>
+</div>
+
+<script type="module">
+  import { requirePlatformAccess, db } from "./assets/admin-auth.js";
+  import { renderAdminNav } from "./assets/admin-nav.js";
+  import { renderPagination } from "./assets/pagination-ui.js";
+  import { createListController } from "../shared/utils/list-controls.js";
+  import { collection, getDocs, query, orderBy, limit, startAfter } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+  function fmtTs(ts) {
+    if (!ts) return "—";
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  }
+
+  const PAGE_FETCH = 200;
+  let allLogs = [];
+  let lastDoc = null;
+  let exhausted = false;
+  const controller = createListController({ pageSize: 25, searchFields: ["userEmail", "orgId", "action"] });
+
+  requirePlatformAccess({
+    onRole: () => {
+      renderAdminNav({ active: "audit" });
+      fetchMore();
+    },
+  });
+
+  async function fetchMore() {
+    document.getElementById("btnCarregarMais").disabled = true;
+    try {
+      let q = query(collection(db, "systemLogs"), orderBy("timestamp", "desc"), limit(PAGE_FETCH));
+      if (lastDoc) q = query(collection(db, "systemLogs"), orderBy("timestamp", "desc"), startAfter(lastDoc), limit(PAGE_FETCH));
+
+      const snap = await getDocs(q);
+      if (snap.docs.length < PAGE_FETCH) exhausted = true;
+      if (snap.docs.length) lastDoc = snap.docs[snap.docs.length - 1];
+
+      allLogs = allLogs.concat(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+      populateOrgFilter();
+      applyFilters();
+    } catch (e) {
+      document.getElementById("loading").textContent = "Erro ao carregar auditoria.";
+      console.error(e);
+    } finally {
+      document.getElementById("btnCarregarMais").disabled = exhausted;
+      document.getElementById("loadedInfo").textContent = exhausted
+        ? `${allLogs.length} registro(s) carregado(s) — todo o histórico.`
+        : `${allLogs.length} registro(s) carregado(s) — pode haver mais.`;
+    }
+  }
+  document.getElementById("btnCarregarMais").addEventListener("click", fetchMore);
+
+  function populateOrgFilter() {
+    const select = document.getElementById("filterOrg");
+    const current = select.value;
+    const orgs = [...new Set(allLogs.map((l) => l.orgId).filter(Boolean))].sort();
+    select.innerHTML = '<option value="">Todas as organizações</option>' + orgs.map((o) => `<option value="${o}">${o}</option>`).join("");
+    select.value = current;
+  }
+
+  function applyFilters() {
+    const org = document.getElementById("filterOrg").value;
+    const filtered = org ? allLogs.filter((l) => l.orgId === org) : allLogs;
+    controller.setData(filtered);
+    controller.search(document.getElementById("searchInput").value);
+    render(1);
+  }
+
+  function render(page) {
+    const items = controller.getPage(page ?? controller.currentPage);
+    document.getElementById("tbody").innerHTML = items.map((l) => `
+      <tr>
+        <td class="ds-text-sm ds-text-muted">${fmtTs(l.timestamp)}</td>
+        <td class="ds-text-sm">${l.userEmail || "—"}</td>
+        <td class="ds-text-sm ds-text-muted">${l.orgId || "—"}</td>
+        <td class="ds-text-sm">${l.action || "—"}</td>
+        <td class="ds-text-xs ds-text-muted">${l.details && Object.keys(l.details).length ? JSON.stringify(l.details) : "—"}</td>
+      </tr>
+    `).join("") || '<tr><td colspan="5" class="ds-table-empty">Nenhum registro encontrado</td></tr>';
+
+    renderPagination(document.getElementById("paginationContainer"), controller, render);
+
+    document.getElementById("loading").classList.add("d-none");
+    document.getElementById("tbl").classList.remove("d-none");
+  }
+
+  let searchTimer;
+  document.getElementById("searchInput").addEventListener("input", () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(applyFilters, 200);
+  });
+  document.getElementById("filterOrg").addEventListener("change", applyFilters);
+</script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Assinaturas — Painel Master · Portal Associativo</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/images/icons/favicon.svg">
+  <link rel="apple-touch-icon" href="../assets/images/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#A85A34">
+  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../css/design-system.css?v=portal-2026-08b">
+  <link rel="stylesheet" href="../shared/layouts/admin-shell.css">
+  <link rel="stylesheet" href="../shared/components/index.css">
+</head>
+<body>
+
+<div class="ds-admin-shell">
+  <main class="ds-admin-main">
+    <div class="mb-4">
+      <h1 class="h4 mb-0">Assinaturas</h1>
+      <p class="ds-text-sm ds-text-muted mb-0">
+        Visão cross-organização. Para criar ou editar uma assinatura, abra a organização — a edição vive na
+        aba "Assinatura" de cada organização, não aqui, pra não ter dois lugares editando o mesmo dado.
+      </p>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="ds-kpi-card">
+          <div class="ds-kpi-value ds-kpi-success" id="kpiMrr">—</div>
+          <div class="ds-kpi-label">MRR (R$)</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="ds-kpi-card">
+          <div class="ds-kpi-value" id="kpiArr">—</div>
+          <div class="ds-kpi-label">ARR estimado (R$)</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="ds-kpi-card">
+          <div class="ds-kpi-value ds-kpi-success" id="kpiAtivas">—</div>
+          <div class="ds-kpi-label">Ativas</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="ds-kpi-card">
+          <div class="ds-kpi-value ds-kpi-danger" id="kpiInadim">—</div>
+          <div class="ds-kpi-label">Inadimplentes</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-2 mb-3">
+      <div class="col-md-6">
+        <input type="search" class="form-control" id="searchInput" placeholder="Buscar por organização…">
+      </div>
+      <div class="col-6 col-md-3">
+        <select class="form-select" id="filterStatus">
+          <option value="">Todos os status</option>
+          <option value="ativa">Ativa</option>
+          <option value="inadimplente">Inadimplente</option>
+          <option value="cancelada">Cancelada</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="ds-table-card">
+      <div class="text-center py-4 ds-text-muted ds-text-sm" id="loading">Carregando…</div>
+      <table class="ds-table d-none" id="tbl">
+        <thead>
+          <tr><th>Organização</th><th>Plano</th><th>Valor/mês</th><th>Status</th><th>Próx. cobrança</th><th></th></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div id="paginationContainer" class="px-3 pb-3"></div>
+    </div>
+  </main>
+</div>
+
+<script type="module">
+  import { requirePlatformAccess, db } from "./assets/admin-auth.js";
+  import { renderAdminNav } from "./assets/admin-nav.js";
+  import { renderPagination } from "./assets/pagination-ui.js";
+  import { createListController } from "../shared/utils/list-controls.js";
+  import { collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+  const PLAN_LABELS = { starter: "Starter", professional: "Professional", enterprise: "Enterprise" };
+  function fmtBRL(v) { return (v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); }
+  function fmtDate(ts) {
+    if (!ts) return "—";
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleDateString("pt-BR");
+  }
+  function badgeForSubStatus(status) {
+    const map = {
+      ativa: '<span class="badge bg-success">Ativa</span>',
+      inadimplente: '<span class="badge bg-danger">Inadimplente</span>',
+      cancelada: '<span class="badge bg-secondary">Cancelada</span>',
+    };
+    return map[status] || `<span class="badge bg-secondary">${status || "—"}</span>`;
+  }
+
+  let allSubs = [];
+  let orgsById = {};
+  const controller = createListController({ pageSize: 20, searchFields: ["orgNome"] });
+
+  requirePlatformAccess({
+    onRole: () => {
+      renderAdminNav({ active: "subscriptions" });
+      loadAll();
+    },
+  });
+
+  async function loadAll() {
+    try {
+      const [subsSnap, orgsSnap] = await Promise.all([
+        getDocs(collection(db, "organizationSubscriptions")),
+        getDocs(collection(db, "organizations")),
+      ]);
+      orgsById = {};
+      orgsSnap.docs.forEach((d) => { orgsById[d.id] = { id: d.id, ...d.data() }; });
+
+      // Doc ID já é o orgId (schema novo da Fase 3.1) — s.id é a fonte de verdade,
+      // s.orgId (campo legado) só é usado como fallback se algum doc ainda não migrou.
+      allSubs = subsSnap.docs.map((d) => {
+        const data = d.data();
+        const orgId = d.id || data.orgId;
+        return { ...data, id: d.id, orgId, orgNome: orgsById[orgId]?.nome || orgId };
+      });
+
+      renderKpis();
+      applyFilters();
+    } catch (e) {
+      document.getElementById("loading").textContent = "Erro ao carregar assinaturas.";
+      console.error(e);
+    }
+  }
+
+  function renderKpis() {
+    const ativas = allSubs.filter((s) => s.status === "ativa");
+    const inadim = allSubs.filter((s) => s.status === "inadimplente");
+    const mrr = ativas.reduce((acc, s) => acc + (s.valorMensal || 0), 0);
+    document.getElementById("kpiMrr").textContent = fmtBRL(mrr);
+    document.getElementById("kpiArr").textContent = fmtBRL(mrr * 12);
+    document.getElementById("kpiAtivas").textContent = ativas.length;
+    document.getElementById("kpiInadim").textContent = inadim.length;
+  }
+
+  function applyFilters() {
+    const status = document.getElementById("filterStatus").value;
+    const filtered = status ? allSubs.filter((s) => s.status === status) : allSubs;
+    controller.setData(filtered);
+    controller.search(document.getElementById("searchInput").value);
+    render(1);
+  }
+
+  function render(page) {
+    const items = controller.getPage(page ?? controller.currentPage);
+    document.getElementById("tbody").innerHTML = items.map((s) => `
+      <tr>
+        <td><strong>${s.orgNome}</strong></td>
+        <td><span class="badge bg-secondary">${PLAN_LABELS[s.plan] || s.plan || "—"}</span></td>
+        <td>${fmtBRL(s.valorMensal)}</td>
+        <td>${badgeForSubStatus(s.status)}</td>
+        <td class="ds-text-sm ds-text-muted">${fmtDate(s.proximaCobranca)}</td>
+        <td class="text-end"><a href="./organization-detail.html?id=${encodeURIComponent(s.orgId)}#tab-assinatura" class="btn btn-sm btn-outline-primary">Abrir</a></td>
+      </tr>
+    `).join("") || '<tr><td colspan="6" class="ds-table-empty">Nenhuma assinatura registrada</td></tr>';
+
+    renderPagination(document.getElementById("paginationContainer"), controller, render);
+
+    document.getElementById("loading").classList.add("d-none");
+    document.getElementById("tbl").classList.remove("d-none");
+  }
+
+  let searchTimer;
+  document.getElementById("searchInput").addEventListener("input", () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(applyFilters, 200);
+  });
+  document.getElementById("filterStatus").addEventListener("change", applyFilters);
+</script>
+</body>
+</html>

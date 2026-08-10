@@ -1,0 +1,47 @@
+/* shared/components/pagination.css — controle de paginação, puro CSS.
+   Companheiro de shared/utils/list-controls.js (que decide os números; este
+   arquivo só estiliza os botões que a página monta). */
+
+.ds-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-xs, 0.25rem);
+  margin-top: var(--space-md, 1rem);
+}
+
+.ds-pagination-btn {
+  border: 1px solid var(--border-subtle, rgba(33, 29, 24, 0.08));
+  background: var(--surface, #ffffff);
+  color: var(--ink, #211D18);
+  border-radius: var(--radius-sm, 6px);
+  padding: 0.35rem 0.75rem;
+  font-size: var(--text-sm, 0.875rem);
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background var(--transition-fast, 0.12s ease), border-color var(--transition-fast, 0.12s ease);
+}
+
+.ds-pagination-btn:hover:not(:disabled):not(.is-active) {
+  background: var(--surface-alt, #F5F0E6);
+}
+
+.ds-pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ds-pagination-btn.is-active {
+  background: var(--brand, #A85A34);
+  border-color: var(--brand, #A85A34);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.ds-pagination-info {
+  color: var(--ink-muted, #6B6156);
+  font-size: var(--text-sm, 0.875rem);
+  margin: 0 var(--space-sm, 0.5rem);
+  white-space: nowrap;
+}

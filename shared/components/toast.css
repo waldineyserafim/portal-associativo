@@ -1,0 +1,44 @@
+/* shared/components/toast.css — notificação temporária de feedback.
+   O token --z-toast já existia em variables.css do Portal Associativo desde
+   a fundação do projeto, sem nenhum componente que o usasse até agora. */
+
+.ds-toast-container {
+  position: fixed;
+  bottom: var(--space-lg, 1.5rem);
+  right: var(--space-lg, 1.5rem);
+  z-index: var(--z-toast, 1060);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs, 0.25rem);
+  max-width: calc(100vw - 2 * var(--space-lg, 1.5rem));
+}
+
+.ds-toast {
+  background: var(--ink, #211D18);
+  color: #ffffff;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md, 12px);
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(0, 0, 0, 0.18));
+  font-size: var(--text-sm, 0.875rem);
+  min-width: 240px;
+  max-width: 360px;
+  animation: ds-toast-in var(--transition-base, 0.2s ease);
+}
+
+.ds-toast.is-success { background: var(--success, #3F7D5C); }
+.ds-toast.is-warning  { background: var(--warning, #B8863B); }
+.ds-toast.is-danger   { background: var(--danger, #A23B2E); }
+
+@keyframes ds-toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 480px) {
+  .ds-toast-container {
+    left: var(--space-md, 1rem);
+    right: var(--space-md, 1rem);
+    bottom: var(--space-md, 1rem);
+  }
+  .ds-toast { min-width: 0; max-width: none; }
+}

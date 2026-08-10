@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Organizações — Painel Master · Portal Associativo</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/images/icons/favicon.svg">
+  <link rel="apple-touch-icon" href="../assets/images/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#A85A34">
+  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../css/design-system.css?v=portal-2026-08b">
+  <link rel="stylesheet" href="../shared/layouts/admin-shell.css">
+  <link rel="stylesheet" href="../shared/components/index.css">
+</head>
+<body>
+
+<div class="ds-admin-shell">
+  <main class="ds-admin-main">
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+      <h1 class="h4 mb-0">Organizações</h1>
+      <a href="./organization-provision.html" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-lg me-1"></i>Nova organização
+      </a>
+    </div>
+
+    <div class="row g-2 mb-3">
+      <div class="col-md-6">
+        <input type="search" class="form-control" id="searchInput" placeholder="Buscar por nome ou domínio…">
+      </div>
+      <div class="col-6 col-md-3">
+        <select class="form-select" id="filterStatus">
+          <option value="">Todos os status</option>
+          <option value="ativa">Ativa</option>
+          <option value="trial">Trial</option>
+          <option value="suspensa">Suspensa</option>
+          <option value="cancelada">Cancelada</option>
+        </select>
+      </div>
+      <div class="col-6 col-md-3">
+        <select class="form-select" id="filterPlan">
+          <option value="">Todos os planos</option>
+          <option value="starter">Starter</option>
+          <option value="professional">Professional</option>
+          <option value="enterprise">Enterprise</option>
+          <option value="custom">Customizado</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="ds-table-card">
+      <div class="text-center py-4 ds-text-muted ds-text-sm" id="loading">Carregando…</div>
+      <table class="ds-table d-none" id="tbl">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Domínio</th>
+            <th>Plano</th>
+            <th>Status</th>
+            <th>Módulos</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div id="paginationContainer" class="px-3 pb-3"></div>
+    </div>
+  </main>
+</div>
+
+<script type="module">
+  import { requirePlatformAccess, db } from "./assets/admin-auth.js";
+  import { renderAdminNav } from "./assets/admin-nav.js";
+  import { renderPagination } from "./assets/pagination-ui.js";
+  import { createListController } from "../shared/utils/list-controls.js";
+  import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+  const PLAN_LABELS = { starter: "Starter", professional: "Professional", enterprise: "Enterprise", custom: "Customizado" };
+  function orgStatus(o) {
+    return o.status || (o.ativo === false ? "suspensa" : "ativa");
+  }
+  function badgeForStatus(status) {
+    const map = {
+      ativa: '<span class="badge bg-success">Ativa</span>',
+      trial: '<span class="badge bg-warning text-dark">Trial</span>',
+      suspensa: '<span class="badge bg-danger">Suspensa</span>',
+      cancelada: '<span class="badge bg-secondary">Cancelada</span>',
+    };
+    return map[status] || `<span class="badge bg-secondary">${status}</span>`;
+  }
+
+  const controller = createListController({ pageSize: 20, searchFields: ["nome", "dominio", "id"] });
+  let allOrgs = [];
+
+  requirePlatformAccess({
+    onRole: () => {
+      renderAdminNav({ active: "organizations" });
+      loadOrgs();
+    },
+  });
+
+  async function loadOrgs() {
+    try {
+      const snap = await getDocs(query(collection(db, "organizations"), orderBy("nome")));
+      allOrgs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      applyFilters();
+    } catch (e) {
+      document.getElementById("loading").textContent = "Erro ao carregar organizações.";
+      console.error(e);
+    }
+  }
+
+  function applyFilters() {
+    const status = document.getElementById("filterStatus").value;
+    const plan = document.getElementById("filterPlan").value;
+    const filtered = allOrgs.filter((o) => (!status || orgStatus(o) === status) && (!plan || o.plan === plan));
+    controller.setData(filtered);
+    controller.search(document.getElementById("searchInput").value);
+    render(1);
+  }
+
+  function render(page) {
+    const items = controller.getPage(page ?? controller.currentPage);
+    const tbody = document.getElementById("tbody");
+    tbody.innerHTML = items.map((o) => {
+      const modCount = Object.values(o.modules || {}).filter((v) => v !== false).length;
+      return `<tr>
+        <td><strong>${o.nome || o.id}</strong><div class="ds-text-xs ds-text-muted">${o.id}</div></td>
+        <td class="ds-text-sm ds-text-muted">${o.dominio || "—"}</td>
+        <td><span class="badge bg-secondary">${PLAN_LABELS[o.plan] || o.plan || "—"}</span></td>
+        <td>${badgeForStatus(orgStatus(o))}</td>
+        <td class="ds-text-sm ds-text-muted">${modCount}</td>
+        <td class="text-end"><a href="./organization-detail.html?id=${encodeURIComponent(o.id)}" class="btn btn-sm btn-outline-primary">Abrir</a></td>
+      </tr>`;
+    }).join("") || '<tr><td colspan="6" class="ds-table-empty">Nenhuma organização encontrada</td></tr>';
+
+    renderPagination(document.getElementById("paginationContainer"), controller, render);
+
+    document.getElementById("loading").classList.add("d-none");
+    document.getElementById("tbl").classList.remove("d-none");
+  }
+
+  let searchTimer;
+  document.getElementById("searchInput").addEventListener("input", () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(applyFilters, 200);
+  });
+  document.getElementById("filterStatus").addEventListener("change", applyFilters);
+  document.getElementById("filterPlan").addEventListener("change", applyFilters);
+</script>
+</body>
+</html>

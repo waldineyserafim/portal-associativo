@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Dashboard — Painel Master · Portal Associativo</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/images/icons/favicon.svg">
+  <link rel="apple-touch-icon" href="../assets/images/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#A85A34">
+  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../css/design-system.css?v=portal-2026-08b">
+  <link rel="stylesheet" href="../shared/layouts/admin-shell.css">
+  <link rel="stylesheet" href="../shared/components/index.css">
+</head>
+<body>
+
+<div class="ds-admin-shell">
+  <!-- sidebar + topbar mobile injetados por admin-nav.js -->
+  <main class="ds-admin-main">
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+      <div>
+        <h1 class="h4 mb-0">Dashboard</h1>
+        <div class="ds-text-sm ds-text-muted" id="dataAtual"></div>
+      </div>
+      <div class="text-end">
+        <div class="ds-text-sm ds-text-muted mb-1">Logado como</div>
+        <strong class="d-block" id="masterNome">—</strong>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="ds-kpi-card">
+          <div class="ds-kpi-value" id="kpiTotalOrgs">—</div>
+          <div class="ds-kpi-label">Organizações</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="ds-kpi-card">
+          <div class="ds-kpi-value ds-kpi-success" id="kpiAtivas">—</div>
+          <div class="ds-kpi-label">Ativas</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="ds-kpi-card">
+          <div class="ds-kpi-value" id="kpiAssociados">—</div>
+          <div class="ds-kpi-label">Associados totais</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="ds-kpi-card">
+          <div class="ds-kpi-value ds-kpi-success" id="kpiMrr">—</div>
+          <div class="ds-kpi-label">MRR (assinaturas ativas)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="ds-kpi-card">
+          <div class="ds-kpi-value ds-kpi-warn" id="kpiTrial">—</div>
+          <div class="ds-kpi-label">Em trial</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="ds-kpi-card">
+          <div class="ds-kpi-value ds-kpi-danger" id="kpiSuspensas">—</div>
+          <div class="ds-kpi-label">Suspensas/canceladas</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="ds-kpi-card">
+          <div class="ds-kpi-value" id="kpiNovas30d">—</div>
+          <div class="ds-kpi-label">Novas (30 dias)</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="ds-kpi-card">
+          <div class="ds-kpi-value" id="kpiModulos">—</div>
+          <div class="ds-kpi-label">Módulos distintos em uso</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-7">
+        <div class="ds-table-card">
+          <div class="ds-table-card-header">
+            <h2>Organizações recentes</h2>
+            <a href="./organizations.html" class="btn btn-sm btn-primary">Ver todas</a>
+          </div>
+          <div class="text-center py-4 ds-text-muted ds-text-sm" id="orgsLoading">Carregando…</div>
+          <table class="ds-table d-none" id="orgsTable">
+            <thead>
+              <tr><th>Nome</th><th>Plano</th><th>Status</th></tr>
+            </thead>
+            <tbody id="orgsTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="ds-table-card">
+          <div class="ds-table-card-header">
+            <h2>Módulos em uso</h2>
+          </div>
+          <div class="text-center py-4 ds-text-muted ds-text-sm" id="modulesLoading">Carregando…</div>
+          <table class="ds-table d-none" id="modulesTable">
+            <thead>
+              <tr><th>Módulo</th><th>Organizações</th></tr>
+            </thead>
+            <tbody id="modulesTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="ds-table-card mt-4">
+      <div class="ds-table-card-header">
+        <h2>Últimas ações registradas</h2>
+        <a href="./audit.html" class="btn btn-sm btn-outline-secondary">Ver auditoria completa</a>
+      </div>
+      <div class="text-center py-4 ds-text-muted ds-text-sm" id="logsLoading">Carregando…</div>
+      <table class="ds-table d-none" id="logsTable">
+        <thead>
+          <tr><th>Data/Hora</th><th>Usuário</th><th>Organização</th><th>Ação</th></tr>
+        </thead>
+        <tbody id="logsTbody"></tbody>
+      </table>
+    </div>
+
+    <p class="ds-text-xs ds-text-muted mt-4">
+      Métricas de erros críticos e saúde da plataforma ainda não aparecem aqui: não existe hoje nenhuma
+      instrumentação real (log de erro, health check) para alimentá-las — ficam para quando essa
+      instrumentação existir, em vez de um número inventado.
+    </p>
+  </main>
+</div>
+
+<script type="module">
+  import { requirePlatformAccess, db, fetchRoleByUid } from "./assets/admin-auth.js";
+  import { renderAdminNav } from "./assets/admin-nav.js";
+  import {
+    collection, getDocs, query, orderBy, limit, where, doc, getDoc,
+  } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+  const PLAN_LABELS = { starter: "Starter", professional: "Professional", enterprise: "Enterprise", custom: "Customizado" };
+
+  function fmtBRL(v) { return (v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); }
+  function fmtTs(ts) {
+    if (!ts) return "—";
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+  }
+  // status é um campo aditivo/opcional (ver shared/CHANGELOG e plano da Fase 3.1) — quando ausente,
+  // deriva de `ativo` (o campo real que Cloud Functions/Firestore Rules já checam) em vez de assumir
+  // "ativa" às cegas, que mentiria sobre uma organização desativada pelo admin.
+  function orgStatus(o) {
+    return o.status || (o.ativo === false ? "suspensa" : "ativa");
+  }
+
+  document.getElementById("dataAtual").textContent = new Date().toLocaleDateString("pt-BR", {
+    weekday: "long", day: "numeric", month: "long", year: "numeric",
+  });
+
+  requirePlatformAccess({
+    onRole: async (role, user) => {
+      renderAdminNav({ active: "dashboard" });
+
+      try {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        document.getElementById("masterNome").textContent = snap.exists() ? (snap.data().nome || user.email) : user.email;
+      } catch {
+        document.getElementById("masterNome").textContent = user.email;
+      }
+
+      await loadDashboard();
+    },
+  });
+
+  async function loadDashboard() {
+    // ── Organizações + KPIs derivados ──────────────────────────────
+    let orgs = [];
+    try {
+      const orgsSnap = await getDocs(query(collection(db, "organizations"), orderBy("nome")));
+      orgs = orgsSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    } catch (e) {
+      console.error(e);
+    }
+
+    document.getElementById("kpiTotalOrgs").textContent = orgs.length || "0";
+
+    const statusCounts = { ativa: 0, trial: 0, suspensa: 0, cancelada: 0 };
+    orgs.forEach((o) => {
+      const s = orgStatus(o);
+      statusCounts[s] = (statusCounts[s] || 0) + 1;
+    });
+    document.getElementById("kpiAtivas").textContent = statusCounts.ativa;
+    document.getElementById("kpiTrial").textContent = statusCounts.trial;
+    document.getElementById("kpiSuspensas").textContent = statusCounts.suspensa + statusCounts.cancelada;
+
+    const trintaDiasAtras = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    const novas30d = orgs.filter((o) => {
+      const t = o.createdAt?.toDate ? o.createdAt.toDate().getTime() : null;
+      return t && t >= trintaDiasAtras;
+    }).length;
+    document.getElementById("kpiNovas30d").textContent = novas30d;
+
+    // Módulos: descobertos a partir do que já está gravado em organizations.modules,
+    // não de uma lista fixa — o catálogo de módulos é dado, não constante de código
+    // (ver "Descartar" no plano da Fase 3.1: MODULE_NAMES duplicado/hardcoded).
+    const moduleCounts = {};
+    orgs.forEach((o) => {
+      Object.entries(o.modules || {}).forEach(([mod, enabled]) => {
+        if (enabled !== false) moduleCounts[mod] = (moduleCounts[mod] || 0) + 1;
+      });
+    });
+    const moduleEntries = Object.entries(moduleCounts).sort((a, b) => b[1] - a[1]);
+    document.getElementById("kpiModulos").textContent = moduleEntries.length;
+
+    const modulesTbody = document.getElementById("modulesTbody");
+    modulesTbody.innerHTML = moduleEntries.map(([mod, count]) => `
+      <tr><td>${mod}</td><td>${count}</td></tr>
+    `).join("") || '<tr><td colspan="2" class="ds-table-empty">Nenhum módulo habilitado em nenhuma organização</td></tr>';
+    document.getElementById("modulesLoading").classList.add("d-none");
+    document.getElementById("modulesTable").classList.remove("d-none");
+
+    const orgsTbody = document.getElementById("orgsTbody");
+    orgsTbody.innerHTML = orgs.slice(0, 8).map((o) => `
+      <tr>
+        <td><strong>${o.nome || o.id}</strong></td>
+        <td><span class="badge bg-secondary">${PLAN_LABELS[o.plan] || o.plan || "—"}</span></td>
+        <td>${badgeForStatus(orgStatus(o))}</td>
+      </tr>
+    `).join("") || '<tr><td colspan="3" class="ds-table-empty">Nenhuma organização cadastrada</td></tr>';
+    document.getElementById("orgsLoading").classList.add("d-none");
+    document.getElementById("orgsTable").classList.remove("d-none");
+
+    // ── Associados totais (cross-org) ──────────────────────────────
+    // Fase 3.2: exclui todo papel administrativo (master/admin/operador/admin
+    // view), não só "master" — antes contava equipe administrativa junto com
+    // membros de verdade. Os valores gravados em role têm capitalização
+    // inconsistente entre telas antigas (ver docs/CLAUDE.md), então filtra no
+    // cliente com a mesma normalização (lower+trim) usada no resto do
+    // projeto, em vez de uma query "!=" que só bateria valor exato.
+    const ADMIN_TIER_ROLES = ["master", "admin", "operador", "admin view"];
+    try {
+      const usersSnap = await getDocs(collection(db, "users"));
+      const associadosCount = usersSnap.docs.filter((d) => {
+        const r = String(d.data().role || "").toLowerCase().trim();
+        return !ADMIN_TIER_ROLES.includes(r);
+      }).length;
+      document.getElementById("kpiAssociados").textContent = associadosCount;
+    } catch (e) {
+      document.getElementById("kpiAssociados").textContent = "—";
+    }
+
+    // ── MRR (assinaturas ativas) ────────────────────────────────────
+    try {
+      const subsSnap = await getDocs(query(collection(db, "organizationSubscriptions"), where("status", "==", "ativa")));
+      const mrr = subsSnap.docs.reduce((acc, d) => acc + (d.data().valorMensal || 0), 0);
+      document.getElementById("kpiMrr").textContent = fmtBRL(mrr);
+    } catch (e) {
+      document.getElementById("kpiMrr").textContent = "—";
+    }
+
+    // ── Últimos logs de auditoria ───────────────────────────────────
+    try {
+      const logsSnap = await getDocs(query(collection(db, "systemLogs"), orderBy("timestamp", "desc"), limit(8)));
+      const logsTbody = document.getElementById("logsTbody");
+      logsTbody.innerHTML = logsSnap.docs.map((d) => {
+        const l = d.data();
+        return `<tr>
+          <td class="ds-text-sm ds-text-muted">${fmtTs(l.timestamp)}</td>
+          <td class="ds-text-sm">${l.userEmail || "—"}</td>
+          <td class="ds-text-sm ds-text-muted">${l.orgId || "—"}</td>
+          <td class="ds-text-sm">${l.action || "—"}</td>
+        </tr>`;
+      }).join("") || '<tr><td colspan="4" class="ds-table-empty">Nenhuma ação registrada</td></tr>';
+      document.getElementById("logsLoading").classList.add("d-none");
+      document.getElementById("logsTable").classList.remove("d-none");
+    } catch (e) {
+      document.getElementById("logsLoading").textContent = "Erro ao carregar auditoria.";
+    }
+  }
+
+  function badgeForStatus(status) {
+    const map = {
+      ativa: '<span class="badge bg-success">Ativa</span>',
+      trial: '<span class="badge bg-warning text-dark">Trial</span>',
+      suspensa: '<span class="badge bg-danger">Suspensa</span>',
+      cancelada: '<span class="badge bg-secondary">Cancelada</span>',
+    };
+    return map[status] || `<span class="badge bg-secondary">${status}</span>`;
+  }
+</script>
+</body>
+</html>

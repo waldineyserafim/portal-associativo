@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Login — Painel Master · Portal Associativo</title>
+  <meta name="description" content="Acesso operacional da Serafim Technologies ao Painel Master.">
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/images/icons/favicon.svg">
+  <link rel="apple-touch-icon" href="../assets/images/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#A85A34">
+  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../css/design-system.css?v=portal-2026-08b">
+</head>
+<body class="d-flex align-items-center" style="min-height:100dvh; background:var(--brand-dark, #7C4326);">
+
+<main class="container">
+  <div class="row justify-content-center">
+    <div class="col-11 col-sm-8 col-md-6 col-lg-4">
+      <div class="ds-card ds-card-body">
+        <div class="text-center mb-4">
+          <span class="ds-eyebrow d-block mb-1">Serafim Technologies</span>
+          <h1 class="h4 fw-bold mb-0">Painel Master</h1>
+          <p class="ds-text-sm ds-text-muted mb-0">Administração da plataforma</p>
+        </div>
+
+        <form id="loginForm" novalidate>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold" for="emailInput">E-mail</label>
+            <input type="email" class="form-control" id="emailInput" autocomplete="username" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold" for="passInput">Senha</label>
+            <input type="password" class="form-control" id="passInput" autocomplete="current-password" required>
+          </div>
+          <div id="errMsg" class="alert alert-danger py-2 small d-none" role="alert"></div>
+          <button type="submit" class="btn btn-primary w-100" id="btnLogin">Entrar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="../js/bootstrap.bundle.min.js"></script>
+<script type="module">
+  import { signInWithEmailAndPassword, onAuthStateChanged, signOut }
+    from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+  import { auth, fetchRoleByUid, PLATFORM_ROLES } from "./assets/admin-auth.js";
+
+  const form = document.getElementById("loginForm");
+  const errMsg = document.getElementById("errMsg");
+  const btnLogin = document.getElementById("btnLogin");
+
+  function showErr(msg) {
+    errMsg.textContent = msg;
+    errMsg.classList.remove("d-none");
+  }
+
+  async function checkAndRedirect(user) {
+    const role = await fetchRoleByUid(user.uid);
+    if (!PLATFORM_ROLES.includes(role)) {
+      showErr("Acesso restrito à equipe da Serafim Technologies.");
+      await signOut(auth);
+      btnLogin.disabled = false;
+      btnLogin.textContent = "Entrar";
+      return;
+    }
+    window.location.href = "./index.html";
+  }
+
+  // Sessão já ativa (ex.: voltou pra tela de login por engano) — pula direto.
+  let checkedInitialAuth = false;
+  onAuthStateChanged(auth, async (user) => {
+    if (checkedInitialAuth || !user) { checkedInitialAuth = true; return; }
+    checkedInitialAuth = true;
+    btnLogin.disabled = true;
+    btnLogin.textContent = "Verificando…";
+    await checkAndRedirect(user);
+  });
+
+  form.addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    errMsg.classList.add("d-none");
+    const email = document.getElementById("emailInput").value.trim();
+    const pass = document.getElementById("passInput").value;
+    if (!email || !pass) { showErr("Preencha e-mail e senha."); return; }
+
+    btnLogin.disabled = true;
+    btnLogin.textContent = "Entrando…";
+
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, pass);
+      await checkAndRedirect(cred.user);
+    } catch (err) {
+      const msgs = {
+        "auth/invalid-email": "E-mail inválido.",
+        "auth/user-not-found": "Usuário não encontrado.",
+        "auth/wrong-password": "Senha incorreta.",
+        "auth/invalid-credential": "E-mail ou senha incorretos.",
+        "auth/too-many-requests": "Muitas tentativas. Aguarde e tente novamente.",
+        "auth/user-disabled": "Conta desativada.",
+      };
+      showErr(msgs[err.code] || "Erro ao entrar: " + err.message);
+      btnLogin.disabled = false;
+      btnLogin.textContent = "Entrar";
+    }
+  });
+</script>
+</body>
+</html>

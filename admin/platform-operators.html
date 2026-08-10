@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Equipe da Plataforma — Painel Master · Portal Associativo</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/images/icons/favicon.svg">
+  <link rel="apple-touch-icon" href="../assets/images/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#A85A34">
+  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../css/design-system.css?v=portal-2026-08b">
+  <link rel="stylesheet" href="../shared/layouts/admin-shell.css">
+  <link rel="stylesheet" href="../shared/components/index.css">
+</head>
+<body>
+
+<div class="ds-admin-shell">
+  <main class="ds-admin-main">
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+      <div>
+        <h1 class="h4 mb-0">Equipe da plataforma</h1>
+        <p class="ds-text-sm ds-text-muted mb-0">Serafim Technologies — nunca misturada com usuários de organizações.</p>
+      </div>
+      <button class="btn btn-primary btn-sm d-none" id="btnNovo" data-bs-toggle="modal" data-bs-target="#modalOperator">
+        <i class="bi bi-plus-lg me-1"></i>Novo membro
+      </button>
+    </div>
+
+    <div id="operatorReadOnlyNote" class="alert alert-info d-none ds-text-sm">
+      Seu papel (Platform Operator) só permite visualizar esta lista — criar, ativar/desativar ou alterar papel exige Administrator ou Owner.
+    </div>
+
+    <div class="ds-table-card">
+      <div class="text-center py-4 ds-text-muted ds-text-sm" id="loading">Carregando…</div>
+      <table class="ds-table d-none" id="tbl">
+        <thead>
+          <tr><th>Nome</th><th>E-mail</th><th>Papel</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- Modal Novo Membro -->
+<div class="modal ds-modal fade" id="modalOperator" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Novo membro da equipe</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Nome *</label>
+          <input class="form-control" id="opNome" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">E-mail *</label>
+          <input class="form-control" id="opEmail" type="email" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Papel *</label>
+          <select class="form-select" id="opRole">
+            <option value="operator">Platform Operator — só leitura</option>
+            <option value="administrator">Platform Administrator</option>
+            <option value="owner">Platform Owner</option>
+          </select>
+          <div class="form-text ds-text-xs" id="opRoleHint"></div>
+        </div>
+        <div id="opErrMsg" class="alert alert-danger py-2 small d-none"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="btnSalvarOperator">Criar conta</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal link de convite (fallback quando o e-mail não pôde ser enviado) -->
+<div class="modal ds-modal fade" id="modalInviteLink" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Conta criada</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="ds-text-sm" id="inviteMsg"></p>
+        <div class="input-group">
+          <input class="form-control" id="inviteLinkInput" readonly>
+          <button class="btn btn-outline-secondary" id="btnCopyLink" type="button">Copiar</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/bootstrap.bundle.min.js"></script>
+<script type="module">
+  import { requirePlatformAccess, db, auth } from "./assets/admin-auth.js";
+  import { renderAdminNav } from "./assets/admin-nav.js";
+  import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+  import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-functions.js";
+  import { getApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+
+  const ROLE_LABELS = { owner: "Platform Owner", administrator: "Platform Administrator", operator: "Platform Operator" };
+  const functionsApi = getFunctions(getApp(), "us-central1");
+  const fnCreatePlatformAdmin = httpsCallable(functionsApi, "createPlatformAdmin");
+  const fnSetPlatformAdminStatus = httpsCallable(functionsApi, "setPlatformAdminStatus");
+  const fnSetPlatformAdminRole = httpsCallable(functionsApi, "setPlatformAdminRole");
+
+  let myRole = null;
+  let myUid = null;
+  let operators = [];
+  const modal = new bootstrap.Modal(document.getElementById("modalOperator"));
+  const inviteModal = new bootstrap.Modal(document.getElementById("modalInviteLink"));
+
+  requirePlatformAccess({
+    onRole: (role, user) => {
+      myRole = role;
+      myUid = user.uid;
+      renderAdminNav({ active: "platform-operators" });
+      setupPermissionUI();
+      load();
+    },
+  });
+
+  function setupPermissionUI() {
+    const canManage = myRole === "administrator" || myRole === "owner";
+    document.getElementById("btnNovo").classList.toggle("d-none", !canManage);
+    document.getElementById("operatorReadOnlyNote").classList.toggle("d-none", canManage);
+
+    const roleSelect = document.getElementById("opRole");
+    const hint = document.getElementById("opRoleHint");
+    if (myRole === "administrator") {
+      roleSelect.value = "operator";
+      roleSelect.disabled = true;
+      hint.textContent = "Administrator só pode criar contas com papel Operator.";
+    } else {
+      roleSelect.disabled = false;
+      hint.textContent = "Owner pode criar qualquer papel, inclusive outro Owner.";
+    }
+  }
+
+  async function load() {
+    try {
+      const snap = await getDocs(query(collection(db, "platformAdmins"), orderBy("nome")));
+      operators = snap.docs.map((d) => ({ uid: d.id, ...d.data() }));
+      render();
+    } catch (e) {
+      document.getElementById("loading").textContent = "Erro ao carregar equipe.";
+      console.error(e);
+    }
+  }
+
+  function canActOn(target) {
+    if (myRole === "owner") return true;
+    if (myRole === "administrator") return target.role === "operator";
+    return false;
+  }
+
+  function render() {
+    document.getElementById("tbody").innerHTML = operators.map((o) => {
+      const statusBadge = o.ativo !== false
+        ? '<span class="badge bg-success">Ativo</span>'
+        : '<span class="badge bg-secondary">Desativado</span>';
+      const isSelf = o.uid === myUid;
+      const actionable = canActOn(o) && !isSelf;
+
+      let actions = "";
+      if (actionable) {
+        actions += `<button class="btn btn-sm btn-outline-secondary me-1 btn-toggle-status" data-uid="${o.uid}" data-ativo="${o.ativo !== false}">${o.ativo !== false ? "Desativar" : "Ativar"}</button>`;
+      }
+      if (myRole === "owner" && !isSelf) {
+        actions += `<select class="form-select form-select-sm d-inline-block w-auto btn-change-role" data-uid="${o.uid}" style="min-width:180px;">
+          ${["operator", "administrator", "owner"].map((r) => `<option value="${r}" ${r === o.role ? "selected" : ""}>${ROLE_LABELS[r]}</option>`).join("")}
+        </select>`;
+      }
+      if (isSelf) actions = '<span class="ds-text-xs ds-text-muted">Sua conta</span>';
+
+      return `<tr>
+        <td><strong>${o.nome || "—"}</strong></td>
+        <td class="ds-text-sm ds-text-muted">${o.email || "—"}</td>
+        <td><span class="badge bg-secondary">${ROLE_LABELS[o.role] || o.role}</span></td>
+        <td>${statusBadge}</td>
+        <td class="text-end">${actions}</td>
+      </tr>`;
+    }).join("") || '<tr><td colspan="5" class="ds-table-empty">Nenhum membro cadastrado ainda</td></tr>';
+
+    document.querySelectorAll(".btn-toggle-status").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const uid = btn.dataset.uid;
+        const ativo = btn.dataset.ativo === "true";
+        btn.disabled = true;
+        try {
+          await fnSetPlatformAdminStatus({ uid, ativo: !ativo });
+          await load();
+        } catch (e) {
+          alert("Erro: " + e.message);
+          btn.disabled = false;
+        }
+      });
+    });
+
+    document.querySelectorAll(".btn-change-role").forEach((sel) => {
+      sel.addEventListener("change", async () => {
+        const uid = sel.dataset.uid;
+        const newRole = sel.value;
+        sel.disabled = true;
+        try {
+          await fnSetPlatformAdminRole({ uid, newRole });
+          await load();
+        } catch (e) {
+          alert("Erro: " + e.message);
+          sel.disabled = false;
+        }
+      });
+    });
+
+    document.getElementById("loading").classList.add("d-none");
+    document.getElementById("tbl").classList.remove("d-none");
+  }
+
+  document.getElementById("btnSalvarOperator").addEventListener("click", async () => {
+    const nome = document.getElementById("opNome").value.trim();
+    const email = document.getElementById("opEmail").value.trim().toLowerCase();
+    const role = document.getElementById("opRole").value;
+    const errMsg = document.getElementById("opErrMsg");
+    errMsg.classList.add("d-none");
+
+    if (!nome || !email) { errMsg.textContent = "Nome e e-mail são obrigatórios."; errMsg.classList.remove("d-none"); return; }
+
+    const btn = document.getElementById("btnSalvarOperator");
+    btn.disabled = true;
+    try {
+      const result = await fnCreatePlatformAdmin({ nome, email, role });
+      modal.hide();
+      document.getElementById("opNome").value = "";
+      document.getElementById("opEmail").value = "";
+      await load();
+
+      if (!result.data.emailSent && result.data.resetLink) {
+        document.getElementById("inviteMsg").textContent = `Não foi possível enviar o e-mail de convite pra ${email}. Copie o link abaixo e envie manualmente:`;
+        document.getElementById("inviteLinkInput").value = result.data.resetLink;
+        inviteModal.show();
+      }
+    } catch (e) {
+      errMsg.textContent = "Erro: " + e.message;
+      errMsg.classList.remove("d-none");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById("btnCopyLink").addEventListener("click", () => {
+    const input = document.getElementById("inviteLinkInput");
+    input.select();
+    navigator.clipboard?.writeText(input.value);
+  });
+</script>
+</body>
+</html>

@@ -77,6 +77,34 @@
   background: var(--surface-alt, #F5F0E6);
 }
 
+/* Barra superior visível só em telas estreitas — o botão que efetivamente
+   ABRE o off-canvas acima (antes desta fase, nenhum consumidor deste
+   componente fornecia esse botão, então a sidebar só desaparecia no
+   mobile sem nenhuma forma de reabrir). Fica escondida em telas largas
+   via a mesma media query que ativa o off-canvas. */
+.ds-admin-topbar {
+  display: none;
+  align-items: center;
+  gap: var(--space-sm, 0.5rem);
+  padding: var(--space-sm, 0.5rem) var(--space-md, 1rem);
+  margin: calc(var(--space-xl, 2rem) * -1) calc(var(--space-xl, 2rem) * -1) var(--space-lg, 1.5rem);
+  background: var(--brand-dark, #7C4326);
+  color: #fff;
+}
+.ds-admin-topbar-toggle {
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: var(--text-lg, 1.25rem);
+  line-height: 1;
+  padding: var(--space-xs, 0.25rem);
+  cursor: pointer;
+}
+.ds-admin-topbar-brand {
+  font-weight: 700;
+  font-size: var(--text-md, 1.125rem);
+}
+
 @media (max-width: 767.98px) {
   .ds-sidebar {
     transform: translateX(-100%);
@@ -90,5 +118,8 @@
   }
   .ds-admin-main {
     margin-left: 0;
+  }
+  .ds-admin-topbar {
+    display: flex;
   }
 }

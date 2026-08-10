@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Planos — Painel Master · Portal Associativo</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/images/icons/favicon.svg">
+  <link rel="apple-touch-icon" href="../assets/images/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#A85A34">
+  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../css/design-system.css?v=portal-2026-08b">
+  <link rel="stylesheet" href="../shared/layouts/admin-shell.css">
+  <link rel="stylesheet" href="../shared/components/index.css">
+</head>
+<body>
+
+<div class="ds-admin-shell">
+  <main class="ds-admin-main">
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+      <div>
+        <h1 class="h4 mb-0">Planos</h1>
+        <p class="ds-text-sm ds-text-muted mb-0">Estrutura administrativa de planos — sem cobrança automática nesta fase.</p>
+      </div>
+      <button class="btn btn-primary btn-sm" id="btnNovo" data-bs-toggle="modal" data-bs-target="#modalPlan">
+        <i class="bi bi-plus-lg me-1"></i>Novo plano
+      </button>
+    </div>
+
+    <div class="ds-table-card">
+      <div class="text-center py-4 ds-text-muted ds-text-sm" id="loading">Carregando…</div>
+      <table class="ds-table d-none" id="tbl">
+        <thead>
+          <tr><th>Plano</th><th>Módulos incluídos</th><th>Limites</th><th>Organizações</th><th></th></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- Modal Plano -->
+<div class="modal ds-modal fade" id="modalPlan" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalPlanTitle">Novo plano</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="planEditId">
+        <div class="row g-3">
+          <div class="col-md-5">
+            <label class="form-label">ID do plano *</label>
+            <input class="form-control" id="planId" placeholder="starter">
+          </div>
+          <div class="col-md-7">
+            <label class="form-label">Nome exibido *</label>
+            <input class="form-control" id="planLabel" placeholder="Starter">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Descrição</label>
+            <textarea class="form-control" id="planDesc" rows="2" placeholder="Para organizações pequenas…"></textarea>
+          </div>
+          <div class="col-12"><h6 class="ds-text-muted mb-0 mt-2">Limites</h6><hr class="mt-1"></div>
+          <div class="col-md-6">
+            <label class="form-label">Máx. associados</label>
+            <input class="form-control" id="planMaxAssociados" type="number" min="0" placeholder="Sem limite">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Máx. usuários admin</label>
+            <input class="form-control" id="planMaxAdmins" type="number" min="0" placeholder="Sem limite">
+          </div>
+          <div class="col-12"><h6 class="ds-text-muted mb-0 mt-2">Módulos incluídos</h6><hr class="mt-1"></div>
+          <div class="col-12 d-flex flex-wrap gap-2" id="planModulesCheckboxes"></div>
+          <div class="col-12">
+            <div class="input-group" style="max-width: 360px;">
+              <input type="text" class="form-control" id="newModuleKey" placeholder="chave_do_modulo">
+              <button class="btn btn-outline-secondary" id="btnAddModule" type="button">Adicionar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-danger me-auto d-none" id="btnExcluir">Excluir</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="btnSalvar">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/bootstrap.bundle.min.js"></script>
+<script type="module">
+  import { requirePlatformAccess, db, logPlatformAction } from "./assets/admin-auth.js";
+  import { renderAdminNav } from "./assets/admin-nav.js";
+  import {
+    collection, getDocs, doc, setDoc, deleteDoc, serverTimestamp,
+  } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+  let plansCache = [];
+  let orgsCache = [];
+  let moduleKeys = [];
+  let currentModules = {};
+  const modalEl = document.getElementById("modalPlan");
+  const modal = new bootstrap.Modal(modalEl);
+
+  requirePlatformAccess({
+    onRole: () => {
+      renderAdminNav({ active: "plans" });
+      loadAll();
+    },
+  });
+
+  async function loadAll() {
+    try {
+      const [plansSnap, orgsSnap] = await Promise.all([
+        getDocs(collection(db, "systemPlans")),
+        getDocs(collection(db, "organizations")),
+      ]);
+      plansCache = plansSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      orgsCache = orgsSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+      const known = new Set();
+      orgsCache.forEach((o) => Object.keys(o.modules || {}).forEach((k) => known.add(k)));
+      plansCache.forEach((p) => Object.keys(p.modules || {}).forEach((k) => known.add(k)));
+      moduleKeys = [...known].sort();
+
+      render();
+    } catch (e) {
+      document.getElementById("loading").textContent = "Erro ao carregar planos.";
+      console.error(e);
+    }
+  }
+
+  function render() {
+    const tbody = document.getElementById("tbody");
+    tbody.innerHTML = plansCache.map((p) => {
+      const mods = Object.entries(p.modules || {}).filter(([, v]) => v !== false).map(([k]) => k);
+      const orgsUsando = orgsCache.filter((o) => o.plan === p.id).length;
+      const limites = [
+        p.limits?.maxAssociados ? `${p.limits.maxAssociados} associados` : null,
+        p.limits?.maxAdmins ? `${p.limits.maxAdmins} admins` : null,
+      ].filter(Boolean).join(" · ") || "Sem limite definido";
+      return `<tr>
+        <td><strong>${p.label || p.id}</strong><div class="ds-text-xs ds-text-muted">${p.id}</div></td>
+        <td class="ds-text-sm ds-text-muted">${mods.join(", ") || "—"}</td>
+        <td class="ds-text-sm ds-text-muted">${limites}</td>
+        <td class="ds-text-sm">${orgsUsando}</td>
+        <td class="text-end"><button class="btn btn-sm btn-outline-primary btn-edit" data-id="${p.id}">Editar</button></td>
+      </tr>`;
+    }).join("") || '<tr><td colspan="5" class="ds-table-empty">Nenhum plano cadastrado ainda</td></tr>';
+
+    document.querySelectorAll(".btn-edit").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const p = plansCache.find((x) => x.id === btn.dataset.id);
+        if (p) openModal(p);
+      });
+    });
+
+    document.getElementById("loading").classList.add("d-none");
+    document.getElementById("tbl").classList.remove("d-none");
+  }
+
+  function renderModuleCheckboxes() {
+    const container = document.getElementById("planModulesCheckboxes");
+    container.innerHTML = moduleKeys.map((k) => `
+      <div class="form-check form-check-inline border rounded px-2 py-1">
+        <input class="form-check-input" type="checkbox" id="pmod_${k}" data-key="${k}" ${currentModules[k] !== false && currentModules[k] !== undefined ? "checked" : ""}>
+        <label class="form-check-label small" for="pmod_${k}">${k}</label>
+      </div>
+    `).join("") || '<span class="ds-text-sm ds-text-muted">Nenhum módulo conhecido ainda — adicione um abaixo.</span>';
+  }
+
+  document.getElementById("btnAddModule").addEventListener("click", () => {
+    const input = document.getElementById("newModuleKey");
+    const key = input.value.trim().toLowerCase().replace(/\s+/g, "_");
+    if (!key) return;
+    if (!moduleKeys.includes(key)) moduleKeys.push(key);
+    currentModules[key] = true;
+    input.value = "";
+    renderModuleCheckboxes();
+  });
+
+  function openModal(p) {
+    currentModules = { ...(p?.modules || {}) };
+    document.getElementById("planEditId").value = p?.id || "";
+    document.getElementById("planId").value = p?.id || "";
+    document.getElementById("planId").readOnly = !!p;
+    document.getElementById("planLabel").value = p?.label || "";
+    document.getElementById("planDesc").value = p?.description || "";
+    document.getElementById("planMaxAssociados").value = p?.limits?.maxAssociados || "";
+    document.getElementById("planMaxAdmins").value = p?.limits?.maxAdmins || "";
+    document.getElementById("modalPlanTitle").textContent = p ? "Editar plano" : "Novo plano";
+    document.getElementById("btnExcluir").classList.toggle("d-none", !p);
+    renderModuleCheckboxes();
+  }
+
+  document.getElementById("btnNovo").addEventListener("click", () => openModal(null));
+
+  document.getElementById("btnSalvar").addEventListener("click", async () => {
+    const editId = document.getElementById("planEditId").value.trim();
+    const planId = document.getElementById("planId").value.trim().toLowerCase().replace(/\s+/g, "_");
+    const label = document.getElementById("planLabel").value.trim();
+    if (!planId || !label) { alert("ID e nome do plano são obrigatórios."); return; }
+
+    const modules = {};
+    moduleKeys.forEach((k) => {
+      const el = document.getElementById(`pmod_${k}`);
+      modules[k] = !!el?.checked;
+    });
+
+    const maxAssociados = parseInt(document.getElementById("planMaxAssociados").value, 10);
+    const maxAdmins = parseInt(document.getElementById("planMaxAdmins").value, 10);
+
+    const payload = {
+      label,
+      description: document.getElementById("planDesc").value.trim(),
+      modules,
+      limits: {
+        maxAssociados: Number.isFinite(maxAssociados) ? maxAssociados : null,
+        maxAdmins: Number.isFinite(maxAdmins) ? maxAdmins : null,
+      },
+      updatedAt: serverTimestamp(),
+    };
+    if (!editId) payload.createdAt = serverTimestamp();
+
+    try {
+      await setDoc(doc(db, "systemPlans", planId), payload, { merge: true });
+      await logPlatformAction(editId ? "plano_atualizado" : "plano_criado", { planId });
+      modal.hide();
+      await loadAll();
+    } catch (e) {
+      alert("Erro ao salvar: " + e.message);
+    }
+  });
+
+  document.getElementById("btnExcluir").addEventListener("click", async () => {
+    const editId = document.getElementById("planEditId").value.trim();
+    if (!editId) return;
+    const emUso = orgsCache.filter((o) => o.plan === editId).length;
+    if (emUso > 0 && !confirm(`${emUso} organização(ões) usam este plano. Excluir mesmo assim? Isso não altera as organizações já configuradas.`)) return;
+    if (emUso === 0 && !confirm("Excluir este plano?")) return;
+    try {
+      await deleteDoc(doc(db, "systemPlans", editId));
+      await logPlatformAction("plano_excluido", { planId: editId });
+      modal.hide();
+      await loadAll();
+    } catch (e) {
+      alert("Erro ao excluir: " + e.message);
+    }
+  });
+</script>
+</body>
+</html>

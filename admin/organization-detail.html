@@ -1,0 +1,1193 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Organização — Painel Master · Portal Associativo</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/images/icons/favicon.svg">
+  <link rel="apple-touch-icon" href="../assets/images/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#A85A34">
+  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../css/design-system.css?v=portal-2026-08b">
+  <link rel="stylesheet" href="../shared/layouts/admin-shell.css">
+  <link rel="stylesheet" href="../shared/components/index.css">
+</head>
+<body>
+
+<div class="ds-admin-shell">
+  <main class="ds-admin-main">
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+      <div>
+        <a href="./organizations.html" class="ds-text-sm ds-text-muted d-block mb-1"><i class="bi bi-arrow-left me-1"></i>Organizações</a>
+        <h1 class="h4 mb-0" id="pageTitle">Nova organização</h1>
+      </div>
+      <div id="statusBadge"></div>
+    </div>
+
+    <div id="notFoundMsg" class="alert alert-danger d-none">Organização não encontrada.</div>
+
+    <!-- Fase 3.3: criação deixou de acontecer nesta página — só o assistente
+         de provisionamento cria organizações (Firestore Rules já bloqueiam
+         create direto do cliente em organizations). -->
+    <div id="newOrgMsg" class="alert alert-info d-none">
+      Para criar uma organização, use o
+      <a href="./organization-provision.html" class="alert-link">assistente de provisionamento</a>.
+    </div>
+
+    <div id="provisioningBanner" class="ds-card ds-card-body mb-4 d-none"></div>
+
+    <div id="detailArea">
+      <ul class="nav nav-tabs mb-4" id="orgTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="tab-dados-btn" data-bs-toggle="tab" data-bs-target="#tab-dados" type="button" role="tab">Dados</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-modulos-btn" data-bs-toggle="tab" data-bs-target="#tab-modulos" type="button" role="tab" disabled>Módulos</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-assinatura-btn" data-bs-toggle="tab" data-bs-target="#tab-assinatura" type="button" role="tab" disabled>Assinatura</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-config-btn" data-bs-toggle="tab" data-bs-target="#tab-config" type="button" role="tab" disabled>Central de Configuração</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-equipe-btn" data-bs-toggle="tab" data-bs-target="#tab-equipe" type="button" role="tab" disabled>Equipe</button>
+        </li>
+      </ul>
+
+      <div class="tab-content">
+        <!-- Dados (Fase 3.4: só o que é administrado pela PLATAFORMA — plano/
+             ciclo de vida. Identificação/contato/endereço moraram aqui antes
+             da Fase 3.4; agora vivem em Configurações → Geral, mesmo campo,
+             mesmo documento, só outra aba.) -->
+        <div class="tab-pane fade show active" id="tab-dados" role="tabpanel">
+          <div class="ds-card ds-card-body">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label">Identificador (slug)</label>
+                <input class="form-control" id="orgSlug" readonly>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Plano</label>
+                <select class="form-select" id="orgPlan">
+                  <option value="starter">Starter</option>
+                  <option value="professional">Professional</option>
+                  <option value="enterprise" selected>Enterprise</option>
+                  <option value="custom">Customizado</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Status</label>
+                <select class="form-select" id="orgStatus">
+                  <option value="ativa">Ativa</option>
+                  <option value="trial">Trial</option>
+                  <option value="suspensa">Suspensa</option>
+                  <option value="cancelada">Cancelada</option>
+                </select>
+                <div class="form-text ds-text-xs">Suspensa/cancelada bloqueia o acesso dos usuários da organização (campo <code>ativo</code>).</div>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Observações internas</label>
+                <textarea class="form-control" id="orgObs" rows="2" placeholder="Notas internas…"></textarea>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end mt-4">
+              <button class="btn btn-primary" id="btnSalvarDados">Salvar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Módulos -->
+        <div class="tab-pane fade" id="tab-modulos" role="tabpanel">
+          <div class="ds-card ds-card-body">
+            <p class="ds-text-sm ds-text-muted">
+              O catálogo abaixo é montado a partir dos módulos já usados por alguma organização — não é uma
+              lista fixa no código. Para habilitar um módulo novo que nenhuma organização usa ainda, digite a
+              chave dele abaixo.
+            </p>
+            <div class="d-flex flex-wrap gap-2 mb-3" id="modulesCheckboxes"></div>
+            <div class="input-group mb-3" style="max-width: 360px;">
+              <input type="text" class="form-control" id="newModuleKey" placeholder="chave_do_modulo">
+              <button class="btn btn-outline-secondary" id="btnAddModule" type="button">Adicionar</button>
+            </div>
+            <div class="d-flex justify-content-end">
+              <button class="btn btn-primary" id="btnSalvarModulos">Salvar módulos</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assinatura -->
+        <div class="tab-pane fade" id="tab-assinatura" role="tabpanel">
+          <div class="ds-card ds-card-body">
+            <div id="semAssinatura" class="d-none">
+              <p class="ds-text-sm ds-text-muted">Nenhuma assinatura registrada para esta organização.</p>
+              <button class="btn btn-outline-primary btn-sm" id="btnCriarAssinatura">Registrar assinatura</button>
+            </div>
+            <div id="formAssinatura" class="row g-3 d-none">
+              <div class="col-md-4">
+                <label class="form-label">Plano</label>
+                <select class="form-select" id="subPlan">
+                  <option value="starter">Starter</option>
+                  <option value="professional">Professional</option>
+                  <option value="enterprise">Enterprise</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Valor mensal (R$)</label>
+                <input class="form-control" id="subValor" type="number" min="0" step="0.01">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Status</label>
+                <select class="form-select" id="subStatus">
+                  <option value="ativa">Ativa</option>
+                  <option value="inadimplente">Inadimplente</option>
+                  <option value="cancelada">Cancelada</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Data de início</label>
+                <input class="form-control" id="subInicio" type="date">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Próxima cobrança</label>
+                <input class="form-control" id="subProxima" type="date">
+              </div>
+              <div class="col-12 d-flex justify-content-end">
+                <button class="btn btn-primary" id="btnSalvarAssinatura">Salvar assinatura</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Central de Configuração (Fase 3.4) — 8 categorias -->
+        <div class="tab-pane fade" id="tab-config" role="tabpanel">
+          <ul class="nav nav-pills mb-4 flex-wrap gap-1" id="configCategories" role="tablist">
+            <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#cfg-geral" type="button" role="tab">Geral</button></li>
+            <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#cfg-localizacao" type="button" role="tab">Localização</button></li>
+            <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#cfg-identidade" type="button" role="tab">Identidade Visual</button></li>
+            <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#cfg-financeiro" type="button" role="tab">Financeiro</button></li>
+            <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#cfg-comunicacao" type="button" role="tab">Comunicação</button></li>
+            <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#cfg-portal" type="button" role="tab">Portal</button></li>
+            <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#cfg-integracoes" type="button" role="tab">Integrações</button></li>
+            <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#cfg-seguranca" type="button" role="tab">Segurança</button></li>
+          </ul>
+
+          <div class="tab-content">
+            <!-- Geral -->
+            <div class="tab-pane fade show active" id="cfg-geral" role="tabpanel">
+              <div class="ds-card ds-card-body">
+                <div class="row g-3">
+                  <div class="col-md-8">
+                    <label class="form-label">Nome *</label>
+                    <input class="form-control" id="genNome" required placeholder="Ex: Clube do Cavalo Bonfim MG">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Nome curto</label>
+                    <input class="form-control" id="genNomeCurto" placeholder="Ex: CCBMG">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">Descrição</label>
+                    <textarea class="form-control" id="genDescricao" rows="2" placeholder="Breve descrição institucional…"></textarea>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">CNPJ</label>
+                    <input class="form-control" id="genCnpj" placeholder="00.000.000/0000-00">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Domínio</label>
+                    <input class="form-control" id="genDominio" placeholder="clubedocavalobonfim.com.br">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Telefone</label>
+                    <input class="form-control" id="genTelefone" placeholder="(31) 98668-5028">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">E-mail institucional</label>
+                    <input class="form-control" id="genEmail" type="email" placeholder="contato@clube.com.br">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">Website</label>
+                    <input class="form-control" id="genSite" placeholder="https://clube.com.br">
+                  </div>
+                  <div class="col-12 mt-2"><h6 class="ds-text-muted mb-0">Endereço</h6><hr class="mt-1"></div>
+                  <div class="col-md-5">
+                    <label class="form-label">Cidade</label>
+                    <input class="form-control" id="genCidade" placeholder="Bonfim">
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label">Estado</label>
+                    <input class="form-control" id="genEstado" maxlength="2" placeholder="MG">
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label">CEP</label>
+                    <input class="form-control" id="genCep" placeholder="35765-000">
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label">País</label>
+                    <input class="form-control" id="genPais" placeholder="Brasil">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">Endereço completo</label>
+                    <input class="form-control" id="genEndereco" placeholder="Rua, número, bairro">
+                  </div>
+                </div>
+                <div id="genErrMsg" class="alert alert-danger py-2 small d-none mt-3"></div>
+                <div class="d-flex justify-content-end mt-4">
+                  <button class="btn btn-primary" id="btnSalvarGeral">Salvar</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Localização -->
+            <div class="tab-pane fade" id="cfg-localizacao" role="tabpanel">
+              <div class="ds-card ds-card-body">
+                <div class="row g-3">
+                  <div class="col-md-4">
+                    <label class="form-label">Idioma</label>
+                    <select class="form-select" id="locIdioma">
+                      <option value="pt-BR" selected>Português (BR)</option>
+                      <option value="en-US">English (US)</option>
+                      <option value="es-ES">Español</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Fuso horário</label>
+                    <select class="form-select" id="locTimezone">
+                      <option value="America/Sao_Paulo" selected>America/Sao_Paulo</option>
+                      <option value="America/Manaus">America/Manaus</option>
+                      <option value="America/Noronha">America/Noronha</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Moeda</label>
+                    <select class="form-select" id="locMoeda">
+                      <option value="BRL" selected>BRL — Real</option>
+                      <option value="USD">USD — Dólar</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Formato de data</label>
+                    <select class="form-select" id="locDateFormat">
+                      <option value="DD/MM/YYYY" selected>DD/MM/AAAA</option>
+                      <option value="MM/DD/YYYY">MM/DD/AAAA</option>
+                      <option value="YYYY-MM-DD">AAAA-MM-DD</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Formato de hora</label>
+                    <select class="form-select" id="locTimeFormat">
+                      <option value="24h" selected>24 horas</option>
+                      <option value="12h">12 horas (AM/PM)</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="d-flex justify-content-end mt-4">
+                  <button class="btn btn-primary" id="btnSalvarLocalizacao">Salvar</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Identidade Visual -->
+            <div class="tab-pane fade" id="cfg-identidade" role="tabpanel">
+              <div class="ds-card ds-card-body">
+                <p class="ds-text-sm ds-text-muted">
+                  Estrutura administrável de identidade visual — nesta fase, só o cadastro. Nenhuma tela
+                  pública ainda aplica esses valores (isso é White Label, Fase 3.5).
+                </p>
+                <div class="row g-4">
+                  <div class="col-md-6">
+                    <label class="form-label d-block">Logotipo</label>
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                      <img id="identLogoPreview" src="" alt="" class="d-none" style="max-height:64px;max-width:160px;object-fit:contain;border:1px solid var(--border-subtle,#eee);border-radius:8px;padding:4px;">
+                      <span id="identLogoEmpty" class="ds-text-xs ds-text-muted">Nenhum logo enviado ainda</span>
+                    </div>
+                    <input type="file" class="form-control form-control-sm" id="identLogoFile" accept="image/*">
+                    <div class="ds-text-xs ds-text-muted mt-1 d-none" id="identLogoProgress"></div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label d-block">Favicon</label>
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                      <img id="identFaviconPreview" src="" alt="" class="d-none" style="max-height:32px;max-width:32px;object-fit:contain;border:1px solid var(--border-subtle,#eee);border-radius:4px;padding:2px;">
+                      <span id="identFaviconEmpty" class="ds-text-xs ds-text-muted">Nenhum favicon enviado ainda</span>
+                    </div>
+                    <input type="file" class="form-control form-control-sm" id="identFaviconFile" accept="image/*">
+                    <div class="ds-text-xs ds-text-muted mt-1 d-none" id="identFaviconProgress"></div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Cor primária</label>
+                    <div class="input-group">
+                      <input type="color" class="form-control form-control-color" id="identCorPrimaria" value="#A85A34">
+                      <input type="text" class="form-control" id="identCorPrimariaHex" placeholder="#A85A34">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Cor secundária</label>
+                    <div class="input-group">
+                      <input type="color" class="form-control form-control-color" id="identCorSecundaria" value="#7C4326">
+                      <input type="text" class="form-control" id="identCorSecundariaHex" placeholder="#7C4326">
+                    </div>
+                  </div>
+                </div>
+                <div id="identErrMsg" class="alert alert-danger py-2 small d-none mt-3"></div>
+                <div class="d-flex justify-content-end mt-4">
+                  <button class="btn btn-primary" id="btnSalvarIdentidade">Salvar</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Financeiro -->
+            <div class="tab-pane fade" id="cfg-financeiro" role="tabpanel">
+              <div class="ds-card ds-card-body">
+                <div class="row g-3">
+                  <div class="col-md-4">
+                    <label class="form-label">Billing Provider</label>
+                    <select class="form-select" id="finProvider">
+                      <option value="asaas" selected>Asaas</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Ambiente</label>
+                    <select class="form-select" id="finEnvironment">
+                      <option value="producao" selected>Produção</option>
+                      <option value="sandbox">Sandbox (testes)</option>
+                    </select>
+                    <div class="form-text ds-text-xs">Muda de verdade pra qual API o provider chama — não é só um rótulo.</div>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="finStatus">
+                      <option value="ativo" selected>Ativo</option>
+                      <option value="pausado">Pausado</option>
+                    </select>
+                    <div class="form-text ds-text-xs">Só informativo nesta fase — sem bloqueio automático ainda.</div>
+                  </div>
+                  <div class="col-12 mt-2"><h6 class="ds-text-muted mb-0">Parâmetros públicos</h6><hr class="mt-1"></div>
+                  <p class="ds-text-sm ds-text-muted mb-2">Parâmetros não sensíveis específicos do provedor (ex.: Wallet ID) — nunca uma credencial/chave secreta.</p>
+                  <div class="col-12" id="finPublicParamsList"></div>
+                  <div class="col-12">
+                    <div class="input-group" style="max-width:480px;">
+                      <input class="form-control" id="finParamKey" placeholder="Nome (ex.: walletId)">
+                      <input class="form-control" id="finParamValue" placeholder="Valor">
+                      <button class="btn btn-outline-secondary" id="btnAddParam" type="button">Adicionar</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="d-flex justify-content-end mt-4">
+                  <button class="btn btn-primary" id="btnSalvarFinanceiro">Salvar</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Comunicação -->
+            <div class="tab-pane fade" id="cfg-comunicacao" role="tabpanel">
+              <div class="ds-card ds-card-body">
+                <p class="ds-text-sm ds-text-muted">Estrutura de envio — nesta fase só configuração, nenhum e-mail/WhatsApp é disparado por aqui ainda.</p>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label">WhatsApp</label>
+                    <input class="form-control" id="commWhatsapp" placeholder="5531986685028">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label d-block">Notificações por e-mail</label>
+                    <div class="form-check form-switch mt-2">
+                      <input class="form-check-input" type="checkbox" id="commNotificationsEnabled">
+                      <label class="form-check-label ds-text-sm" for="commNotificationsEnabled">Ativas</label>
+                    </div>
+                  </div>
+                  <div class="col-12 mt-2"><h6 class="ds-text-muted mb-0">SMTP (reservado)</h6><hr class="mt-1"></div>
+                  <div class="col-md-6">
+                    <label class="form-label">SMTP — host</label>
+                    <input class="form-control" id="commSmtpHost" placeholder="smtp.exemplo.com">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">SMTP — usuário</label>
+                    <input class="form-control" id="commSmtpUser" placeholder="usuario@exemplo.com">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Remetente (e-mail)</label>
+                    <input class="form-control" id="commFromEmail" type="email" placeholder="naoresponda@clube.com.br">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Nome do remetente</label>
+                    <input class="form-control" id="commFromName" placeholder="Clube do Cavalo Bonfim MG">
+                  </div>
+                </div>
+                <div id="commErrMsg" class="alert alert-danger py-2 small d-none mt-3"></div>
+                <div class="d-flex justify-content-end mt-4">
+                  <button class="btn btn-primary" id="btnSalvarComunicacao">Salvar</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Portal -->
+            <div class="tab-pane fade" id="cfg-portal" role="tabpanel">
+              <div class="ds-card ds-card-body">
+                <p class="ds-text-sm ds-text-muted">
+                  Conteúdo institucional (missão, benefícios, sede etc.) continua editável no painel do
+                  CCBMG por enquanto — migrar aquele editor pro Painel Master é conteúdo, não
+                  configuração, e fica pra uma fase futura de CMS. Aqui só redes sociais, que ainda não
+                  têm campo em lugar nenhum.
+                </p>
+                <div class="row g-3">
+                  <div class="col-md-4">
+                    <label class="form-label">Facebook</label>
+                    <input class="form-control" id="portalFacebook" placeholder="https://facebook.com/...">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Instagram</label>
+                    <input class="form-control" id="portalInstagram" placeholder="https://instagram.com/...">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">YouTube</label>
+                    <input class="form-control" id="portalYoutube" placeholder="https://youtube.com/...">
+                  </div>
+                </div>
+                <div id="portalErrMsg" class="alert alert-danger py-2 small d-none mt-3"></div>
+                <div class="d-flex justify-content-end mt-4">
+                  <button class="btn btn-primary" id="btnSalvarPortal">Salvar</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Integrações -->
+            <div class="tab-pane fade" id="cfg-integracoes" role="tabpanel">
+              <div class="ds-card ds-card-body text-center py-5">
+                <i class="bi bi-plug ds-text-muted" style="font-size:2rem;"></i>
+                <p class="ds-text-sm ds-text-muted mt-3 mb-0">Nenhuma integração configurada ainda.</p>
+                <p class="ds-text-xs ds-text-muted">Esta área está pronta para receber integrações futuras (webhooks, APIs externas) — nenhuma existe hoje.</p>
+              </div>
+            </div>
+
+            <!-- Segurança -->
+            <div class="tab-pane fade" id="cfg-seguranca" role="tabpanel">
+              <div class="ds-card ds-card-body">
+                <p class="ds-text-sm ds-text-muted">
+                  Trilha de auditoria das alterações de configuração desta organização — toda mudança
+                  salva nas abas acima gera um registro aqui.
+                </p>
+                <div class="text-center py-4 ds-text-muted ds-text-sm" id="segLoading">Carregando…</div>
+                <table class="ds-table d-none" id="segTable">
+                  <thead><tr><th>Data/Hora</th><th>Quem</th><th>Ação</th></tr></thead>
+                  <tbody id="segTbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Equipe (Fase 3.2, somente leitura) -->
+        <div class="tab-pane fade" id="tab-equipe" role="tabpanel">
+          <div class="ds-card ds-card-body">
+            <p class="ds-text-sm ds-text-muted">
+              Quem tem papel administrativo nesta organização — Master, Administrator, Operator ou Viewer.
+              Somente leitura nesta fase: gestão da própria equipe é autoatendimento da organização, não do
+              Painel Master da plataforma (ver relatório da Fase 3.2).
+            </p>
+            <div class="text-center py-4 ds-text-muted ds-text-sm" id="equipeLoading">Carregando…</div>
+            <table class="ds-table d-none" id="equipeTable">
+              <thead>
+                <tr><th>Nome</th><th>Papel</th><th>Status</th></tr>
+              </thead>
+              <tbody id="equipeTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/bootstrap.bundle.min.js"></script>
+<script type="module">
+  import { requirePlatformAccess, db, storage, logPlatformAction } from "./assets/admin-auth.js";
+  import { renderAdminNav } from "./assets/admin-nav.js";
+  import {
+    collection, getDocs, doc, getDoc, setDoc, updateDoc, serverTimestamp, Timestamp, query, where, orderBy, limit,
+  } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+  import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-functions.js";
+  import { getApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import { createImageUploader } from "../shared/utils/images.js";
+
+  const functionsApi = getFunctions(getApp(), "us-central1");
+  const fnProvisionOrganization = httpsCallable(functionsApi, "provisionOrganization");
+  const uploadImageFile = createImageUploader(storage);
+
+  const params = new URLSearchParams(location.search);
+  const isNew = params.get("id") === "new" || !params.get("id");
+  let orgId = isNew ? null : params.get("id");
+  let orgData = null;
+
+  function badgeForStatus(status) {
+    const map = {
+      ativa: '<span class="badge bg-success">Ativa</span>',
+      trial: '<span class="badge bg-warning text-dark">Trial</span>',
+      suspensa: '<span class="badge bg-danger">Suspensa</span>',
+      cancelada: '<span class="badge bg-secondary">Cancelada</span>',
+    };
+    return map[status] || "";
+  }
+  function orgStatus(o) {
+    return o.status || (o.ativo === false ? "suspensa" : "ativa");
+  }
+  function toInputDate(ts) {
+    if (!ts) return "";
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toISOString().split("T")[0];
+  }
+
+  requirePlatformAccess({
+    onRole: () => {
+      renderAdminNav({ active: "organizations" });
+      if (isNew) {
+        document.getElementById("pageTitle").textContent = "Nova organização";
+        document.getElementById("newOrgMsg").classList.remove("d-none");
+        document.getElementById("detailArea").classList.add("d-none");
+      } else {
+        loadOrg();
+      }
+    },
+  });
+
+  async function loadOrg() {
+    try {
+      const snap = await getDoc(doc(db, "organizations", orgId));
+      if (!snap.exists()) {
+        document.getElementById("notFoundMsg").classList.remove("d-none");
+        document.getElementById("detailArea").classList.add("d-none");
+        return;
+      }
+      orgData = { id: snap.id, ...snap.data() };
+      fillDadosForm(orgData);
+      document.getElementById("pageTitle").textContent = orgData.nome || orgData.id;
+      document.getElementById("statusBadge").innerHTML = badgeForStatus(orgStatus(orgData));
+      enableTabs();
+      loadModulos();
+      loadAssinatura();
+      loadGeral();
+      loadLocalizacao();
+      loadIdentidade();
+      loadFinanceiro();
+      loadComunicacao();
+      loadPortal();
+      loadSeguranca();
+      loadEquipe();
+      loadProvisioningStatus();
+      openTabFromHash();
+    } catch (e) {
+      console.error(e);
+      document.getElementById("notFoundMsg").textContent = "Erro ao carregar organização.";
+      document.getElementById("notFoundMsg").classList.remove("d-none");
+    }
+  }
+
+  function enableTabs() {
+    ["tab-modulos-btn", "tab-assinatura-btn", "tab-config-btn", "tab-equipe-btn"].forEach((id) => {
+      document.getElementById(id).removeAttribute("disabled");
+    });
+  }
+
+  // Papéis administrativos (não associado/participanteLeilao comuns) — Fase 3.2.
+  const EQUIPE_ROLE_LABELS = { master: "Organization Master", admin: "Organization Administrator", operador: "Organization Operator", "admin view": "Organization Viewer" };
+  async function loadEquipe() {
+    try {
+      const snap = await getDocs(query(collection(db, "users"), where("orgId", "==", orgId)));
+      const equipe = snap.docs
+        .map((d) => ({ uid: d.id, ...d.data() }))
+        .filter((u) => {
+          const r = String(u.role || "").toLowerCase().trim();
+          return r === "master" || r === "admin" || r === "operador" || r === "admin view";
+        });
+
+      document.getElementById("equipeTbody").innerHTML = equipe.map((u) => {
+        const r = String(u.role || "").toLowerCase().trim();
+        const statusBadge = u.ativo !== false ? '<span class="badge bg-success">Ativo</span>' : '<span class="badge bg-danger">Desativado</span>';
+        return `<tr>
+          <td><strong>${u.nome || u.uid}</strong></td>
+          <td><span class="badge bg-secondary">${EQUIPE_ROLE_LABELS[r] || u.role}</span></td>
+          <td>${statusBadge}</td>
+        </tr>`;
+      }).join("") || '<tr><td colspan="3" class="ds-table-empty">Nenhum membro de equipe administrativa cadastrado ainda — só associados comuns.</td></tr>';
+
+      document.getElementById("equipeLoading").classList.add("d-none");
+      document.getElementById("equipeTable").classList.remove("d-none");
+    } catch (e) {
+      document.getElementById("equipeLoading").textContent = "Erro ao carregar equipe.";
+      console.error(e);
+    }
+  }
+
+  // ── Status do provisionamento (Fase 3.3) ─────────────────────────
+  const PROV_STEP_LABELS = {
+    organization: "Organização", masterAccount: "Primeiro Organization Master",
+    modules: "Módulos do plano", billing: "Billing Provider",
+    branding: "Configurações básicas", storage: "Armazenamento", cms: "Conteúdo institucional inicial",
+  };
+
+  async function loadProvisioningStatus() {
+    try {
+      const snap = await getDocs(query(
+        collection(db, "provisioningRuns"), where("orgId", "==", orgId), orderBy("startedAt", "desc"), limit(1)
+      ));
+      if (snap.empty) return; // organização anterior à Fase 3.3, sem execução registrada — nada a mostrar
+      renderProvisioningBanner({ id: snap.docs[0].id, ...snap.docs[0].data() });
+    } catch (e) {
+      console.error("loadProvisioningStatus:", e);
+    }
+  }
+
+  function provStepIcon(status) {
+    if (status === "ok") return '<i class="bi bi-check-circle-fill text-success"></i>';
+    if (status === "skipped") return '<i class="bi bi-dash-circle text-muted"></i>';
+    if (status === "error") return '<i class="bi bi-x-circle-fill text-danger"></i>';
+    return '<i class="bi bi-circle text-muted"></i>';
+  }
+
+  function renderProvisioningBanner(run) {
+    const banner = document.getElementById("provisioningBanner");
+    if (run.status === "completed") {
+      banner.classList.add("d-none");
+      return; // tudo certo — o banner só existe pra chamar atenção quando NÃO está
+    }
+    banner.classList.remove("d-none");
+
+    const stepsHtml = (run.steps || []).map((s) => `
+      <div class="ds-text-sm d-flex align-items-center gap-2">
+        <span style="width:1.25rem;text-align:center;">${provStepIcon(s.status)}</span>
+        ${PROV_STEP_LABELS[s.name] || s.name}
+        ${s.error ? `<span class="ds-text-xs text-danger ms-1">— ${s.error}</span>` : ""}
+      </div>
+    `).join("");
+
+    banner.innerHTML = `
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <h6 class="mb-0"><i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>Provisionamento ${run.status === "running" ? "em andamento" : "incompleto"}</h6>
+        <button class="btn btn-sm btn-outline-primary" id="btnAbrirReprocessar" ${run.status === "running" ? "disabled" : ""}>Reprocessar</button>
+      </div>
+      <div class="mb-3">${stepsHtml}</div>
+      <div id="reprocessForm" class="d-none row g-2 pt-2 border-top">
+        <div class="col-md-6">
+          <label class="form-label ds-text-xs">Nome do Organization Master</label>
+          <input class="form-control form-control-sm" id="reprocMasterNome">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label ds-text-xs">E-mail do Organization Master</label>
+          <input class="form-control form-control-sm" id="reprocMasterEmail" type="email">
+        </div>
+        <div class="col-12 d-flex justify-content-end">
+          <button class="btn btn-sm btn-primary" id="btnConfirmarReprocessar">Confirmar reprocessamento</button>
+        </div>
+      </div>
+    `;
+
+    document.getElementById("btnAbrirReprocessar")?.addEventListener("click", async () => {
+      // Pré-preenche com o Master já criado pra esta org, se algum passo já tiver chegado lá.
+      try {
+        const usersSnap = await getDocs(query(
+          collection(db, "users"), where("orgId", "==", orgId), where("role", "in", ["Master", "master"]), limit(1)
+        ));
+        if (!usersSnap.empty) {
+          const m = usersSnap.docs[0].data();
+          document.getElementById("reprocMasterNome").value = m.nome || "";
+          document.getElementById("reprocMasterEmail").value = m.email || "";
+        }
+      } catch (e) { console.warn(e); }
+      document.getElementById("reprocessForm").classList.remove("d-none");
+    });
+
+    document.getElementById("btnConfirmarReprocessar")?.addEventListener("click", async (ev) => {
+      const btn = ev.currentTarget;
+      const masterNome = document.getElementById("reprocMasterNome").value.trim();
+      const masterEmail = document.getElementById("reprocMasterEmail").value.trim().toLowerCase();
+      if (!masterNome || !masterEmail) { alert("Preencha nome e e-mail do Organization Master."); return; }
+      btn.disabled = true;
+      btn.textContent = "Reprocessando…";
+      try {
+        await fnProvisionOrganization({
+          orgId, nome: orgData.nome, planId: orgData.plan,
+          master: { nome: masterNome, email: masterEmail },
+          forceReprocess: true,
+        });
+        await loadProvisioningStatus();
+        alert("Reprocessamento concluído — confira o status acima.");
+      } catch (e) {
+        alert("Erro ao reprocessar: " + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Confirmar reprocessamento";
+      }
+    });
+  }
+
+  // Links de subscriptions.html/modules.html chegam com #tab-assinatura etc. —
+  // abre a aba correspondente em vez de deixar sempre em "Dados".
+  function openTabFromHash() {
+    const hash = location.hash;
+    if (!hash) return;
+    const btn = document.getElementById(`${hash.slice(1)}-btn`);
+    if (btn && !btn.disabled) new bootstrap.Tab(btn).show();
+  }
+
+  // Fase 3.4: só o que é administrado pela PLATAFORMA (plano, status/ciclo
+  // de vida, observações internas) — identificação/contato mudou pra
+  // Configurações → Geral (ver fillGeralForm).
+  function fillDadosForm(o) {
+    document.getElementById("orgSlug").value = o.slug || o.id || "";
+    document.getElementById("orgPlan").value = o.plan || "enterprise";
+    document.getElementById("orgStatus").value = orgStatus(o);
+    document.getElementById("orgObs").value = o.observacoes || "";
+  }
+
+  // Fase 3.3: esta página nunca cria organização (ver newOrgMsg acima) — o
+  // detailArea só fica visível quando orgId já existe, então este handler
+  // sempre edita um doc existente (create está bloqueado nas Firestore Rules
+  // de qualquer forma — allow create: if false).
+  document.getElementById("btnSalvarDados").addEventListener("click", async () => {
+    const status = document.getElementById("orgStatus").value;
+    // `ativo` continua sendo o único campo que Cloud Functions/Firestore Rules checam
+    // (ver shared/CHANGELOG e docs do CCBMG) — deriva-se de status pra manter os dois
+    // coerentes sem exigir que quem só usa `ativo` saiba que `status` existe.
+    const ativo = status !== "suspensa" && status !== "cancelada";
+
+    const payload = {
+      plan: document.getElementById("orgPlan").value,
+      status,
+      ativo,
+      observacoes: document.getElementById("orgObs").value.trim(),
+      updatedAt: serverTimestamp(),
+    };
+
+    try {
+      await updateDoc(doc(db, "organizations", orgId), payload);
+      await logPlatformAction("org_atualizada", { orgId });
+      orgData = { ...orgData, ...payload };
+      document.getElementById("statusBadge").innerHTML = badgeForStatus(status);
+      alert("Dados salvos.");
+    } catch (e) {
+      alert("Erro ao salvar: " + e.message);
+    }
+  });
+
+  // ── Módulos ──────────────────────────────────────────────────────
+  let moduleKeys = [];
+  async function loadModulos() {
+    try {
+      const snap = await getDocs(collection(db, "organizations"));
+      const known = new Set();
+      snap.docs.forEach((d) => Object.keys(d.data().modules || {}).forEach((k) => known.add(k)));
+      Object.keys(orgData.modules || {}).forEach((k) => known.add(k));
+      moduleKeys = [...known].sort();
+      renderModuleCheckboxes();
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  function renderModuleCheckboxes() {
+    const container = document.getElementById("modulesCheckboxes");
+    const mods = orgData.modules || {};
+    container.innerHTML = moduleKeys.map((k) => `
+      <div class="form-check form-check-inline border rounded px-2 py-1">
+        <input class="form-check-input" type="checkbox" id="mod_${k}" data-key="${k}" ${mods[k] !== false ? "checked" : ""}>
+        <label class="form-check-label small" for="mod_${k}">${k}</label>
+      </div>
+    `).join("") || '<span class="ds-text-sm ds-text-muted">Nenhum módulo conhecido ainda.</span>';
+  }
+  document.getElementById("btnAddModule").addEventListener("click", () => {
+    const input = document.getElementById("newModuleKey");
+    const key = input.value.trim().toLowerCase().replace(/\s+/g, "_");
+    if (!key) return;
+    if (!moduleKeys.includes(key)) moduleKeys.push(key);
+    orgData.modules = { ...(orgData.modules || {}), [key]: true };
+    input.value = "";
+    renderModuleCheckboxes();
+  });
+  document.getElementById("btnSalvarModulos").addEventListener("click", async () => {
+    const result = {};
+    moduleKeys.forEach((k) => {
+      const el = document.getElementById(`mod_${k}`);
+      result[k] = !!el?.checked;
+    });
+    try {
+      await updateDoc(doc(db, "organizations", orgId), { modules: result, updatedAt: serverTimestamp() });
+      orgData.modules = result;
+      await logPlatformAction("org_modulos_atualizados", { orgId });
+      alert("Módulos salvos.");
+    } catch (e) {
+      alert("Erro ao salvar módulos: " + e.message);
+    }
+  });
+
+  // ── Assinatura (doc ID = orgId) ─────────────────────────────────
+  async function loadAssinatura() {
+    try {
+      const snap = await getDoc(doc(db, "organizationSubscriptions", orgId));
+      if (!snap.exists()) {
+        document.getElementById("semAssinatura").classList.remove("d-none");
+        document.getElementById("formAssinatura").classList.add("d-none");
+        return;
+      }
+      const s = snap.data();
+      document.getElementById("subPlan").value = s.plan || "enterprise";
+      document.getElementById("subValor").value = s.valorMensal || "";
+      document.getElementById("subStatus").value = s.status || "ativa";
+      document.getElementById("subInicio").value = toInputDate(s.dataInicio);
+      document.getElementById("subProxima").value = toInputDate(s.proximaCobranca);
+      document.getElementById("semAssinatura").classList.add("d-none");
+      document.getElementById("formAssinatura").classList.remove("d-none");
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  document.getElementById("btnCriarAssinatura").addEventListener("click", () => {
+    document.getElementById("subInicio").value = new Date().toISOString().split("T")[0];
+    document.getElementById("semAssinatura").classList.add("d-none");
+    document.getElementById("formAssinatura").classList.remove("d-none");
+  });
+  document.getElementById("btnSalvarAssinatura").addEventListener("click", async () => {
+    const inicio = document.getElementById("subInicio").value;
+    const proxima = document.getElementById("subProxima").value;
+    const payload = {
+      orgId,
+      plan: document.getElementById("subPlan").value,
+      valorMensal: parseFloat(document.getElementById("subValor").value) || 0,
+      status: document.getElementById("subStatus").value,
+      dataInicio: inicio ? Timestamp.fromDate(new Date(inicio)) : null,
+      proximaCobranca: proxima ? Timestamp.fromDate(new Date(proxima)) : null,
+      updatedAt: serverTimestamp(),
+    };
+    try {
+      await setDoc(doc(db, "organizationSubscriptions", orgId), payload, { merge: true });
+      await logPlatformAction("assinatura_atualizada", { orgId, plan: payload.plan });
+      alert("Assinatura salva.");
+    } catch (e) {
+      alert("Erro ao salvar assinatura: " + e.message);
+    }
+  });
+
+  // ══════════════════════════════════════════════════════════════════
+  // Central de Configuração (Fase 3.4) — 8 categorias
+  // ══════════════════════════════════════════════════════════════════
+
+  // ── Validação client-side (mesmo rigor já praticado no resto do projeto —
+  // checagem de formato, não validação de schema no servidor) ──────────
+  function isValidEmail(v) { return !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+  function isValidCnpjDigits(v) { return !v || v.replace(/\D/g, "").length === 14; }
+  function isValidUrlish(v) { return !v || (/\./.test(v) && !/\s/.test(v)); }
+  function isValidHex(v) { return !v || /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(v); }
+  function showFormErr(elId, msg) {
+    const el = document.getElementById(elId);
+    el.textContent = msg;
+    el.classList.remove("d-none");
+  }
+  function hideFormErr(elId) {
+    document.getElementById(elId).classList.add("d-none");
+  }
+
+  // ── Geral ──────────────────────────────────────────────────────────
+  function loadGeral() {
+    const o = orgData;
+    document.getElementById("genNome").value = o.nome || "";
+    document.getElementById("genNomeCurto").value = o.nomeCurto || "";
+    document.getElementById("genDescricao").value = o.descricao || "";
+    document.getElementById("genCnpj").value = o.cnpj || "";
+    document.getElementById("genDominio").value = o.dominio || "";
+    document.getElementById("genTelefone").value = o.telefone || "";
+    document.getElementById("genEmail").value = o.email || "";
+    document.getElementById("genSite").value = o.site || "";
+    document.getElementById("genCidade").value = o.cidade || "";
+    document.getElementById("genEstado").value = o.estado || "";
+    document.getElementById("genCep").value = o.cep || "";
+    document.getElementById("genPais").value = o.pais || "Brasil";
+    document.getElementById("genEndereco").value = o.endereco || "";
+  }
+  document.getElementById("btnSalvarGeral").addEventListener("click", async () => {
+    hideFormErr("genErrMsg");
+    const nome = document.getElementById("genNome").value.trim();
+    const cnpj = document.getElementById("genCnpj").value.trim();
+    const email = document.getElementById("genEmail").value.trim();
+    const site = document.getElementById("genSite").value.trim();
+    if (!nome) { showFormErr("genErrMsg", "Nome é obrigatório."); return; }
+    if (!isValidCnpjDigits(cnpj)) { showFormErr("genErrMsg", "CNPJ precisa ter 14 dígitos."); return; }
+    if (!isValidEmail(email)) { showFormErr("genErrMsg", "E-mail institucional inválido."); return; }
+    if (!isValidUrlish(site)) { showFormErr("genErrMsg", "Website em formato inválido."); return; }
+
+    const payload = {
+      nome,
+      nomeCurto: document.getElementById("genNomeCurto").value.trim(),
+      descricao: document.getElementById("genDescricao").value.trim(),
+      cnpj, email, site,
+      dominio: document.getElementById("genDominio").value.trim(),
+      telefone: document.getElementById("genTelefone").value.trim(),
+      cidade: document.getElementById("genCidade").value.trim(),
+      estado: document.getElementById("genEstado").value.trim().toUpperCase(),
+      cep: document.getElementById("genCep").value.trim(),
+      pais: document.getElementById("genPais").value.trim() || "Brasil",
+      endereco: document.getElementById("genEndereco").value.trim(),
+      updatedAt: serverTimestamp(),
+    };
+    try {
+      await updateDoc(doc(db, "organizations", orgId), payload);
+      await logPlatformAction("org_config_geral_atualizada", { orgId });
+      orgData = { ...orgData, ...payload };
+      document.getElementById("pageTitle").textContent = nome;
+      alert("Configurações gerais salvas.");
+    } catch (e) {
+      showFormErr("genErrMsg", "Erro ao salvar: " + e.message);
+    }
+  });
+
+  // ── Localização ────────────────────────────────────────────────────
+  function loadLocalizacao() {
+    const cfg = orgData.config || {};
+    if (cfg.idioma) document.getElementById("locIdioma").value = cfg.idioma;
+    if (cfg.timezone) document.getElementById("locTimezone").value = cfg.timezone;
+    if (cfg.moeda) document.getElementById("locMoeda").value = cfg.moeda;
+    if (cfg.dateFormat) document.getElementById("locDateFormat").value = cfg.dateFormat;
+    if (cfg.timeFormat) document.getElementById("locTimeFormat").value = cfg.timeFormat;
+  }
+  document.getElementById("btnSalvarLocalizacao").addEventListener("click", async () => {
+    const config = {
+      ...(orgData.config || {}),
+      idioma: document.getElementById("locIdioma").value,
+      timezone: document.getElementById("locTimezone").value,
+      moeda: document.getElementById("locMoeda").value,
+      dateFormat: document.getElementById("locDateFormat").value,
+      timeFormat: document.getElementById("locTimeFormat").value,
+    };
+    try {
+      await updateDoc(doc(db, "organizations", orgId), { config, updatedAt: serverTimestamp() });
+      await logPlatformAction("org_config_localizacao_atualizada", { orgId });
+      orgData.config = config;
+      alert("Localização salva.");
+    } catch (e) {
+      alert("Erro ao salvar: " + e.message);
+    }
+  });
+
+  // ── Identidade Visual ──────────────────────────────────────────────
+  function loadIdentidade() {
+    const cfg = orgData.config || {};
+    if (cfg.logoUrl) {
+      document.getElementById("identLogoPreview").src = cfg.logoUrl;
+      document.getElementById("identLogoPreview").classList.remove("d-none");
+      document.getElementById("identLogoEmpty").classList.add("d-none");
+    }
+    if (cfg.faviconUrl) {
+      document.getElementById("identFaviconPreview").src = cfg.faviconUrl;
+      document.getElementById("identFaviconPreview").classList.remove("d-none");
+      document.getElementById("identFaviconEmpty").classList.add("d-none");
+    }
+    document.getElementById("identCorPrimaria").value = cfg.corPrimaria || "#A85A34";
+    document.getElementById("identCorPrimariaHex").value = cfg.corPrimaria || "#A85A34";
+    document.getElementById("identCorSecundaria").value = cfg.corSecundaria || "#7C4326";
+    document.getElementById("identCorSecundariaHex").value = cfg.corSecundaria || "#7C4326";
+  }
+  // Cor: picker <-> campo hex sincronizados nos dois sentidos.
+  function wireColorSync(colorId, hexId) {
+    const colorEl = document.getElementById(colorId);
+    const hexEl = document.getElementById(hexId);
+    colorEl.addEventListener("input", () => { hexEl.value = colorEl.value; });
+    hexEl.addEventListener("input", () => { if (isValidHex(hexEl.value)) colorEl.value = hexEl.value; });
+  }
+  wireColorSync("identCorPrimaria", "identCorPrimariaHex");
+  wireColorSync("identCorSecundaria", "identCorSecundariaHex");
+
+  // Logo/favicon não recebem compressão automática (createImageUploader
+  // converte pra JPEG ao comprimir — perderia transparência de PNG, ruim
+  // especificamente pra marca/ícone) — envia o arquivo original.
+  async function handleBrandingUpload(fileInputId, category, progressId, previewId, emptyId) {
+    const input = document.getElementById(fileInputId);
+    const file = input.files?.[0];
+    if (!file) return null;
+    const progressEl = document.getElementById(progressId);
+    progressEl.classList.remove("d-none");
+    progressEl.textContent = "Enviando… 0%";
+    try {
+      const { url } = await uploadImageFile(file, `tenants/${orgId}/branding`, (pct) => {
+        progressEl.textContent = `Enviando… ${pct}%`;
+      }, { autoCompress: false });
+      progressEl.classList.add("d-none");
+      document.getElementById(previewId).src = url;
+      document.getElementById(previewId).classList.remove("d-none");
+      document.getElementById(emptyId).classList.add("d-none");
+      input.value = "";
+      return url;
+    } catch (e) {
+      progressEl.classList.add("d-none");
+      throw e;
+    }
+  }
+  document.getElementById("btnSalvarIdentidade").addEventListener("click", async () => {
+    hideFormErr("identErrMsg");
+    const corPrimaria = document.getElementById("identCorPrimariaHex").value.trim();
+    const corSecundaria = document.getElementById("identCorSecundariaHex").value.trim();
+    if (!isValidHex(corPrimaria) || !isValidHex(corSecundaria)) {
+      showFormErr("identErrMsg", "Cores precisam estar em formato hexadecimal (ex.: #A85A34).");
+      return;
+    }
+    const btn = document.getElementById("btnSalvarIdentidade");
+    btn.disabled = true;
+    try {
+      const config = { ...(orgData.config || {}), corPrimaria, corSecundaria };
+      const newLogoUrl = await handleBrandingUpload("identLogoFile", "logo", "identLogoProgress", "identLogoPreview", "identLogoEmpty");
+      if (newLogoUrl) config.logoUrl = newLogoUrl;
+      const newFaviconUrl = await handleBrandingUpload("identFaviconFile", "favicon", "identFaviconProgress", "identFaviconPreview", "identFaviconEmpty");
+      if (newFaviconUrl) config.faviconUrl = newFaviconUrl;
+
+      await updateDoc(doc(db, "organizations", orgId), { config, updatedAt: serverTimestamp() });
+      await logPlatformAction("org_config_identidade_atualizada", { orgId });
+      orgData.config = config;
+      alert("Identidade visual salva.");
+    } catch (e) {
+      showFormErr("identErrMsg", "Erro ao salvar: " + e.message);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // ── Financeiro ─────────────────────────────────────────────────────
+  let billingPublicParams = {};
+  function renderPublicParams() {
+    const list = document.getElementById("finPublicParamsList");
+    const keys = Object.keys(billingPublicParams);
+    list.innerHTML = keys.length
+      ? keys.map((k) => `
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <code class="ds-text-sm">${k}</code><span class="ds-text-sm ds-text-muted">=</span>
+            <span class="ds-text-sm">${billingPublicParams[k]}</span>
+            <button class="btn btn-sm btn-outline-danger ms-auto btn-remove-param" data-key="${k}" type="button"><i class="bi bi-trash"></i></button>
+          </div>
+        `).join("")
+      : '<span class="ds-text-sm ds-text-muted">Nenhum parâmetro público cadastrado ainda.</span>';
+    list.querySelectorAll(".btn-remove-param").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        delete billingPublicParams[btn.dataset.key];
+        renderPublicParams();
+      });
+    });
+  }
+  document.getElementById("btnAddParam").addEventListener("click", () => {
+    const keyInput = document.getElementById("finParamKey");
+    const valueInput = document.getElementById("finParamValue");
+    const key = keyInput.value.trim();
+    const value = valueInput.value.trim();
+    if (!key || !value) return;
+    billingPublicParams[key] = value;
+    keyInput.value = "";
+    valueInput.value = "";
+    renderPublicParams();
+  });
+  function loadFinanceiro() {
+    document.getElementById("finProvider").value = orgData.billingProvider || "asaas";
+    document.getElementById("finEnvironment").value = orgData.billingEnvironment || "producao";
+    document.getElementById("finStatus").value = orgData.billingStatus || "ativo";
+    billingPublicParams = { ...(orgData.billingConfig?.publicParams || {}) };
+    renderPublicParams();
+  }
+  document.getElementById("btnSalvarFinanceiro").addEventListener("click", async () => {
+    const billingProvider = document.getElementById("finProvider").value;
+    const billingEnvironment = document.getElementById("finEnvironment").value;
+    const billingStatus = document.getElementById("finStatus").value;
+    const billingConfig = { ...(orgData.billingConfig || {}), publicParams: billingPublicParams };
+    try {
+      await updateDoc(doc(db, "organizations", orgId), {
+        billingProvider, billingEnvironment, billingStatus, billingConfig, updatedAt: serverTimestamp(),
+      });
+      await logPlatformAction("org_config_financeiro_atualizada", { orgId });
+      orgData = { ...orgData, billingProvider, billingEnvironment, billingStatus, billingConfig };
+      alert("Configuração financeira salva.");
+    } catch (e) {
+      alert("Erro ao salvar: " + e.message);
+    }
+  });
+
+  // ── Comunicação ────────────────────────────────────────────────────
+  function loadComunicacao() {
+    const cfg = orgData.config || {};
+    document.getElementById("commWhatsapp").value = orgData.whatsapp || "";
+    document.getElementById("commNotificationsEnabled").checked = cfg.notificationsEnabled !== false;
+    document.getElementById("commSmtpHost").value = cfg.smtpHost || "";
+    document.getElementById("commSmtpUser").value = cfg.smtpUser || "";
+    document.getElementById("commFromEmail").value = cfg.fromEmail || "";
+    document.getElementById("commFromName").value = cfg.fromName || "";
+  }
+  document.getElementById("btnSalvarComunicacao").addEventListener("click", async () => {
+    hideFormErr("commErrMsg");
+    const fromEmail = document.getElementById("commFromEmail").value.trim();
+    if (!isValidEmail(fromEmail)) { showFormErr("commErrMsg", "E-mail do remetente inválido."); return; }
+
+    const whatsapp = document.getElementById("commWhatsapp").value.trim().replace(/\D/g, "");
+    const config = {
+      ...(orgData.config || {}),
+      notificationsEnabled: document.getElementById("commNotificationsEnabled").checked,
+      smtpHost: document.getElementById("commSmtpHost").value.trim(),
+      smtpUser: document.getElementById("commSmtpUser").value.trim(),
+      fromEmail,
+      fromName: document.getElementById("commFromName").value.trim(),
+    };
+    try {
+      await updateDoc(doc(db, "organizations", orgId), { whatsapp, config, updatedAt: serverTimestamp() });
+      await logPlatformAction("org_config_comunicacao_atualizada", { orgId });
+      orgData = { ...orgData, whatsapp, config };
+      alert("Comunicação salva.");
+    } catch (e) {
+      showFormErr("commErrMsg", "Erro ao salvar: " + e.message);
+    }
+  });
+
+  // ── Portal ─────────────────────────────────────────────────────────
+  function loadPortal() {
+    const redes = orgData.portal?.redesSociais || {};
+    document.getElementById("portalFacebook").value = redes.facebook || "";
+    document.getElementById("portalInstagram").value = redes.instagram || "";
+    document.getElementById("portalYoutube").value = redes.youtube || "";
+  }
+  document.getElementById("btnSalvarPortal").addEventListener("click", async () => {
+    hideFormErr("portalErrMsg");
+    const facebook = document.getElementById("portalFacebook").value.trim();
+    const instagram = document.getElementById("portalInstagram").value.trim();
+    const youtube = document.getElementById("portalYoutube").value.trim();
+    if (!isValidUrlish(facebook) || !isValidUrlish(instagram) || !isValidUrlish(youtube)) {
+      showFormErr("portalErrMsg", "Um dos links de rede social está em formato inválido.");
+      return;
+    }
+    const portal = { ...(orgData.portal || {}), redesSociais: { facebook, instagram, youtube } };
+    try {
+      await updateDoc(doc(db, "organizations", orgId), { portal, updatedAt: serverTimestamp() });
+      await logPlatformAction("org_config_portal_atualizada", { orgId });
+      orgData.portal = portal;
+      alert("Portal salvo.");
+    } catch (e) {
+      showFormErr("portalErrMsg", "Erro ao salvar: " + e.message);
+    }
+  });
+
+  // ── Segurança (somente leitura — trilha de auditoria desta organização) ──
+  async function loadSeguranca() {
+    try {
+      const snap = await getDocs(query(
+        collection(db, "systemLogs"), where("details.orgId", "==", orgId), orderBy("timestamp", "desc"), limit(30)
+      ));
+      document.getElementById("segTbody").innerHTML = snap.docs.map((d) => {
+        const l = d.data();
+        const ts = l.timestamp?.toDate ? l.timestamp.toDate() : null;
+        return `<tr>
+          <td class="ds-text-sm ds-text-muted">${ts ? ts.toLocaleString("pt-BR") : "—"}</td>
+          <td class="ds-text-sm">${l.userEmail || "—"}</td>
+          <td class="ds-text-sm">${l.action || "—"}</td>
+        </tr>`;
+      }).join("") || '<tr><td colspan="3" class="ds-table-empty">Nenhuma alteração registrada ainda para esta organização.</td></tr>';
+      document.getElementById("segLoading").classList.add("d-none");
+      document.getElementById("segTable").classList.remove("d-none");
+    } catch (e) {
+      document.getElementById("segLoading").textContent = "Erro ao carregar auditoria.";
+      console.error(e);
+    }
+  }
+</script>
+</body>
+</html>
