@@ -33,7 +33,7 @@ Este diretório é a **origem única** de código reutilizável pela plataforma 
 
 3. Para os componentes visuais (CSS puro, sem dependência de JS além do Bootstrap que o site já carrega):
    ```html
-   <link rel="stylesheet" href="https://portalassociativo.com.br/shared/components/index.css?v=2026.08.0">
+   <link rel="stylesheet" href="https://portalassociativo.com.br/shared/components/index.css?v=2026.08.4">
    ```
 
 ## Versionamento — por que a query string `?v=` é obrigatória
