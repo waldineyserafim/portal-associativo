@@ -2,6 +2,14 @@
 
 Sem build/hash automático (sem bundler, por decisão de arquitetura — ver `README.md`). Versão é manual, incrementada aqui a cada publicação relevante, e replicada na query string (`?v=`) usada pelos tenants.
 
+## 2026.08.4 — Fase 3.5: identidade do tenant e domínios
+
+**Adicionado:**
+- `core/tenant/branding.js` — `createBrandingResolver({db, getOrgId, ...})` → `getOrgBranding()`, `applyBranding()`. Lê `organizations/{orgId}/public/branding` (projeção curada e segura mantida por Cloud Function no CCBMG — nunca `organizations/{orgId}` direto, que carrega campos não-públicos desde a Fase 3.4), mesmo padrão de cache em `sessionStorage` de `modules.js`. `applyBranding()` só sobrescreve favicon/cores/`[data-tenant-name]`/`[data-tenant-logo]` quando o campo correspondente existe — HTML/CSS estático de um tenant continua valendo como fallback quando o branding está vazio ou indisponível. Não roda sozinha ao importar (ver regra "O que NUNCA vai para o núcleo" — quem decide chamar automaticamente é o `firebase.js` de cada tenant, nunca o núcleo).
+
+**Mudado:**
+- `core/tenant/tenant-context.js` — `getTenant()` agora inclui `domain: location.hostname` no objeto resolvido (síncrono, sem leitura de rede). O corpo continua confiando em `window.__TENANT_CONFIG__.orgId` — ver nota de arquitetura atualizada no próprio arquivo para o porquê de ainda não consultar `domains/{hostname}` no Firestore (depende de uma decisão de hospedagem multi-domínio ainda não tomada, gap G4 de `docs/SAAS_MULTITENANT.md` do CCBMG).
+
 ## 2026.08.3 — Fase 3.1: componentes de lista para o novo Painel Master
 
 **Adicionado:**

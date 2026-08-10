@@ -199,12 +199,22 @@
                     <input class="form-control" id="genCnpj" placeholder="00.000.000/0000-00">
                   </div>
                   <div class="col-md-6">
-                    <label class="form-label">Domínio</label>
-                    <input class="form-control" id="genDominio" placeholder="clubedocavalobonfim.com.br">
+                    <label class="form-label">Domínio principal</label>
+                    <input class="form-control" id="genDominioPrincipal" placeholder="clubedocavalobonfim.com.br">
+                    <div class="form-text">Fase 3.5 — precisa ser único entre organizações; a plataforma rejeita se outro cliente já tiver registrado o mesmo domínio.</div>
                   </div>
                   <div class="col-md-6">
                     <label class="form-label">Telefone</label>
                     <input class="form-control" id="genTelefone" placeholder="(31) 98668-5028">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">Domínios adicionais</label>
+                    <div id="genDominiosAdicionaisList" class="d-flex flex-column gap-2 mb-2"></div>
+                    <div class="d-flex gap-2">
+                      <input class="form-control" id="genDominioAdicionalNovo" placeholder="www.clubedocavalobonfim.com.br">
+                      <button class="btn btn-outline-secondary text-nowrap" type="button" id="btnAdicionarDominio">+ Adicionar</button>
+                    </div>
+                    <div class="form-text">Ex.: variante <code>www.</code> ou domínio legado durante uma transição. Só entra na lista ao clicar em Salvar.</div>
                   </div>
                   <div class="col-md-6">
                     <label class="form-label">E-mail institucional</label>
@@ -515,6 +525,7 @@
 
   const functionsApi = getFunctions(getApp(), "us-central1");
   const fnProvisionOrganization = httpsCallable(functionsApi, "provisionOrganization");
+  const fnSetOrganizationDomains = httpsCallable(functionsApi, "setOrganizationDomains");
   const uploadImageFile = createImageUploader(storage);
 
   const params = new URLSearchParams(location.search);
@@ -888,13 +899,48 @@
   }
 
   // ── Geral ──────────────────────────────────────────────────────────
-  function loadGeral() {
+
+  // Fase 3.5 — domínios adicionais vivem em domains/{hostname} (não em
+  // organizations/{orgId}), então precisam de sua própria consulta pra
+  // popular a lista ao carregar a aba. Editados só em memória até o clique
+  // em Salvar — mesmo padrão do resto do formulário.
+  let dominiosAdicionais = [];
+
+  function renderDominiosAdicionais() {
+    const list = document.getElementById("genDominiosAdicionaisList");
+    if (dominiosAdicionais.length === 0) {
+      list.innerHTML = '<div class="ds-text-muted small">Nenhum domínio adicional cadastrado.</div>';
+      return;
+    }
+    list.innerHTML = dominiosAdicionais.map((h, i) => `
+      <div class="d-flex align-items-center gap-2">
+        <span class="form-control-plaintext py-1 flex-grow-1">${h}</span>
+        <button type="button" class="btn btn-sm btn-outline-danger" data-remove-dominio="${i}">Remover</button>
+      </div>
+    `).join("");
+    list.querySelectorAll("[data-remove-dominio]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        dominiosAdicionais.splice(Number(btn.dataset.removeDominio), 1);
+        renderDominiosAdicionais();
+      });
+    });
+  }
+  document.getElementById("btnAdicionarDominio").addEventListener("click", () => {
+    const input = document.getElementById("genDominioAdicionalNovo");
+    const raw = input.value.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+    if (!raw) return;
+    if (!dominiosAdicionais.includes(raw)) dominiosAdicionais.push(raw);
+    input.value = "";
+    renderDominiosAdicionais();
+  });
+
+  async function loadGeral() {
     const o = orgData;
     document.getElementById("genNome").value = o.nome || "";
     document.getElementById("genNomeCurto").value = o.nomeCurto || "";
     document.getElementById("genDescricao").value = o.descricao || "";
     document.getElementById("genCnpj").value = o.cnpj || "";
-    document.getElementById("genDominio").value = o.dominio || "";
+    document.getElementById("genDominioPrincipal").value = o.dominio || "";
     document.getElementById("genTelefone").value = o.telefone || "";
     document.getElementById("genEmail").value = o.email || "";
     document.getElementById("genSite").value = o.site || "";
@@ -903,6 +949,10 @@
     document.getElementById("genCep").value = o.cep || "";
     document.getElementById("genPais").value = o.pais || "Brasil";
     document.getElementById("genEndereco").value = o.endereco || "";
+
+    const domainsSnap = await getDocs(query(collection(db, "domains"), where("orgId", "==", orgId), where("tipo", "==", "alternativo")));
+    dominiosAdicionais = domainsSnap.docs.map((d) => d.id);
+    renderDominiosAdicionais();
   }
   document.getElementById("btnSalvarGeral").addEventListener("click", async () => {
     hideFormErr("genErrMsg");
@@ -910,17 +960,32 @@
     const cnpj = document.getElementById("genCnpj").value.trim();
     const email = document.getElementById("genEmail").value.trim();
     const site = document.getElementById("genSite").value.trim();
+    const dominioPrincipal = document.getElementById("genDominioPrincipal").value.trim();
     if (!nome) { showFormErr("genErrMsg", "Nome é obrigatório."); return; }
     if (!isValidCnpjDigits(cnpj)) { showFormErr("genErrMsg", "CNPJ precisa ter 14 dígitos."); return; }
     if (!isValidEmail(email)) { showFormErr("genErrMsg", "E-mail institucional inválido."); return; }
     if (!isValidUrlish(site)) { showFormErr("genErrMsg", "Website em formato inválido."); return; }
+    if (dominioPrincipal && !isValidUrlish(dominioPrincipal)) { showFormErr("genErrMsg", "Domínio principal em formato inválido."); return; }
+
+    // Domínio primeiro (unicidade validada/gravada pela Cloud Function,
+    // incluindo o espelhamento em organizations/{orgId}.dominio) — só
+    // segue pro resto dos campos de Geral se isso não conflitar com outra
+    // organização, pra nunca dar a impressão de "salvo" com um domínio
+    // rejeitado.
+    if (dominioPrincipal) {
+      try {
+        await fnSetOrganizationDomains({ orgId, dominioPrincipal, dominiosAlternativos: dominiosAdicionais });
+      } catch (e) {
+        showFormErr("genErrMsg", "Erro ao salvar domínio: " + (e.message || e));
+        return;
+      }
+    }
 
     const payload = {
       nome,
       nomeCurto: document.getElementById("genNomeCurto").value.trim(),
       descricao: document.getElementById("genDescricao").value.trim(),
       cnpj, email, site,
-      dominio: document.getElementById("genDominio").value.trim(),
       telefone: document.getElementById("genTelefone").value.trim(),
       cidade: document.getElementById("genCidade").value.trim(),
       estado: document.getElementById("genEstado").value.trim().toUpperCase(),
@@ -932,7 +997,7 @@
     try {
       await updateDoc(doc(db, "organizations", orgId), payload);
       await logPlatformAction("org_config_geral_atualizada", { orgId });
-      orgData = { ...orgData, ...payload };
+      orgData = { ...orgData, ...payload, dominio: dominioPrincipal || orgData.dominio };
       document.getElementById("pageTitle").textContent = nome;
       alert("Configurações gerais salvas.");
     } catch (e) {

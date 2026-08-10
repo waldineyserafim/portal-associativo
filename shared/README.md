@@ -26,8 +26,8 @@ Este diretório é a **origem única** de código reutilizável pela plataforma 
 2. Importar o que precisar do núcleo, sempre com a versão fixada na query string:
    ```html
    <script type="module">
-     import { getTenant } from "https://portalassociativo.com.br/shared/core/tenant/tenant-context.js?v=2026.08.0";
-     import { initTenantFirebase } from "https://portalassociativo.com.br/shared/core/auth/firebase-init.js?v=2026.08.0";
+     import { getTenant } from "https://portalassociativo.com.br/shared/core/tenant/tenant-context.js?v=2026.08.4";
+     import { initTenantFirebase } from "https://portalassociativo.com.br/shared/core/auth/firebase-init.js?v=2026.08.4";
    </script>
    ```
 
@@ -47,7 +47,7 @@ Regra: **toda alteração publicada aqui incrementa a versão em `CHANGELOG.md` 
 | Pasta | Conteúdo | Regra de entrada |
 |---|---|---|
 | `core/auth/` | Inicialização do Firebase, sessão/guarda de rota, normalização de papéis | Só mecanismo genérico e parametrizável — nenhum vocabulário de papel, nenhum caminho hardcoded, nenhuma regra de negócio de um tenant específico |
-| `core/tenant/` | Resolução de tenant, módulos habilitados, auditoria | `getTenant()` já nasce assíncrona (`Promise`), mesmo hoje sendo síncrona por dentro — ver nota de arquitetura em `core/tenant/tenant-context.js` |
+| `core/tenant/` | Resolução de tenant, módulos habilitados, branding, auditoria | `getTenant()` já nasce assíncrona (`Promise`), mesmo hoje sendo síncrona por dentro — ver nota de arquitetura em `core/tenant/tenant-context.js`. `branding.js` (Fase 3.5) lê a projeção pública e curada de `organizations/{orgId}`, nunca o documento inteiro |
 | `utils/` | Funções puras sem dependência de Firebase nem de markup de nenhum tenant | — |
 | `components/` | CSS puro (nenhum comportamento) para sidebar, KPI card, tabela de dados, modal | Todo `var()` tem fallback explícito — funciona mesmo em um tenant que não declarou os tokens de cor do Portal Associativo |
 | `layouts/` | Composição de componentes (como eles se combinam numa tela), não átomos isolados | — |
