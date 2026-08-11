@@ -94,6 +94,11 @@ export function createBrandingResolver({ db, getOrgId, orgCollection = "organiza
     }
     if (branding.logoUrl) {
       document.querySelectorAll("[data-tenant-logo]").forEach((el) => { el.src = branding.logoUrl; });
+      // og:image (Fase 3.11 — White Label): sem isso, compartilhar o link de
+      // qualquer organização em redes sociais/WhatsApp mostrava a prévia com o
+      // logo do CCBMG (URL absoluta hardcoded no HTML estático de cada página).
+      const ogImage = document.querySelector('meta[property="og:image"]');
+      if (ogImage) ogImage.setAttribute("content", branding.logoUrl);
     }
 
     // Contato institucional (Fase 3.11 — White Label): [data-tenant-email] em
@@ -130,6 +135,17 @@ export function createBrandingResolver({ db, getOrgId, orgCollection = "organiza
     // (fail-safe, mesmo espírito do resto desta função).
     if (displayName && document.body?.dataset.pageTitle) {
       document.title = `${document.body.dataset.pageTitle} — ${displayName}`;
+    }
+
+    // meta[name="description"] (Fase 3.11 — White Label): mesmo padrão de
+    // data-page-title, mas com um template ({org}) em vez de string fixa,
+    // porque a descrição é uma frase inteira, não só um nome anexado no fim.
+    // Ausência do atributo = descrição estática da página continua valendo.
+    if (displayName && document.body?.dataset.descTemplate) {
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) {
+        metaDesc.setAttribute("content", document.body.dataset.descTemplate.replace(/\{org\}/g, displayName));
+      }
     }
   }
 
