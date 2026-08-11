@@ -348,6 +348,23 @@
                   <button class="btn btn-primary" id="btnSalvarIdentidade">Salvar</button>
                 </div>
               </div>
+
+              <!-- Ação exclusiva do tenant Sandbox oficial (org_teste_etapa10) — nunca
+                   aparece pra nenhuma outra organização (ver visibilidade controlada
+                   no script, comparando orgId). -->
+              <div class="ds-card ds-card-body mt-4 d-none" id="sandboxBrandingCard">
+                <h6 class="mb-1">Ambiente de demonstração</h6>
+                <p class="ds-text-sm ds-text-muted">
+                  Este tenant é o Sandbox oficial da plataforma. Depois de uma demonstração comercial
+                  (que pode ter mudado logo/cores pra mostrar personalização de marca), restaure o
+                  branding pro estado oficial com um clique — não afeta associados, eventos,
+                  financeiro nem nenhum outro dado.
+                </p>
+                <div id="sandboxBrandingMsg" class="alert py-2 small d-none mt-2"></div>
+                <div class="d-flex justify-content-end mt-2">
+                  <button class="btn btn-outline-warning" id="btnRestaurarSandboxBranding">Restaurar Branding da Demonstração</button>
+                </div>
+              </div>
             </div>
 
             <!-- Financeiro -->
@@ -526,6 +543,13 @@
   const functionsApi = getFunctions(getApp(), "us-central1");
   const fnProvisionOrganization = httpsCallable(functionsApi, "provisionOrganization");
   const fnSetOrganizationDomains = httpsCallable(functionsApi, "setOrganizationDomains");
+  const fnRestoreSandboxBranding = httpsCallable(functionsApi, "restoreSandboxBranding");
+
+  // Único identificador do tenant Sandbox oficial da plataforma (ver
+  // CLAUDE.md, Fase 3.7) — controla só a VISIBILIDADE do botão aqui; o
+  // backend (functions/lib/sandboxBranding.js) faz a mesma checagem de
+  // verdade e nunca confia neste valor vindo do cliente.
+  const SANDBOX_ORG_ID = "org_teste_etapa10";
   const uploadImageFile = createImageUploader(storage);
 
   const params = new URLSearchParams(location.search);
@@ -1050,6 +1074,11 @@
     document.getElementById("identCorPrimariaHex").value = cfg.corPrimaria || "#A85A34";
     document.getElementById("identCorSecundaria").value = cfg.corSecundaria || "#7C4326";
     document.getElementById("identCorSecundariaHex").value = cfg.corSecundaria || "#7C4326";
+
+    // Ação exclusiva do tenant Sandbox oficial — nunca aparece pra nenhuma
+    // outra organização, produção incluída. O backend valida de novo (nunca
+    // confia só nesta checagem do cliente).
+    document.getElementById("sandboxBrandingCard").classList.toggle("d-none", orgId !== SANDBOX_ORG_ID);
   }
   // Cor: picker <-> campo hex sincronizados nos dois sentidos.
   function wireColorSync(colorId, hexId) {
@@ -1109,6 +1138,37 @@
       alert("Identidade visual salva.");
     } catch (e) {
       showFormErr("identErrMsg", "Erro ao salvar: " + e.message);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // Restaurar Branding da Demonstração — só existe/aparece pro tenant Sandbox
+  // oficial (SANDBOX_ORG_ID); o backend (restoreSandboxBranding) hardcoda o
+  // mesmo alvo e nunca aceita orgId nenhum vindo do cliente pra escolher a
+  // organização — este orgId é só uma confirmação extra, checada de novo lá.
+  document.getElementById("btnRestaurarSandboxBranding").addEventListener("click", async () => {
+    const msgEl = document.getElementById("sandboxBrandingMsg");
+    msgEl.classList.add("d-none");
+    const confirmado = confirm(
+      "Isso restaurará o branding padrão do ambiente de demonstração. Nenhum dado de associados, eventos, financeiro ou outros módulos será alterado."
+    );
+    if (!confirmado) return;
+
+    const btn = document.getElementById("btnRestaurarSandboxBranding");
+    btn.disabled = true;
+    try {
+      // Auditoria já é gravada pelo backend (writePlatformAuditLog dentro de
+      // restoreSandboxBranding) — mesmo padrão de setOrganizationDomains/
+      // createFeatureFlag, sem log duplicado do lado do cliente.
+      const { data: result } = await fnRestoreSandboxBranding({ orgId });
+      orgData.config = { ...(orgData.config || {}), ...result.branding };
+      loadIdentidade();
+      msgEl.className = "alert alert-success py-2 small mt-2";
+      msgEl.textContent = "Branding da demonstração restaurado com sucesso.";
+    } catch (e) {
+      msgEl.className = "alert alert-danger py-2 small mt-2";
+      msgEl.textContent = "Erro ao restaurar branding: " + (e.message || e);
     } finally {
       btn.disabled = false;
     }
