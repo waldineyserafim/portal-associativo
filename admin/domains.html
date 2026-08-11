@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Domínios — Painel Master · Portal Associativo</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/images/icons/favicon.svg">
+  <link rel="apple-touch-icon" href="../assets/images/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#A85A34">
+  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../css/design-system.css?v=portal-2026-08b">
+  <link rel="stylesheet" href="../shared/layouts/admin-shell.css?v=2026.08.7">
+  <link rel="stylesheet" href="../shared/components/index.css?v=2026.08.7">
+</head>
+<body>
+
+<div class="ds-admin-shell">
+  <main class="ds-admin-main">
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+      <div>
+        <h1 class="h4 mb-0">Domínios</h1>
+        <p class="ds-text-sm ds-text-muted mb-0">Quem resolve pra qual organização — o Tenant Resolver lê exatamente esta lista (ver CLAUDE.md, Fase 3.9/3.10).</p>
+      </div>
+      <button class="btn btn-primary btn-sm d-none" id="btnNovo" data-bs-toggle="modal" data-bs-target="#modalNovo">
+        <i class="bi bi-plus-lg me-1"></i>Novo domínio
+      </button>
+    </div>
+
+    <div id="readOnlyNote" class="alert alert-info d-none ds-text-sm">
+      Seu papel (Platform Operator) só permite visualizar — cadastrar, editar ou remover domínio exige Administrator ou Owner.
+    </div>
+
+    <div class="mb-3">
+      <input class="form-control" id="searchInput" placeholder="Buscar por domínio ou organização…">
+    </div>
+
+    <div class="ds-table-card">
+      <div class="text-center py-4 ds-text-muted ds-text-sm" id="loading">Carregando…</div>
+      <table class="ds-table d-none" id="tbl">
+        <thead>
+          <tr><th>Domínio</th><th>Organização</th><th>Tipo</th><th>Status</th><th>Atualizado</th><th></th></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- Modal Novo Domínio -->
+<div class="modal ds-modal fade" id="modalNovo" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Novo domínio</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Organização *</label>
+          <select class="form-select" id="novoOrgSelect"></select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Domínio *</label>
+          <input class="form-control" id="novoDominio" placeholder="ex.: demo.portalassociativo.com.br">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Tipo</label>
+          <select class="form-select" id="novoTipo">
+            <option value="alternativo">Alternativo (mantém o principal atual da organização)</option>
+            <option value="principal">Principal (substitui o domínio principal atual, se houver)</option>
+          </select>
+        </div>
+        <div class="form-text ds-text-xs mb-2">Domínio duplicado (já usado por outra organização) é rejeitado automaticamente pela Cloud Function — a mesma validação de sempre (Fase 3.5).</div>
+        <div id="novoErrMsg" class="alert alert-danger py-2 small d-none"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="btnSalvarNovo">Cadastrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/bootstrap.bundle.min.js"></script>
+<script type="module">
+  import { requirePlatformAccess, db } from "./assets/admin-auth.js";
+  import { renderAdminNav } from "./assets/admin-nav.js";
+  import { collection, getDocs, query, orderBy, where } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+  import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-functions.js";
+  import { getApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+
+  const TIPO_LABELS = { primario: '<span class="badge bg-primary">Principal</span>', alternativo: '<span class="badge bg-secondary">Alternativo</span>' };
+  const STATUS_LABELS = { verificado: '<span class="badge bg-success">Verificado</span>' };
+
+  const functionsApi = getFunctions(getApp(), "us-central1");
+  const fnSetOrganizationDomains = httpsCallable(functionsApi, "setOrganizationDomains");
+
+  let myRole = null;
+  let domains = [];
+  let orgsById = {};
+  const modal = new bootstrap.Modal(document.getElementById("modalNovo"));
+
+  requirePlatformAccess({
+    onRole: (role) => {
+      myRole = role;
+      renderAdminNav({ active: "domains" });
+      const canManage = myRole === "administrator" || myRole === "owner";
+      document.getElementById("btnNovo").classList.toggle("d-none", !canManage);
+      document.getElementById("readOnlyNote").classList.toggle("d-none", canManage);
+      load();
+    },
+  });
+
+  async function load() {
+    try {
+      const [domainsSnap, orgsSnap] = await Promise.all([
+        getDocs(query(collection(db, "domains"), orderBy("orgId"))),
+        getDocs(query(collection(db, "organizations"), orderBy("nome"))),
+      ]);
+      domains = domainsSnap.docs.map((d) => ({ hostname: d.id, ...d.data() }));
+      orgsById = Object.fromEntries(orgsSnap.docs.map((d) => [d.id, d.data().nome || d.id]));
+
+      const novoOrgSelect = document.getElementById("novoOrgSelect");
+      novoOrgSelect.innerHTML = Object.entries(orgsById).map(([id, nome]) => `<option value="${id}">${nome}</option>`).join("");
+
+      render();
+    } catch (e) {
+      document.getElementById("loading").textContent = "Erro ao carregar domínios.";
+      console.error(e);
+    }
+  }
+
+  function render(filterText = "") {
+    const canManage = myRole === "administrator" || myRole === "owner";
+    const f = filterText.trim().toLowerCase();
+    const filtered = domains.filter((d) => {
+      if (!f) return true;
+      const orgNome = (orgsById[d.orgId] || d.orgId || "").toLowerCase();
+      return d.hostname.toLowerCase().includes(f) || orgNome.includes(f);
+    });
+
+    document.getElementById("tbody").innerHTML = filtered.map((d) => {
+      const updatedAt = d.atualizadoEm?.toDate ? d.atualizadoEm.toDate().toLocaleString("pt-BR") : "—";
+      const orgNome = orgsById[d.orgId] || `(organização "${d.orgId}" não encontrada)`;
+      let actions = `<a href="./organization-detail.html?id=${encodeURIComponent(d.orgId)}" class="btn btn-sm btn-outline-secondary me-1">Ver organização</a>`;
+      if (canManage && d.tipo === "alternativo") {
+        actions += `<button class="btn btn-sm btn-outline-danger btn-remove" data-hostname="${d.hostname}" data-org="${d.orgId}">Remover</button>`;
+      }
+      return `<tr>
+        <td><code>${d.hostname}</code></td>
+        <td>${orgNome}</td>
+        <td>${TIPO_LABELS[d.tipo] || d.tipo}</td>
+        <td>${STATUS_LABELS[d.status] || d.status || "—"}</td>
+        <td class="ds-text-xs ds-text-muted">${updatedAt}</td>
+        <td class="text-end">${actions}</td>
+      </tr>`;
+    }).join("") || `<tr><td colspan="6" class="ds-table-empty">${f ? "Nenhum domínio encontrado pra essa busca" : "Nenhum domínio cadastrado ainda"}</td></tr>`;
+
+    document.querySelectorAll(".btn-remove").forEach((btn) => {
+      btn.addEventListener("click", () => removeDomain(btn.dataset.org, btn.dataset.hostname));
+    });
+
+    document.getElementById("loading").classList.add("d-none");
+    document.getElementById("tbl").classList.remove("d-none");
+  }
+
+  document.getElementById("searchInput").addEventListener("input", (e) => render(e.target.value));
+
+  /** Remove um domínio ALTERNATIVO recalculando o conjunto atual da organização e
+   * chamando setOrganizationDomains — mesma Cloud Function de sempre, sem endpoint novo
+   * (ver CLAUDE.md, Fase 3.10, "por que reaproveitar em vez de criar CRUD granular"). */
+  async function removeDomain(orgId, hostname) {
+    if (!confirm(`Remover "${hostname}" de ${orgsById[orgId] || orgId}?`)) return;
+    try {
+      const orgDomainsSnap = await getDocs(query(collection(db, "domains"), where("orgId", "==", orgId)));
+      const current = orgDomainsSnap.docs.map((d) => ({ hostname: d.id, ...d.data() }));
+      const principal = current.find((d) => d.tipo === "primario");
+      const alternativos = current.filter((d) => d.tipo === "alternativo" && d.hostname !== hostname).map((d) => d.hostname);
+      if (!principal) { alert("Esta organização não tem domínio principal — remova pela tela da organização."); return; }
+      await fnSetOrganizationDomains({ orgId, dominioPrincipal: principal.hostname, dominiosAlternativos: alternativos });
+      await load();
+    } catch (e) {
+      alert("Erro: " + e.message);
+    }
+  }
+
+  document.getElementById("btnSalvarNovo").addEventListener("click", async () => {
+    const orgId = document.getElementById("novoOrgSelect").value;
+    const novoDominio = document.getElementById("novoDominio").value.trim();
+    const tipo = document.getElementById("novoTipo").value;
+    const errMsg = document.getElementById("novoErrMsg");
+    errMsg.classList.add("d-none");
+
+    if (!orgId || !novoDominio) { errMsg.textContent = "Organização e domínio são obrigatórios."; errMsg.classList.remove("d-none"); return; }
+
+    const btn = document.getElementById("btnSalvarNovo");
+    btn.disabled = true;
+    try {
+      const orgDomainsSnap = await getDocs(query(collection(db, "domains"), where("orgId", "==", orgId)));
+      const current = orgDomainsSnap.docs.map((d) => ({ hostname: d.id, ...d.data() }));
+      const currentPrincipal = current.find((d) => d.tipo === "primario");
+      const currentAlternativos = current.filter((d) => d.tipo === "alternativo").map((d) => d.hostname);
+
+      let dominioPrincipal, dominiosAlternativos;
+      if (tipo === "principal" || !currentPrincipal) {
+        dominioPrincipal = novoDominio;
+        dominiosAlternativos = currentPrincipal ? [...currentAlternativos, currentPrincipal.hostname] : currentAlternativos;
+      } else {
+        dominioPrincipal = currentPrincipal.hostname;
+        dominiosAlternativos = [...currentAlternativos, novoDominio];
+      }
+
+      await fnSetOrganizationDomains({ orgId, dominioPrincipal, dominiosAlternativos });
+      modal.hide();
+      document.getElementById("novoDominio").value = "";
+      await load();
+    } catch (e) {
+      errMsg.textContent = "Erro: " + e.message;
+      errMsg.classList.remove("d-none");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

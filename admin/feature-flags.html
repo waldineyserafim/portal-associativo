@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Feature Flags — Painel Master · Portal Associativo</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/images/icons/favicon.svg">
+  <link rel="apple-touch-icon" href="../assets/images/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#A85A34">
+  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../css/design-system.css?v=portal-2026-08b">
+  <link rel="stylesheet" href="../shared/layouts/admin-shell.css?v=2026.08.7">
+  <link rel="stylesheet" href="../shared/components/index.css?v=2026.08.7">
+</head>
+<body>
+
+<div class="ds-admin-shell">
+  <main class="ds-admin-main">
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+      <div>
+        <h1 class="h4 mb-0">Feature Flags</h1>
+        <p class="ds-text-sm ds-text-muted mb-0">Deploy ≠ Release — separe "código publicado" de "quem pode usar" (ver CLAUDE.md, Fase 3.8).</p>
+      </div>
+      <button class="btn btn-primary btn-sm d-none" id="btnNovaFlag" data-bs-toggle="modal" data-bs-target="#modalFlag">
+        <i class="bi bi-plus-lg me-1"></i>Nova flag
+      </button>
+    </div>
+
+    <div id="readOnlyNote" class="alert alert-info d-none ds-text-sm">
+      Seu papel (Platform Operator) só permite visualizar — criar flags, mudar status ou definir exceções por organização exige Administrator ou Owner.
+    </div>
+
+    <div class="ds-table-card">
+      <div class="text-center py-4 ds-text-muted ds-text-sm" id="loading">Carregando…</div>
+      <table class="ds-table d-none" id="tbl">
+        <thead>
+          <tr><th>Flag</th><th>Categoria</th><th>Status</th><th>Exceções por org.</th><th>Atualizado</th><th></th></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- Modal Nova Flag -->
+<div class="modal ds-modal fade" id="modalFlag" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Nova Feature Flag</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Chave *</label>
+          <input class="form-control" id="fKey" placeholder="ex.: checkout_v2, leiloes_beta" pattern="[a-z][a-z0-9_]*">
+          <div class="form-text ds-text-xs">snake_case, minúsculo — vira o ID do documento e o nome usado em <code>[data-feature="chave"]</code>/código.</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Descrição</label>
+          <textarea class="form-control" id="fDescription" rows="2"></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Categoria</label>
+          <select class="form-select" id="fCategory">
+            <option value="experiment">Experimento</option>
+            <option value="beta">Beta interno</option>
+            <option value="premium">Módulo premium</option>
+            <option value="killswitch">Kill-switch</option>
+            <option value="other">Outro</option>
+          </select>
+        </div>
+        <div class="form-text ds-text-xs mb-2">Nasce sempre desligada (status "off") para todo mundo — ativação é sempre um passo explícito, feito depois de criada.</div>
+        <div id="fErrMsg" class="alert alert-danger py-2 small d-none"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="btnSalvarFlag">Criar flag</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Gerenciar Flag (status/rollout/exceções) -->
+<div class="modal ds-modal fade" id="modalManage" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Gerenciar <code id="mFlagKey"></code></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <h6 class="ds-text-sm fw-bold">Status global</h6>
+        <div class="d-flex gap-2 align-items-end flex-wrap mb-2">
+          <div>
+            <label class="form-label ds-text-xs mb-1">Status</label>
+            <select class="form-select form-select-sm" id="mStatus">
+              <option value="off">Desligada (off)</option>
+              <option value="on">Ligada pra todos (on)</option>
+              <option value="rollout">Rollout gradual (%)</option>
+            </select>
+          </div>
+          <div id="mRolloutWrap" class="d-none">
+            <label class="form-label ds-text-xs mb-1">Percentual</label>
+            <input type="number" min="0" max="100" class="form-control form-control-sm" id="mRolloutPct" style="width:100px">
+          </div>
+          <button class="btn btn-primary btn-sm" id="btnSalvarStatus">Salvar status</button>
+        </div>
+        <p class="ds-text-xs ds-text-muted">Rollout é determinístico por organização (mesma org sempre no mesmo grupo, sobe o % sem "embaralhar" quem já está dentro). Uma exceção abaixo sempre vence o status/rollout, pra qualquer organização.</p>
+
+        <hr>
+        <h6 class="ds-text-sm fw-bold">Exceções por organização</h6>
+        <p class="ds-text-xs ds-text-muted">Use pra beta interno / cliente piloto (marque "Ligada" só pra essa org) ou desligamento emergencial pontual (marque "Desligada" só pra essa org, mesmo com status global "on").</p>
+        <div class="d-flex gap-2 align-items-end flex-wrap mb-3">
+          <div class="flex-grow-1">
+            <label class="form-label ds-text-xs mb-1">Organização</label>
+            <select class="form-select form-select-sm" id="mOrgSelect"></select>
+          </div>
+          <div>
+            <label class="form-label ds-text-xs mb-1">Exceção</label>
+            <select class="form-select form-select-sm" id="mOrgValue">
+              <option value="true">Ligada</option>
+              <option value="false">Desligada</option>
+            </select>
+          </div>
+          <button class="btn btn-outline-primary btn-sm" id="btnAddOverride">Adicionar</button>
+        </div>
+        <table class="ds-table">
+          <thead><tr><th>Organização</th><th>Exceção</th><th></th></tr></thead>
+          <tbody id="mOverridesBody"></tbody>
+        </table>
+
+        <hr>
+        <button class="btn btn-outline-danger btn-sm" id="btnArquivar">Arquivar flag</button>
+        <span class="ds-text-xs ds-text-muted ms-2">Nunca é excluída de verdade — arquivar equivale a "sempre desligada, escondida da lista de gestão".</span>
+        <div id="mErrMsg" class="alert alert-danger py-2 small d-none mt-2"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/bootstrap.bundle.min.js"></script>
+<script type="module">
+  import { requirePlatformAccess, db } from "./assets/admin-auth.js";
+  import { renderAdminNav } from "./assets/admin-nav.js";
+  import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+  import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-functions.js";
+  import { getApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+
+  const CATEGORY_LABELS = { experiment: "Experimento", beta: "Beta interno", premium: "Premium", killswitch: "Kill-switch", other: "Outro" };
+  const STATUS_LABELS = { off: '<span class="badge bg-secondary">Desligada</span>', on: '<span class="badge bg-success">Ligada</span>', rollout: '<span class="badge bg-warning text-dark">Rollout</span>' };
+
+  const functionsApi = getFunctions(getApp(), "us-central1");
+  const fnCreate = httpsCallable(functionsApi, "createFeatureFlag");
+  const fnSetStatus = httpsCallable(functionsApi, "setFeatureFlagStatus");
+  const fnSetOverride = httpsCallable(functionsApi, "setFeatureFlagOverride");
+  const fnArchive = httpsCallable(functionsApi, "archiveFeatureFlag");
+
+  let myRole = null;
+  let flags = [];
+  let orgsById = {};
+  let activeKey = null;
+  const modal = new bootstrap.Modal(document.getElementById("modalFlag"));
+  const manageModal = new bootstrap.Modal(document.getElementById("modalManage"));
+
+  requirePlatformAccess({
+    onRole: (role) => {
+      myRole = role;
+      renderAdminNav({ active: "feature-flags" });
+      const canManage = myRole === "administrator" || myRole === "owner";
+      document.getElementById("btnNovaFlag").classList.toggle("d-none", !canManage);
+      document.getElementById("readOnlyNote").classList.toggle("d-none", canManage);
+      load();
+    },
+  });
+
+  async function load() {
+    try {
+      const [flagsSnap, orgsSnap] = await Promise.all([
+        getDocs(query(collection(db, "featureFlags"), orderBy("key"))),
+        getDocs(query(collection(db, "organizations"), orderBy("nome"))),
+      ]);
+      flags = flagsSnap.docs.map((d) => ({ key: d.id, ...d.data() })).filter((f) => !f.archived);
+      orgsById = Object.fromEntries(orgsSnap.docs.map((d) => [d.id, d.data().nome || d.id]));
+      render();
+    } catch (e) {
+      document.getElementById("loading").textContent = "Erro ao carregar flags.";
+      console.error(e);
+    }
+  }
+
+  function render() {
+    const canManage = myRole === "administrator" || myRole === "owner";
+    document.getElementById("tbody").innerHTML = flags.map((f) => {
+      const overrideCount = Object.keys(f.overrides || {}).length;
+      const updatedAt = f.updatedAt?.toDate ? f.updatedAt.toDate().toLocaleString("pt-BR") : "—";
+      const statusLabel = f.status === "rollout" ? `${STATUS_LABELS.rollout} (${f.rolloutPercentage || 0}%)` : (STATUS_LABELS[f.status] || f.status);
+      return `<tr>
+        <td><strong>${f.key}</strong><div class="ds-text-xs ds-text-muted">${f.description || ""}</div></td>
+        <td><span class="badge bg-secondary">${CATEGORY_LABELS[f.category] || f.category}</span></td>
+        <td>${statusLabel}</td>
+        <td>${overrideCount || "—"}</td>
+        <td class="ds-text-xs ds-text-muted">${updatedAt}</td>
+        <td class="text-end">${canManage ? `<button class="btn btn-sm btn-outline-secondary btn-manage" data-key="${f.key}">Gerenciar</button>` : ""}</td>
+      </tr>`;
+    }).join("") || '<tr><td colspan="6" class="ds-table-empty">Nenhuma flag criada ainda</td></tr>';
+
+    document.querySelectorAll(".btn-manage").forEach((btn) => {
+      btn.addEventListener("click", () => openManage(btn.dataset.key));
+    });
+
+    document.getElementById("loading").classList.add("d-none");
+    document.getElementById("tbl").classList.remove("d-none");
+  }
+
+  function openManage(key) {
+    activeKey = key;
+    const flag = flags.find((f) => f.key === key);
+    document.getElementById("mFlagKey").textContent = key;
+    document.getElementById("mStatus").value = flag.status;
+    document.getElementById("mRolloutPct").value = flag.rolloutPercentage || 0;
+    document.getElementById("mRolloutWrap").classList.toggle("d-none", flag.status !== "rollout");
+    document.getElementById("mErrMsg").classList.add("d-none");
+
+    const orgSelect = document.getElementById("mOrgSelect");
+    orgSelect.innerHTML = Object.entries(orgsById).map(([id, nome]) => `<option value="${id}">${nome}</option>`).join("");
+
+    renderOverrides(flag);
+    manageModal.show();
+  }
+
+  function renderOverrides(flag) {
+    const overrides = flag.overrides || {};
+    document.getElementById("mOverridesBody").innerHTML = Object.entries(overrides).map(([orgId, value]) => `
+      <tr>
+        <td>${orgsById[orgId] || orgId}</td>
+        <td>${value ? '<span class="badge bg-success">Ligada</span>' : '<span class="badge bg-danger">Desligada</span>'}</td>
+        <td class="text-end"><button class="btn btn-sm btn-outline-danger btn-remove-override" data-org="${orgId}">Remover</button></td>
+      </tr>`).join("") || '<tr><td colspan="3" class="ds-table-empty">Nenhuma exceção — segue o status global pra todo mundo</td></tr>';
+
+    document.querySelectorAll(".btn-remove-override").forEach((btn) => {
+      btn.addEventListener("click", () => setOverride(btn.dataset.org, null));
+    });
+  }
+
+  document.getElementById("mStatus").addEventListener("change", (e) => {
+    document.getElementById("mRolloutWrap").classList.toggle("d-none", e.target.value !== "rollout");
+  });
+
+  document.getElementById("btnSalvarStatus").addEventListener("click", async () => {
+    const status = document.getElementById("mStatus").value;
+    const rolloutPercentage = status === "rollout" ? Number(document.getElementById("mRolloutPct").value) : undefined;
+    const errMsg = document.getElementById("mErrMsg");
+    errMsg.classList.add("d-none");
+    try {
+      await fnSetStatus({ key: activeKey, status, rolloutPercentage });
+      await load();
+      manageModal.hide();
+    } catch (e) {
+      errMsg.textContent = "Erro: " + e.message;
+      errMsg.classList.remove("d-none");
+    }
+  });
+
+  document.getElementById("btnAddOverride").addEventListener("click", async () => {
+    const orgId = document.getElementById("mOrgSelect").value;
+    const value = document.getElementById("mOrgValue").value === "true";
+    await setOverride(orgId, value);
+  });
+
+  async function setOverride(orgId, value) {
+    const errMsg = document.getElementById("mErrMsg");
+    errMsg.classList.add("d-none");
+    try {
+      await fnSetOverride({ key: activeKey, orgId, value });
+      const flagsSnap = await getDocs(query(collection(db, "featureFlags"), orderBy("key")));
+      flags = flagsSnap.docs.map((d) => ({ key: d.id, ...d.data() })).filter((f) => !f.archived);
+      renderOverrides(flags.find((f) => f.key === activeKey));
+      render();
+    } catch (e) {
+      errMsg.textContent = "Erro: " + e.message;
+      errMsg.classList.remove("d-none");
+    }
+  }
+
+  document.getElementById("btnArquivar").addEventListener("click", async () => {
+    if (!confirm(`Arquivar a flag "${activeKey}"? Ela para de valer pra todo mundo e some desta lista (não é excluída).`)) return;
+    try {
+      await fnArchive({ key: activeKey, archived: true });
+      manageModal.hide();
+      await load();
+    } catch (e) {
+      alert("Erro: " + e.message);
+    }
+  });
+
+  document.getElementById("btnSalvarFlag").addEventListener("click", async () => {
+    const key = document.getElementById("fKey").value.trim();
+    const description = document.getElementById("fDescription").value.trim();
+    const category = document.getElementById("fCategory").value;
+    const errMsg = document.getElementById("fErrMsg");
+    errMsg.classList.add("d-none");
+
+    if (!key) { errMsg.textContent = "Chave é obrigatória."; errMsg.classList.remove("d-none"); return; }
+
+    const btn = document.getElementById("btnSalvarFlag");
+    btn.disabled = true;
+    try {
+      await fnCreate({ key, description, category });
+      modal.hide();
+      document.getElementById("fKey").value = "";
+      document.getElementById("fDescription").value = "";
+      await load();
+    } catch (e) {
+      errMsg.textContent = "Erro: " + e.message;
+      errMsg.classList.remove("d-none");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

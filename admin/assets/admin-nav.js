@@ -8,11 +8,13 @@
 const NAV_ITEMS = [
   { key: "dashboard", href: "./index.html", label: "Dashboard", icon: "bi-speedometer2" },
   { key: "organizations", href: "./organizations.html", label: "Organizações", icon: "bi-buildings" },
+  { key: "domains", href: "./domains.html", label: "Domínios", icon: "bi-globe2" },
   { key: "plans", href: "./plans.html", label: "Planos", icon: "bi-layers" },
   { key: "subscriptions", href: "./subscriptions.html", label: "Assinaturas", icon: "bi-receipt" },
   { key: "modules", href: "./modules.html", label: "Módulos", icon: "bi-puzzle" },
   { key: "audit", href: "./audit.html", label: "Auditoria", icon: "bi-clock-history" },
   { key: "platform-operators", href: "./platform-operators.html", label: "Equipe da plataforma", icon: "bi-person-badge" },
+  { key: "feature-flags", href: "./feature-flags.html", label: "Feature Flags", icon: "bi-toggles" },
   { key: "settings", href: "./settings.html", label: "Configurações", icon: "bi-gear" },
 ];
 
