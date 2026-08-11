@@ -117,6 +117,7 @@
   const fnCreatePlatformAdmin = httpsCallable(functionsApi, "createPlatformAdmin");
   const fnSetPlatformAdminStatus = httpsCallable(functionsApi, "setPlatformAdminStatus");
   const fnSetPlatformAdminRole = httpsCallable(functionsApi, "setPlatformAdminRole");
+  const fnDeletePlatformAdmin = httpsCallable(functionsApi, "deletePlatformAdmin");
 
   let myRole = null;
   let myUid = null;
@@ -179,6 +180,7 @@
       let actions = "";
       if (actionable) {
         actions += `<button class="btn btn-sm btn-outline-secondary me-1 btn-toggle-status" data-uid="${o.uid}" data-ativo="${o.ativo !== false}">${o.ativo !== false ? "Desativar" : "Ativar"}</button>`;
+        actions += `<button class="btn btn-sm btn-outline-danger me-1 btn-delete" data-uid="${o.uid}" data-nome="${(o.nome || "").replace(/"/g, "&quot;")}">Excluir</button>`;
       }
       if (myRole === "owner" && !isSelf) {
         actions += `<select class="form-select form-select-sm d-inline-block w-auto btn-change-role" data-uid="${o.uid}" style="min-width:180px;">
@@ -203,6 +205,22 @@
         btn.disabled = true;
         try {
           await fnSetPlatformAdminStatus({ uid, ativo: !ativo });
+          await load();
+        } catch (e) {
+          alert("Erro: " + e.message);
+          btn.disabled = false;
+        }
+      });
+    });
+
+    document.querySelectorAll(".btn-delete").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const uid = btn.dataset.uid;
+        const nome = btn.dataset.nome || "esta conta";
+        if (!confirm(`Excluir definitivamente "${nome}"? Essa ação não pode ser desfeita — a conta perde acesso ao Painel Master imediatamente e some da lista.`)) return;
+        btn.disabled = true;
+        try {
+          await fnDeletePlatformAdmin({ uid });
           await load();
         } catch (e) {
           alert("Erro: " + e.message);
