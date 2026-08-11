@@ -64,13 +64,17 @@ export function createBrandingResolver({ db, getOrgId, orgCollection = "organiza
     if (!branding) return;
 
     if (branding.faviconUrl) {
-      let link = document.querySelector('link[rel="icon"]');
-      if (!link) {
-        link = document.createElement("link");
+      // Várias páginas têm rel="icon" E rel="shortcut icon" — atualiza todos
+      // (só o primeiro deixava o segundo com o favicon antigo em alguns navegadores).
+      const iconLinks = document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"]');
+      if (iconLinks.length) {
+        iconLinks.forEach((link) => { link.href = branding.faviconUrl; });
+      } else {
+        const link = document.createElement("link");
         link.rel = "icon";
+        link.href = branding.faviconUrl;
         document.head.appendChild(link);
       }
-      link.href = branding.faviconUrl;
     }
 
     if (branding.corPrimaria) {
@@ -90,6 +94,42 @@ export function createBrandingResolver({ db, getOrgId, orgCollection = "organiza
     }
     if (branding.logoUrl) {
       document.querySelectorAll("[data-tenant-logo]").forEach((el) => { el.src = branding.logoUrl; });
+    }
+
+    // Contato institucional (Fase 3.11 — White Label): [data-tenant-email] em
+    // <a href="mailto:..."> troca href E texto; [data-tenant-address] só o
+    // texto. Ambos condicionais — organização sem o campo preenchido mantém
+    // o texto estático da página (fail-safe, mesmo padrão do resto daqui).
+    if (branding.email) {
+      document.querySelectorAll("[data-tenant-email]").forEach((el) => {
+        el.textContent = branding.email;
+        if (el.tagName === "A") el.href = `mailto:${branding.email}`;
+      });
+    }
+    if (branding.endereco) {
+      document.querySelectorAll("[data-tenant-address]").forEach((el) => { el.textContent = branding.endereco; });
+    }
+
+    // [data-hide-if-sandbox] (Fase 3.11 — White Label): esconde conteúdo
+    // institucional hardcoded que hoje só pertence de verdade ao CCBMG (fotos
+    // reais de diretoria, histórico do clube) — nenhuma outra organização tem
+    // uma versão própria disso ainda (não existe CMS pra essas seções, ver
+    // CLAUDE.md). Gate por `isSandbox`, não por orgId: genérico pra qualquer
+    // tenant de demonstração futuro, não uma exceção pro Sandbox de hoje.
+    // [data-hide-if-sandbox-fallback] no MESMO container (ou logo em seguida)
+    // aparece no lugar, se existir.
+    if (branding.isSandbox === true) {
+      document.querySelectorAll("[data-hide-if-sandbox]").forEach((el) => { el.classList.add("d-none"); });
+      document.querySelectorAll("[data-hide-if-sandbox-fallback]").forEach((el) => { el.classList.remove("d-none"); });
+    }
+
+    // <title> — cada página declara só o propósito ("Login", "Área do
+    // Associado") em <body data-page-title="..."> (nunca o nome da
+    // organização, que não pertence ao HTML estático). Ausência do atributo
+    // = página não migrada ainda, título estático de sempre continua valendo
+    // (fail-safe, mesmo espírito do resto desta função).
+    if (displayName && document.body?.dataset.pageTitle) {
+      document.title = `${document.body.dataset.pageTitle} — ${displayName}`;
     }
   }
 
