@@ -1,6 +1,6 @@
 # EVOLUÇÃO MULTI-TENANT — FASE 4: Configurações Personalizáveis por Tenant
 
-**Status: implementado, testado e migrado em produção.**
+**Status: implementado, deployado em produção e validado com escrita real no Sandbox. Fase encerrada.**
 Baseline: [TENANT_HARDCODE_AUDIT_REPORT.md](./TENANT_HARDCODE_AUDIT_REPORT.md).
 
 ---
@@ -232,4 +232,49 @@ Cenário: `org_associacao_exemplo` — nome diferente, cidade diferente, WhatsAp
 5. **Endereço/mapa institucional** — o texto do endereço já é 100% dinâmico (`endereco`); a imagem do mapa foi removida (não recriada) por não existir campo de configuração — um tenant que queira um mapa visual precisaria de um campo novo, fora do escopo desta fase.
 
 Comparado ao teste equivalente da auditoria original (12 pontos que exigiam alteração manual), **10 dos 12** foram resolvidos nesta fase. Os 2 que restam (#2 domínio/proxy e #3 reCAPTCHA) já eram — e continuam sendo — infraestrutura fora do escopo desta fase, não uma lacuna nova descoberta agora.
+
+---
+
+## 11. DEPLOY EM PRODUÇÃO E SMOKE TEST DE ESCRITA REAL
+
+Deploy completo (Firestore Rules + Indexes, todas as Cloud Functions, frontend dos dois repositórios via `git push` — GitHub Pages), seguido de smoke test real contra o tenant Sandbox (`org_teste_etapa10`), navegador de verdade via Playwright, nunca contra CCBMG.
+
+### Deploy
+
+| Alvo | Comando | Resultado |
+|---|---|---|
+| Firestore Rules + Indexes | `firebase deploy --only firestore` | ✅ `isOrgMasterSelfService` liberada em produção; índice novo de `leads` (feature paralela, não desta fase) também aplicado |
+| Cloud Functions | `firebase deploy --only functions` | ✅ Todas as ~57 functions atualizadas/criadas sem erro (billing engine, provisioning, organizationPublicSync, + 4 functions de `leads`, feature paralela confirmada pronta pelo operador) |
+| Frontend CCBMG | `git push` (`clubedocavalobonfimmg`) | ✅ 2 commits — Fase 4 completa + bump de cache-busting de `branding.js` (ver achado abaixo) |
+| Frontend Painel Master | `git push` (`portal-associativo`) | ✅ 1 commit |
+
+**Achado durante o deploy, corrigido no próprio deploy**: `firebase.js` importava `shared/core/tenant/branding.js` com uma query string de cache-busting (`?v=2026.08.11`) que não tinha sido incrementada, apesar do conteúdo do arquivo ter mudado (suporte a WhatsApp/redes sociais). Como `portalassociativo.com.br` fica atrás de Cloudflare com cache de até 4h (documentado desde a Fase 3.9), isso deixaria produção servindo a versão antiga por horas. Corrigido bumpando pra `?v=2026.08.12` antes de considerar o deploy completo; confirmado via `curl` direto na URL de produção que o conteúdo novo já estava sendo servido antes de iniciar o smoke test.
+
+### Smoke test (Sandbox, escrita real, pós-deploy)
+
+Mecanismo: `domains/localhost → org_teste_etapa10` registrado temporariamente (autorizado explicitamente antes de gravar; removido ao final), site servido localmente (`npx serve`), Playwright dirigindo um Chromium real contra Firebase de produção.
+
+| Cenário | Resultado |
+|---|---|
+| **Master**: altera Classificados, salva, **recarrega a página** | ✅ PASSOU — toast de sucesso, valor novo confirmado após reload (não só em memória — leitura fresca do Firestore) |
+| **Admin**: acessa a mesma tela | ✅ PASSOU — `viewer-mode` ativo, todos os valores visíveis, campos travados |
+| **Admin**: tenta escrever direto no Firestore (contornando a UI) | ✅ PASSOU — `permission-denied`, nada foi alterado |
+| **Master**: tenta alterar `business.auction.commissionSistemaPct` (contornando a UI) | ✅ PASSOU — `permission-denied`, valor manteve-se em `0.05` antes/depois |
+| **Master**: consegue alterar o resto de `business.auction` (`commissionClubePct` etc.) no mesmo payload | ✅ PASSOU |
+
+**Achado durante o próprio teste (bug do script de teste, não do produto)**: o clique em "Entrar" de `login.html` inicialmente não disparava — `firebase.js` resolve o tenant através de uma cadeia de `await` no topo do módulo antes de anexar qualquer listener, e o clique do Playwright chegava antes disso terminar. Corrigido no script de teste com uma espera curta após o carregamento da página; não é um bug de produção (um usuário real levaria mais que os ~500ms que faltavam pro script pegar a rota rápida, mas fica registrado como um padrão a ter em mente em qualquer teste automatizado futuro contra páginas que importam `firebase.js`).
+
+**Achado durante o próprio teste (bug do script de teste, causou dano real e já corrigido)**: uma chamada de diagnóstico ad-hoc dentro do teste (fora do fluxo normal da UI) escreveu `updateDoc(ref, { business: { auction: {...} } })` sem espalhar as outras chaves de `business` primeiro — como `updateDoc` substitui o mapa inteiro do campo de topo (não faz merge profundo de objeto aninhado), isso apagou `business.classifieds` e `business.membership` do Sandbox. **Confirmado que o código real de `admin_configuracoes.html` não tem esse problema** — todos os handlers de salvar de verdade espalham `...(orgData.business || {})` antes de sobrescrever a subchave própria. O dado do Sandbox foi restaurado para os valores exatos da migração (`classifieds: {pricePerDay:1, minimumDays:30}`, `membership: {renewSoonDays:5, graceOverdueDays:5}`) logo em seguida, confirmado por leitura direta.
+
+### Pendência documental registrada (não corrigida agora, por pedido explícito)
+
+Durante o teste, a conta Master do Sandbox (`sandbox_master_01`) mostrou-se acessível via `login.html` (CPF `22233344073`), não mais via `login_master.html`/e-mail `@sandbox.invalid` como o CLAUDE.md documentava desde a Fase 3.7. Isso já havia sido investigado e corrigido numa sessão paralela no mesmo dia — ver CLAUDE.md, **Fase 3.12** (`login_master.html`/`admin_master*.html`: mecanismo legado, não uma segunda tela de admin) — que documenta a causa raiz completa e a correção já aplicada às contas do Sandbox. Nenhuma ação adicional necessária desta fase; achado confirmado de forma independente durante este teste, registrado aqui só para manter o histórico completo.
+
+### Limpeza pós-teste
+
+`domains/localhost` removido, valores de teste no Sandbox restaurados/confirmados, servidor local encerrado, scripts de teste descartáveis apagados. Nenhum resíduo de teste permanece em produção.
+
+### Veredito
+
+Todos os critérios do smoke test passaram. **Fase 4 encerrada.**
 
