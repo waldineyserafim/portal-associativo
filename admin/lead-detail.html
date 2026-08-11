@@ -27,9 +27,12 @@
         <h1 class="h4 mb-0" id="leadTitulo">—</h1>
         <div id="leadStatusBadge"></div>
       </div>
-      <button class="btn btn-outline-danger btn-sm" id="btnArquivar">Arquivar lead</button>
+      <button class="btn btn-outline-danger btn-sm d-none" id="btnArquivar">Arquivar lead</button>
     </div>
 
+    <div id="leadLoadError" class="alert alert-danger d-none"></div>
+
+    <div id="leadContent" class="d-none">
     <ul class="nav nav-tabs mb-4" id="leadTabs" role="tablist">
       <li class="nav-item" role="presentation">
         <button class="nav-link active" id="tab-dados-btn" data-bs-toggle="tab" data-bs-target="#tab-dados" type="button" role="tab">Dados</button>
@@ -218,6 +221,7 @@
         </div>
       </div>
     </div>
+    </div>
   </main>
 </div>
 
@@ -253,17 +257,44 @@
     onRole: () => {
       renderAdminNav({ active: "leads" });
       if (!leadId) {
-        document.getElementById("leadTitulo").textContent = "Lead não informado";
+        showLoadError("Lead não informado — volte para a listagem e escolha um lead pela lista.");
         return;
       }
       loadAdmins().then(load);
     },
   });
 
+  function showLoadError(message) {
+    document.getElementById("leadTitulo").textContent = "—";
+    document.getElementById("leadContent").classList.add("d-none");
+    document.getElementById("btnArquivar").classList.add("d-none");
+    const err = document.getElementById("leadLoadError");
+    err.textContent = message;
+    err.classList.remove("d-none");
+  }
+
   async function loadAdmins() {
     const snap = await getDocs(query(collection(db, "platformAdmins"), orderBy("nome")));
     const sel = document.getElementById("dResponsavel");
     sel.innerHTML = snap.docs.map((d) => `<option value="${d.id}">${d.data().nome || d.id}</option>`).join("");
+  }
+
+  // Se o responsável do lead não estiver mais entre as contas ativas de
+  // platformAdmins (ex.: excluída via deletePlatformAdmin), o <select> não
+  // teria nenhuma opção correspondente — sem isso, salvar sem querer
+  // reatribuiria o lead pra outra pessoa. Injeta a opção "órfã" explicitamente
+  // pra ela continuar selecionada e visível até alguém escolher outro responsável.
+  function ensureResponsavelOption(uid) {
+    if (!uid) return;
+    const sel = document.getElementById("dResponsavel");
+    const exists = Array.from(sel.options).some((o) => o.value === uid);
+    if (!exists) {
+      const opt = document.createElement("option");
+      opt.value = uid;
+      opt.textContent = `Conta removida (${uid})`;
+      sel.insertBefore(opt, sel.firstChild);
+    }
+    sel.value = uid;
   }
 
   function toDateInputValue(ts) {
@@ -272,22 +303,56 @@
     return d.toISOString().slice(0, 10);
   }
 
-  async function load() {
-    const snap = await getDoc(doc(db, "leads", leadId));
-    if (!snap.exists()) {
-      document.getElementById("leadTitulo").textContent = "Lead não encontrado";
-      return;
-    }
-    lead = { id: snap.id, ...snap.data() };
-    fillForm();
-    loadHistory();
+  // Datas nascem de <input type="date"> ("YYYY-MM-DD"), interpretado como
+  // meia-noite UTC — formatar com getters UTC (não toLocaleDateString, que
+  // usa o fuso local) evita mostrar um dia a menos em fusos negativos (Brasil).
+  function fmtDateUTC(ts) {
+    if (!ts?.toDate) return null;
+    const d = ts.toDate();
+    const dd = String(d.getUTCDate()).padStart(2, "0");
+    const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+    return `${dd}/${mm}/${d.getUTCFullYear()}`;
   }
 
-  function fillForm() {
+  // Atualiza só cabeçalho/badge/botão Arquivar a partir de `lead` já carregado
+  // — usada após efeitos colaterais (registrar histórico, arquivar) que NÃO
+  // devem sobrescrever edições não salvas na aba Dados (fillForm() faz isso).
+  function updateHeader() {
     document.getElementById("leadTitulo").textContent = lead.organizacaoNome || "—";
     document.getElementById("leadStatusBadge").innerHTML = STATUS_LABELS[lead.status] || lead.status;
     document.getElementById("btnArquivar").textContent = lead.archived ? "Desarquivar lead" : "Arquivar lead";
+    document.getElementById("btnArquivar").classList.remove("d-none");
+  }
 
+  // Recarrega só o documento do lead (pra header/badge/botão refletirem o
+  // estado atual) sem tocar no formulário Dados — ver updateHeader() acima.
+  async function refreshLeadData() {
+    const snap = await getDoc(doc(db, "leads", leadId));
+    if (!snap.exists()) { showLoadError("Lead não encontrado — pode ter sido removido."); return; }
+    lead = { id: snap.id, ...snap.data() };
+    updateHeader();
+  }
+
+  async function load() {
+    try {
+      const snap = await getDoc(doc(db, "leads", leadId));
+      if (!snap.exists()) {
+        showLoadError("Lead não encontrado — pode ter sido removido ou o link está incorreto.");
+        return;
+      }
+      lead = { id: snap.id, ...snap.data() };
+      document.getElementById("leadLoadError").classList.add("d-none");
+      document.getElementById("leadContent").classList.remove("d-none");
+      updateHeader();
+      fillForm();
+      await loadHistory();
+    } catch (e) {
+      console.error(e);
+      showLoadError("Erro ao carregar o lead. Tente recarregar a página.");
+    }
+  }
+
+  function fillForm() {
     document.getElementById("dOrganizacaoNome").value = lead.organizacaoNome || "";
     document.getElementById("dSegmento").value = lead.segmento || "";
     document.getElementById("dCidade").value = lead.cidade || "";
@@ -300,6 +365,7 @@
     document.getElementById("dOrigem").value = lead.origem || "";
     document.getElementById("dPrioridade").value = lead.prioridade || "media";
     document.getElementById("dResponsavel").value = lead.responsavelUid || "";
+    ensureResponsavelOption(lead.responsavelUid);
     document.getElementById("dSistemaAtual").value = lead.sistemaAtual || "nenhum";
     document.getElementById("dSistemaAtualNome").value = lead.sistemaAtualNome || "";
     document.getElementById("dSistemaAtualNomeWrap").classList.toggle("d-none", lead.sistemaAtual !== "outro");
@@ -322,7 +388,7 @@
       const items = snap.docs.map((d) => d.data());
       body.innerHTML = items.map((h) => `
         <tr>
-          <td class="ds-text-sm">${h.data?.toDate ? h.data.toDate().toLocaleDateString("pt-BR") : "—"}</td>
+          <td class="ds-text-sm">${fmtDateUTC(h.data) || "—"}</td>
           <td class="ds-text-sm">${HISTORY_TIPO_LABELS[h.tipo] || h.tipo}</td>
           <td class="ds-text-sm">${h.descricao || "—"}</td>
         </tr>`).join("") || '<tr><td colspan="3" class="ds-table-empty">Nenhuma interação registrada ainda</td></tr>';
@@ -388,16 +454,21 @@
   });
 
   document.getElementById("btnArquivar").addEventListener("click", async () => {
+    if (!lead) return;
     const willArchive = !lead.archived;
     const msg = willArchive
       ? `Arquivar "${lead.organizacaoNome}"? Ele some da listagem principal — não é excluído de verdade.`
       : `Desarquivar "${lead.organizacaoNome}"? Ele volta a aparecer na listagem principal.`;
     if (!confirm(msg)) return;
+    const btn = document.getElementById("btnArquivar");
+    btn.disabled = true;
     try {
       await fnArchiveLead({ id: leadId, archived: willArchive });
-      await load();
+      await refreshLeadData();
     } catch (e) {
       alert("Erro: " + e.message);
+    } finally {
+      btn.disabled = false;
     }
   });
 
@@ -415,7 +486,11 @@
       document.getElementById("hTipo").value = "";
       document.getElementById("hData").value = "";
       document.getElementById("hDescricao").value = "";
-      await load();
+      // Só atualiza cabeçalho (ultimaInteracao/badge) + a própria lista de
+      // histórico — nunca fillForm(), pra não descartar edição não salva na
+      // aba Dados (ver refreshLeadData()).
+      await refreshLeadData();
+      await loadHistory();
     } catch (e) {
       errMsg.textContent = "Erro: " + e.message;
       errMsg.classList.remove("d-none");

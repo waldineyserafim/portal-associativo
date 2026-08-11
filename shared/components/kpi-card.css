@@ -14,11 +14,16 @@
 }
 
 .ds-kpi-value {
-  font-size: var(--text-3xl, 2.5rem);
+  /* clamp() encolhe o número em telas estreitas (ex.: valores de moeda como
+     "R$ 12.345,67" não cabem em 2.5rem numa coluna col-6 de ~103px úteis);
+     overflow-wrap é a garantia de fato — nenhum valor, por mais comprido que
+     seja, deve ultrapassar a borda do card ou gerar scroll horizontal. */
+  font-size: clamp(1.5rem, 5vw, var(--text-3xl, 2.5rem));
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1.1;
   color: var(--ink, #211D18);
+  overflow-wrap: anywhere;
 }
 .ds-kpi-value.ds-kpi-success { color: var(--success, #3F7D5C); }
 .ds-kpi-value.ds-kpi-warn    { color: var(--warning, #B8863B); }

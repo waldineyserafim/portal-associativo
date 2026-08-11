@@ -55,7 +55,7 @@
       <div class="col-6 col-md-3">
         <div class="ds-kpi-card">
           <div class="ds-kpi-value ds-kpi-success" id="kpiMrr">—</div>
-          <div class="ds-kpi-label">MRR (assinaturas ativas)</div>
+          <div class="ds-kpi-label" title="Assinaturas ativas">MRR</div>
         </div>
       </div>
     </div>
@@ -84,6 +84,82 @@
           <div class="ds-kpi-value" id="kpiModulos">—</div>
           <div class="ds-kpi-label">Módulos distintos em uso</div>
         </div>
+      </div>
+    </div>
+
+    <!-- Leads (Release 2) — resumo executivo; a operação do dia a dia mora em leads.html.
+         Só aparece pra administrator/owner (mesmo acesso do módulo de Leads) — ver JS. -->
+    <div class="ds-table-card mb-4 d-none" id="leadsCardWrapper">
+      <div class="ds-table-card-header">
+        <h2>Leads</h2>
+        <a href="./leads.html" class="btn btn-sm btn-outline-secondary">Ver Leads →</a>
+      </div>
+      <div class="p-3 p-md-4">
+        <div class="row g-3">
+          <div class="col-6 col-md-3">
+            <div class="ds-kpi-card">
+              <div class="ds-kpi-value" id="kpiLeadsAtivos">—</div>
+              <div class="ds-kpi-label">Leads ativos</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="ds-kpi-card">
+              <div class="ds-kpi-value" id="kpiLeadsNovos">—</div>
+              <div class="ds-kpi-label">Novos</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="ds-kpi-card">
+              <div class="ds-kpi-value ds-kpi-warn" id="kpiLeadsNegociacao">—</div>
+              <div class="ds-kpi-label">Em negociação</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="ds-kpi-card">
+              <div class="ds-kpi-value ds-kpi-success" id="kpiLeadsClientes">—</div>
+              <div class="ds-kpi-label">Clientes</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comercial — ritmo/pendências comerciais, complementar ao pipeline do
+         card "Leads" acima. Mesmo gate de acesso e mesma leitura de leads/
+         (ver JS: loadLeadsAndComercial alimenta os dois cards com 1 fetch só). -->
+    <div class="ds-table-card mb-4 d-none" id="comercialCardWrapper">
+      <div class="ds-table-card-header">
+        <h2>Comercial</h2>
+      </div>
+      <div class="p-3 p-md-4">
+        <div class="row g-3 mb-4">
+          <div class="col-6 col-md-3">
+            <div class="ds-kpi-card">
+              <div class="ds-kpi-value" id="kpiLeadsHoje">—</div>
+              <div class="ds-kpi-label">Leads cadastrados hoje</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="ds-kpi-card">
+              <div class="ds-kpi-value" id="kpiContatosHoje">—</div>
+              <div class="ds-kpi-label" title="Leads distintos com uma interação registrada hoje">Contatos realizados hoje</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="ds-kpi-card">
+              <div class="ds-kpi-value ds-kpi-danger" id="kpiAcoesVencidas">—</div>
+              <div class="ds-kpi-label">Próximas ações vencidas</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="ds-kpi-card">
+              <div class="ds-kpi-value" id="kpiTaxaConversao">—</div>
+              <div class="ds-kpi-label">Taxa de conversão (30 dias)</div>
+            </div>
+          </div>
+        </div>
+        <div class="ds-text-sm ds-text-muted mb-2">Novos leads por dia — últimos 30 dias</div>
+        <div id="comercialChart"></div>
       </div>
     </div>
 
@@ -159,6 +235,13 @@
   }
 
   function fmtBRL(v) { return (v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); }
+  // Notação compacta ("R$ 12,3 mil" em vez de "R$ 12.345,67") só pro KPI de
+  // MRR — string bem mais curta ataca a causa raiz do valor quebrando linha
+  // numa coluna de ~103px úteis em mobile (ver kpi-card.css pro resto da
+  // correção: clamp() + overflow-wrap). Não altera o valor real, só a exibição.
+  function fmtBRLCompact(v) {
+    return (v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL", notation: "compact", compactDisplay: "short" });
+  }
   function fmtTs(ts) {
     if (!ts) return "—";
     const d = ts.toDate ? ts.toDate() : new Date(ts);
@@ -188,6 +271,17 @@
 
       await loadPlanLabels();
       await loadDashboard();
+
+      // Cards "Leads" e "Comercial" só pra administrator/owner — mesmo acesso
+      // do módulo em si (operator nunca vê Leads; ver requirePlatformAdministrator
+      // em functions/index.js e as Firestore Rules de leads/). Escondidos por
+      // padrão no HTML — só mostram e só consultam o Firestore quando o papel
+      // permite, pra não gerar uma leitura fadada a permission-denied pra operator.
+      if (role === "administrator" || role === "owner") {
+        document.getElementById("leadsCardWrapper").classList.remove("d-none");
+        document.getElementById("comercialCardWrapper").classList.remove("d-none");
+        loadLeadsAndComercial();
+      }
     },
   });
 
@@ -272,7 +366,7 @@
     try {
       const subsSnap = await getDocs(query(collection(db, "organizationSubscriptions"), where("status", "==", "ativa")));
       const mrr = subsSnap.docs.reduce((acc, d) => acc + (d.data().valorMensal || 0), 0);
-      document.getElementById("kpiMrr").textContent = fmtBRL(mrr);
+      document.getElementById("kpiMrr").textContent = fmtBRLCompact(mrr);
     } catch (e) {
       document.getElementById("kpiMrr").textContent = "—";
     }
@@ -295,6 +389,148 @@
     } catch (e) {
       document.getElementById("logsLoading").textContent = "Erro ao carregar auditoria.";
     }
+  }
+
+  // Duas semânticas de data diferentes (mesma causa-raiz do bug de timezone
+  // já corrigido no módulo de Leads — ver comentários em leads.html):
+  //  - createdAt/updatedAt/ultimaInteracao-como-instante NÃO se aplica aqui:
+  //    createdAt É um instante real (serverTimestamp), "hoje" pra ele é
+  //    meia-noite a meia-noite LOCAL (fuso do navegador).
+  //  - proximaAcao.data e ultimaInteracao são datas PURAS vindas de
+  //    <input type="date"> (a mesma função addLeadHistory grava as duas),
+  //    guardadas como meia-noite UTC — "hoje"/"vencida" pra elas precisa de
+  //    um intervalo ANCORADO EM UTC, nunca comparado contra meia-noite local.
+  function localDayRange(d) {
+    const start = new Date(d);
+    start.setHours(0, 0, 0, 0);
+    return { start, end: new Date(start.getTime() + 24 * 60 * 60 * 1000) };
+  }
+  function utcDayRange(d) {
+    const start = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0));
+    return { start, end: new Date(start.getTime() + 24 * 60 * 60 * 1000) };
+  }
+
+  // Mesma leitura de leads/ que já alimentava só o card "Leads" (fase
+  // anterior) — agora compartilhada com o bloco "Comercial" também: 1 fetch
+  // só, sem orderBy (é contagem/agregação em memória, não listagem).
+  async function loadLeadsAndComercial() {
+    let leads = [];
+    try {
+      const leadsSnap = await getDocs(query(collection(db, "leads"), where("archived", "==", false)));
+      leads = leadsSnap.docs.map((d) => d.data());
+    } catch (e) {
+      console.error(e);
+    }
+    renderLeadsPipelineKpis(leads);
+    renderComercialKpis(leads);
+  }
+
+  function renderLeadsPipelineKpis(leads) {
+    document.getElementById("kpiLeadsAtivos").textContent = leads.filter((l) => l.status !== "cliente" && l.status !== "perdido").length;
+    document.getElementById("kpiLeadsNovos").textContent = leads.filter((l) => l.status === "novo").length;
+    document.getElementById("kpiLeadsNegociacao").textContent = leads.filter((l) => l.status === "negociacao").length;
+    document.getElementById("kpiLeadsClientes").textContent = leads.filter((l) => l.status === "cliente").length;
+  }
+
+  function renderComercialKpis(leads) {
+    const now = new Date();
+    const { start: hojeLocalStart, end: hojeLocalEnd } = localDayRange(now);
+    const { start: hojeUtcStart, end: hojeUtcEnd } = utcDayRange(now);
+    const trintaDiasAtras = Date.now() - 30 * 24 * 60 * 60 * 1000;
+
+    // Leads cadastrados hoje — createdAt é instante real, compara em fuso local.
+    const leadsHoje = leads.filter((l) => {
+      const t = l.createdAt?.toDate ? l.createdAt.toDate().getTime() : null;
+      return t && t >= hojeLocalStart.getTime() && t < hojeLocalEnd.getTime();
+    });
+    document.getElementById("kpiLeadsHoje").textContent = leadsHoje.length;
+
+    // Contatos realizados hoje — aproximação por LEADS DISTINTOS com
+    // ultimaInteracao hoje (não é contagem de registros de histórico — um
+    // lead com 2+ contatos no mesmo dia conta só 1 vez; ver title= no
+    // rótulo). ultimaInteracao é data pura (mesma função addLeadHistory que
+    // grava proximaAcao.data), compara em UTC.
+    const contatosHoje = leads.filter((l) => {
+      const t = l.ultimaInteracao?.toDate ? l.ultimaInteracao.toDate().getTime() : null;
+      return t && t >= hojeUtcStart.getTime() && t < hojeUtcEnd.getTime();
+    });
+    document.getElementById("kpiContatosHoje").textContent = contatosHoje.length;
+
+    // Próximas ações vencidas — data pura (UTC); "vencida" = dia
+    // estritamente anterior a hoje (uma ação com vencimento HOJE ainda não
+    // está vencida).
+    const vencidas = leads.filter((l) => {
+      const pa = l.proximaAcao;
+      if (!pa || pa.concluida || !pa.data?.toDate) return false;
+      return pa.data.toDate().getTime() < hojeUtcStart.getTime();
+    });
+    document.getElementById("kpiAcoesVencidas").textContent = vencidas.length;
+
+    // Taxa de conversão (30 dias) — coorte por criação: dos leads criados
+    // nos últimos 30 dias, quantos já são "cliente" agora (decisão
+    // confirmada com o usuário — não existe campo de data de conversão no
+    // schema, e criar um só pra esta métrica contraria o pedido de manter a
+    // entrega simples).
+    const criados30d = leads.filter((l) => {
+      const t = l.createdAt?.toDate ? l.createdAt.toDate().getTime() : null;
+      return t && t >= trintaDiasAtras;
+    });
+    const clientesNoCoorte = criados30d.filter((l) => l.status === "cliente");
+    const taxa = criados30d.length > 0 ? (clientesNoCoorte.length / criados30d.length) * 100 : 0;
+    document.getElementById("kpiTaxaConversao").textContent = criados30d.length > 0 ? `${taxa.toFixed(1)}%` : "0%";
+
+    // Gráfico — novos leads por dia, últimos 30 dias (mesmo critério de
+    // "hoje" local usado acima). Conta a partir do MESMO array já em
+    // memória — zero leitura extra.
+    const countsByDay = new Map();
+    leads.forEach((l) => {
+      const dt = l.createdAt?.toDate ? l.createdAt.toDate() : null;
+      if (!dt) return;
+      const { start } = localDayRange(dt);
+      countsByDay.set(start.getTime(), (countsByDay.get(start.getTime()) || 0) + 1);
+    });
+    const points = [];
+    for (let i = 29; i >= 0; i--) {
+      const day = new Date(hojeLocalStart.getTime() - i * 24 * 60 * 60 * 1000);
+      points.push({
+        label: day.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
+        value: countsByDay.get(day.getTime()) || 0,
+      });
+    }
+    renderLineChartSVG(document.getElementById("comercialChart"), points);
+  }
+
+  // Gráfico de linha simples, sem biblioteca — SVG desenhado à mão,
+  // responsivo via viewBox + width="100%" (sem JS de resize). Função
+  // GENÉRICA de propósito: recebe `points` ([{label,value}]), não sabe nada
+  // sobre "leads" — trocar a métrica no futuro (Contatos, Clientes) é só
+  // passar outro array pra ela, sem mudar esta função. Nesta entrega só é
+  // chamada uma vez, com "Novos Leads por dia".
+  function renderLineChartSVG(container, points, { color = "var(--brand, #A85A34)", height = 130 } = {}) {
+    if (!container) return;
+    const width = 600; // unidade do viewBox (não pixel real) — o SVG escala pro container via width="100%"
+    const padX = 8, padY = 12;
+    const max = Math.max(1, ...points.map((p) => p.value)); // mínimo 1 evita divisão por zero quando tudo é 0
+    const stepX = (width - padX * 2) / Math.max(1, points.length - 1);
+
+    const coords = points.map((p, i) => ({
+      x: padX + i * stepX,
+      y: padY + (height - padY * 2) * (1 - p.value / max),
+    }));
+    const linePath = coords.map((c, i) => `${i === 0 ? "M" : "L"}${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(" ");
+    const areaPath = `${linePath} L${coords[coords.length - 1].x.toFixed(1)},${height - padY} L${coords[0].x.toFixed(1)},${height - padY} Z`;
+
+    container.innerHTML = `
+      <svg viewBox="0 0 ${width} ${height}" width="100%" height="${height}" preserveAspectRatio="none"
+           role="img" aria-label="Gráfico de linha: novos leads por dia, últimos 30 dias">
+        <path d="${areaPath}" fill="${color}" opacity="0.12" stroke="none"></path>
+        <path d="${linePath}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
+      </svg>
+      <div class="d-flex justify-content-between ds-text-xs ds-text-muted mt-1">
+        <span>${points[0]?.label || ""}</span>
+        <span>${points[points.length - 1]?.label || ""}</span>
+      </div>
+    `;
   }
 
   function badgeForStatus(status) {

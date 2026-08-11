@@ -30,34 +30,6 @@
       </button>
     </div>
 
-    <!-- Dashboard -->
-    <div class="row g-3 mb-4">
-      <div class="col-6 col-md-3">
-        <div class="ds-kpi-card">
-          <div class="ds-kpi-value" id="kpiAtivos">—</div>
-          <div class="ds-kpi-label">Leads ativos</div>
-        </div>
-      </div>
-      <div class="col-6 col-md-3">
-        <div class="ds-kpi-card">
-          <div class="ds-kpi-value" id="kpiNovos">—</div>
-          <div class="ds-kpi-label">Novos</div>
-        </div>
-      </div>
-      <div class="col-6 col-md-3">
-        <div class="ds-kpi-card">
-          <div class="ds-kpi-value ds-kpi-warn" id="kpiNegociacao">—</div>
-          <div class="ds-kpi-label">Em negociação</div>
-        </div>
-      </div>
-      <div class="col-6 col-md-3">
-        <div class="ds-kpi-card">
-          <div class="ds-kpi-value ds-kpi-success" id="kpiClientes">—</div>
-          <div class="ds-kpi-label">Clientes</div>
-        </div>
-      </div>
-    </div>
-
     <!-- Filtros -->
     <div class="d-flex gap-2 flex-wrap mb-3">
       <select class="form-select form-select-sm" id="fStatus" style="max-width:200px;">
@@ -238,9 +210,9 @@
   };
   const STATUS_ORDER = ["novo", "qualificado", "negociacao", "cliente", "perdido"];
   const PRIORIDADE_LABELS = {
-    baixa: '<span class="ds-text-xs ds-text-muted">● Baixa</span>',
-    media: '<span class="ds-text-xs" style="color:var(--warning,#B8863B);">● Média</span>',
-    alta: '<span class="ds-text-xs" style="color:var(--danger,#A23B2E);">● Alta</span>',
+    baixa: '<span class="badge bg-secondary">Baixa</span>',
+    media: '<span class="badge bg-warning text-dark">Média</span>',
+    alta: '<span class="badge bg-danger">Alta</span>',
   };
   const PROXIMA_ACAO_TIPO_LABELS = { ligacao: "Ligação", whatsapp: "WhatsApp", reuniao: "Reunião", email: "E-mail", outro: "Outro" };
 
@@ -283,7 +255,6 @@
       leads = leadsSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
       adminsById = Object.fromEntries(adminsSnap.docs.map((d) => [d.id, d.data().nome || d.id]));
       populateResponsavelFilter();
-      renderDashboard();
       renderTable();
     } catch (e) {
       document.getElementById("loading").textContent = "Erro ao carregar leads.";
@@ -299,16 +270,17 @@
     sel.value = current;
   }
 
-  function renderDashboard() {
-    document.getElementById("kpiAtivos").textContent = leads.filter((l) => l.status !== "cliente" && l.status !== "perdido").length;
-    document.getElementById("kpiNovos").textContent = leads.filter((l) => l.status === "novo").length;
-    document.getElementById("kpiNegociacao").textContent = leads.filter((l) => l.status === "negociacao").length;
-    document.getElementById("kpiClientes").textContent = leads.filter((l) => l.status === "cliente").length;
-  }
-
+  // Datas de "próxima ação"/"última interação" nascem de <input type="date">
+  // ("YYYY-MM-DD"), interpretado pelo JS como meia-noite UTC (toDateOrNull em
+  // functions/index.js). Formatar com métodos locais (toLocaleDateString)
+  // mostraria um dia a menos em qualquer fuso negativo (ex.: Brasil) — os
+  // getters UTC mantêm a exibição ancorada no mesmo dia que foi digitado.
   function fmtDate(ts) {
     if (!ts?.toDate) return null;
-    return ts.toDate().toLocaleDateString("pt-BR");
+    const d = ts.toDate();
+    const dd = String(d.getUTCDate()).padStart(2, "0");
+    const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+    return `${dd}/${mm}/${d.getUTCFullYear()}`;
   }
 
   function sistemaLabel(lead) {
