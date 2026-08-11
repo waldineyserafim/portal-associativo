@@ -11,6 +11,16 @@
 
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
+// Formata um número no padrão brasileiro de celular (DDI+DDD+9 dígitos) pra
+// exibição; formatos que não batem (organização fora do Brasil, número sem
+// DDI) mostram os dígitos como vieram — nunca assume que todo tenant é
+// brasileiro pra decidir NÃO mostrar nada.
+function formatPhoneDisplay(digits) {
+  const d = String(digits || "").replace(/\D/g, "");
+  const m = d.match(/^55(\d{2})(\d{5})(\d{4})$/);
+  return m ? `+55 (${m[1]}) ${m[2]}-${m[3]}` : d;
+}
+
 /**
  * @param {object} opts
  * @param {object} opts.db — instância de Firestore.
@@ -113,6 +123,52 @@ export function createBrandingResolver({ db, getOrgId, orgCollection = "organiza
     }
     if (branding.endereco) {
       document.querySelectorAll("[data-tenant-address]").forEach((el) => { el.textContent = branding.endereco; });
+    } else {
+      // [data-tenant-address-card]/[data-tenant-address-empty] (Fase 4):
+      // organização sem endereço configurado esconde o card de endereço (que,
+      // sem isto, continuaria mostrando o endereço físico real do CCBMG
+      // hardcoded no HTML) e mostra o estado vazio no lugar. Card visível por
+      // padrão (a maioria das organizações tem endereço) — só esconde quando
+      // NÃO há dado, mesmo padrão condicional de data-hide-if-sandbox acima,
+      // agora orientado por dado em vez de um booleano fixo (achado #37 da
+      // auditoria: antes, só "é o Sandbox?" escondia o endereço do CCBMG —
+      // um 2º tenant de produção sem endereço próprio continuava vendo-o).
+      document.querySelectorAll("[data-tenant-address-card]").forEach((el) => { el.classList.add("d-none"); });
+      document.querySelectorAll("[data-tenant-address-empty]").forEach((el) => { el.classList.remove("d-none"); });
+    }
+
+    // WhatsApp (Evolução Multi-Tenant, Fase 4): [data-tenant-whatsapp] em
+    // <a href="https://wa.me/..."> troca href (preservando qualquer
+    // ?text=... já presente no atributo data-wa-text, ver uso em pay.html/
+    // sobre.html/index.html/board.html) e, quando o elemento não tem texto
+    // próprio marcado (sem [data-tenant-whatsapp-label]), também o texto
+    // exibido — mesmo padrão fail-safe do resto desta função.
+    if (branding.whatsapp) {
+      document.querySelectorAll("[data-tenant-whatsapp]").forEach((el) => {
+        const text = el.dataset.waText ? `?text=${encodeURIComponent(el.dataset.waText)}` : "";
+        el.href = `https://wa.me/${branding.whatsapp}${text}`;
+      });
+      document.querySelectorAll("[data-tenant-whatsapp-label]").forEach((el) => {
+        el.textContent = formatPhoneDisplay(branding.whatsapp);
+      });
+    }
+
+    // Redes sociais (Fase 4): organizations/{orgId}.portal.redesSociais já
+    // era administrável desde a Fase 3.4, mas sem nenhum consumidor no
+    // frontend público (achado #36 da auditoria) — [data-tenant-social="facebook|instagram|youtube"]
+    // troca o href; some (d-none) quando a organização não configurou aquela
+    // rede específica, em vez de deixar um link morto/genérico visível.
+    if (branding.redesSociais) {
+      document.querySelectorAll("[data-tenant-social]").forEach((el) => {
+        const network = el.dataset.tenantSocial;
+        const url = branding.redesSociais[network];
+        if (url) {
+          el.href = url;
+          el.classList.remove("d-none");
+        } else {
+          el.classList.add("d-none");
+        }
+      });
     }
 
     // [data-hide-if-sandbox] (Fase 3.11 — White Label): esconde conteúdo

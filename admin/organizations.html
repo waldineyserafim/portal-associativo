@@ -43,10 +43,7 @@
       <div class="col-6 col-md-3">
         <select class="form-select" id="filterPlan">
           <option value="">Todos os planos</option>
-          <option value="starter">Starter</option>
-          <option value="professional">Professional</option>
-          <option value="enterprise">Enterprise</option>
-          <option value="custom">Customizado</option>
+          <!-- demais opções populadas em runtime a partir de systemPlans (admin/plans.html) -->
         </select>
       </div>
     </div>
@@ -78,7 +75,22 @@
   import { createListController } from "../shared/utils/list-controls.js?v=2026.08.7";
   import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-  const PLAN_LABELS = { starter: "Starter", professional: "Professional", enterprise: "Enterprise", custom: "Customizado" };
+  // Evolução Multi-Tenant (Fase 4): PLAN_LABELS era um mapa fixo (achado #25
+  // da auditoria) — um plano novo criado em admin/plans.html (systemPlans)
+  // aparecia como id cru na coluna/filtro. Populado em runtime, mesma fonte
+  // que organization-detail.html usa pros próprios <select>.
+  let PLAN_LABELS = {};
+  async function loadPlanLabels() {
+    const snap = await getDocs(collection(db, "systemPlans"));
+    const plans = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    PLAN_LABELS = Object.fromEntries(plans.map((p) => [p.id, p.label || p.id]));
+    const filterEl = document.getElementById("filterPlan");
+    if (filterEl) {
+      plans
+        .sort((a, b) => (a.label || a.id).localeCompare(b.label || b.id))
+        .forEach((p) => filterEl.insertAdjacentHTML("beforeend", `<option value="${p.id}">${p.label || p.id}</option>`));
+    }
+  }
   function orgStatus(o) {
     return o.status || (o.ativo === false ? "suspensa" : "ativa");
   }
@@ -96,8 +108,9 @@
   let allOrgs = [];
 
   requirePlatformAccess({
-    onRole: () => {
+    onRole: async () => {
       renderAdminNav({ active: "organizations" });
+      await loadPlanLabels();
       loadOrgs();
     },
   });

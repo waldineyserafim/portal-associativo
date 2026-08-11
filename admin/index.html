@@ -149,7 +149,14 @@
     collection, getDocs, query, orderBy, limit, where, doc, getDoc,
   } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-  const PLAN_LABELS = { starter: "Starter", professional: "Professional", enterprise: "Enterprise", custom: "Customizado" };
+  // Evolução Multi-Tenant (Fase 4): PLAN_LABELS era um mapa fixo (achado #26
+  // da auditoria) — populado em runtime a partir de systemPlans, mesma fonte
+  // de admin/organizations.html.
+  let PLAN_LABELS = {};
+  async function loadPlanLabels() {
+    const snap = await getDocs(collection(db, "systemPlans"));
+    PLAN_LABELS = Object.fromEntries(snap.docs.map((d) => [d.id, d.data().label || d.id]));
+  }
 
   function fmtBRL(v) { return (v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); }
   function fmtTs(ts) {
@@ -179,6 +186,7 @@
         document.getElementById("masterNome").textContent = user.email;
       }
 
+      await loadPlanLabels();
       await loadDashboard();
     },
   });

@@ -8,6 +8,7 @@
 const NAV_ITEMS = [
   { key: "dashboard", href: "./index.html", label: "Dashboard", icon: "bi-speedometer2" },
   { key: "organizations", href: "./organizations.html", label: "Organizações", icon: "bi-buildings" },
+  { key: "leads", href: "./leads.html", label: "Leads", icon: "bi-person-lines-fill" },
   { key: "domains", href: "./domains.html", label: "Domínios", icon: "bi-globe2" },
   { key: "plans", href: "./plans.html", label: "Planos", icon: "bi-layers" },
   { key: "subscriptions", href: "./subscriptions.html", label: "Assinaturas", icon: "bi-receipt" },

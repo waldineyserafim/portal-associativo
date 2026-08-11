@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Lead — Painel Master · Portal Associativo</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/images/icons/favicon.svg">
+  <link rel="apple-touch-icon" href="../assets/images/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#A85A34">
+  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../css/design-system.css?v=portal-2026-08b">
+  <link rel="stylesheet" href="../shared/layouts/admin-shell.css?v=2026.08.7">
+  <link rel="stylesheet" href="../shared/components/index.css?v=2026.08.7">
+</head>
+<body>
+
+<div class="ds-admin-shell">
+  <main class="ds-admin-main">
+    <a href="./leads.html" class="ds-text-sm d-inline-block mb-2"><i class="bi bi-arrow-left"></i> Voltar para Leads</a>
+
+    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+      <div>
+        <h1 class="h4 mb-0" id="leadTitulo">—</h1>
+        <div id="leadStatusBadge"></div>
+      </div>
+      <button class="btn btn-outline-danger btn-sm" id="btnArquivar">Arquivar lead</button>
+    </div>
+
+    <ul class="nav nav-tabs mb-4" id="leadTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tab-dados-btn" data-bs-toggle="tab" data-bs-target="#tab-dados" type="button" role="tab">Dados</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-historico-btn" data-bs-toggle="tab" data-bs-target="#tab-historico" type="button" role="tab">Histórico</button>
+      </li>
+    </ul>
+
+    <div class="tab-content">
+      <!-- ===================== Dados ===================== -->
+      <div class="tab-pane fade show active" id="tab-dados" role="tabpanel">
+        <h6 class="ds-text-sm fw-bold">Organização</h6>
+        <div class="row g-2 mb-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label ds-text-xs mb-1">Nome da organização *</label>
+            <input class="form-control form-control-sm" id="dOrganizacaoNome">
+          </div>
+          <div class="col-6 col-md-2">
+            <label class="form-label ds-text-xs mb-1">Segmento</label>
+            <select class="form-select form-select-sm" id="dSegmento">
+              <option value="">—</option>
+              <option value="clube">Clube</option>
+              <option value="associacao">Associação</option>
+              <option value="sindicato">Sindicato</option>
+              <option value="conselho">Conselho</option>
+              <option value="ong">ONG</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label ds-text-xs mb-1">Cidade</label>
+            <input class="form-control form-control-sm" id="dCidade">
+          </div>
+          <div class="col-6 col-md-1">
+            <label class="form-label ds-text-xs mb-1">UF</label>
+            <input class="form-control form-control-sm" id="dEstado" maxlength="2" style="text-transform:uppercase;">
+          </div>
+        </div>
+
+        <h6 class="ds-text-sm fw-bold">Contato principal</h6>
+        <div class="row g-2 mb-3">
+          <div class="col-6 col-md-3"><label class="form-label ds-text-xs mb-1">Nome</label><input class="form-control form-control-sm" id="dContatoNome"></div>
+          <div class="col-6 col-md-3"><label class="form-label ds-text-xs mb-1">Cargo</label><input class="form-control form-control-sm" id="dContatoCargo"></div>
+          <div class="col-6 col-md-3"><label class="form-label ds-text-xs mb-1">WhatsApp</label><input class="form-control form-control-sm" id="dContatoWhatsapp"></div>
+          <div class="col-6 col-md-3"><label class="form-label ds-text-xs mb-1">E-mail</label><input class="form-control form-control-sm" type="email" id="dContatoEmail"></div>
+        </div>
+
+        <h6 class="ds-text-sm fw-bold">Comercial</h6>
+        <div class="row g-2 mb-3">
+          <div class="col-6 col-md-3">
+            <label class="form-label ds-text-xs mb-1">Status</label>
+            <select class="form-select form-select-sm" id="dStatus">
+              <option value="novo">Novo</option>
+              <option value="qualificado">Qualificado</option>
+              <option value="negociacao">Em negociação</option>
+              <option value="cliente">Cliente</option>
+              <option value="perdido">Perdido</option>
+            </select>
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label ds-text-xs mb-1">Origem</label>
+            <select class="form-select form-select-sm" id="dOrigem">
+              <option value="">—</option>
+              <option value="indicacao">Indicação</option>
+              <option value="site">Site</option>
+              <option value="linkedin">LinkedIn</option>
+              <option value="evento">Evento</option>
+              <option value="prospeccao">Prospecção</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label ds-text-xs mb-1">Prioridade</label>
+            <select class="form-select form-select-sm" id="dPrioridade">
+              <option value="baixa">Baixa</option>
+              <option value="media">Média</option>
+              <option value="alta">Alta</option>
+            </select>
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label ds-text-xs mb-1">Responsável</label>
+            <select class="form-select form-select-sm" id="dResponsavel"></select>
+          </div>
+        </div>
+
+        <h6 class="ds-text-sm fw-bold">Sistema atual</h6>
+        <div class="row g-2 mb-3">
+          <div class="col-6 col-md-3">
+            <label class="form-label ds-text-xs mb-1">Utiliza algum sistema atualmente?</label>
+            <select class="form-select form-select-sm" id="dSistemaAtual">
+              <option value="nenhum">Nenhum</option>
+              <option value="proprio">Sistema próprio</option>
+              <option value="outro">Outro fornecedor</option>
+            </select>
+          </div>
+          <div class="col-6 col-md-3 d-none" id="dSistemaAtualNomeWrap">
+            <label class="form-label ds-text-xs mb-1">Nome do sistema</label>
+            <input class="form-control form-control-sm" id="dSistemaAtualNome">
+          </div>
+        </div>
+
+        <h6 class="ds-text-sm fw-bold">Estimativa</h6>
+        <div class="row g-2 mb-3">
+          <div class="col-6 col-md-3">
+            <label class="form-label ds-text-xs mb-1">Qtd. aproximada de associados</label>
+            <input class="form-control form-control-sm" type="number" min="0" id="dAssociadosEstimados">
+          </div>
+        </div>
+
+        <h6 class="ds-text-sm fw-bold">Informações</h6>
+        <div class="row g-2 mb-3">
+          <div class="col-12"><label class="form-label ds-text-xs mb-1">Dores</label><textarea class="form-control form-control-sm" id="dDores" rows="2"></textarea></div>
+          <div class="col-12"><label class="form-label ds-text-xs mb-1">Necessidades</label><textarea class="form-control form-control-sm" id="dNecessidades" rows="2"></textarea></div>
+          <div class="col-12"><label class="form-label ds-text-xs mb-1">Observações</label><textarea class="form-control form-control-sm" id="dObservacoes" rows="2"></textarea></div>
+        </div>
+
+        <h6 class="ds-text-sm fw-bold">Próxima ação</h6>
+        <div class="row g-2 mb-3">
+          <div class="col-6 col-md-3">
+            <label class="form-label ds-text-xs mb-1">Tipo</label>
+            <select class="form-select form-select-sm" id="dProximaAcaoTipo">
+              <option value="">—</option>
+              <option value="ligacao">Ligação</option>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="reuniao">Reunião</option>
+              <option value="email">E-mail</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label ds-text-xs mb-1">Data</label>
+            <input class="form-control form-control-sm" type="date" id="dProximaAcaoData">
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label ds-text-xs mb-1">Descrição</label>
+            <input class="form-control form-control-sm" id="dProximaAcaoDescricao">
+          </div>
+          <div class="col-6 col-md-2 d-flex align-items-end">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="dProximaAcaoConcluida">
+              <label class="form-check-label ds-text-xs" for="dProximaAcaoConcluida">Concluída</label>
+            </div>
+          </div>
+        </div>
+
+        <div id="dErrMsg" class="alert alert-danger py-2 small d-none"></div>
+        <button class="btn btn-primary btn-sm" id="btnSalvarDados">Salvar alterações</button>
+        <span class="ds-text-xs ds-text-muted ms-2" id="dSavedNote"></span>
+      </div>
+
+      <!-- ===================== Histórico ===================== -->
+      <div class="tab-pane fade" id="tab-historico" role="tabpanel">
+        <div class="row g-2 align-items-end mb-3">
+          <div class="col-6 col-md-3">
+            <label class="form-label ds-text-xs mb-1">Tipo *</label>
+            <select class="form-select form-select-sm" id="hTipo">
+              <option value="">—</option>
+              <option value="ligacao">Ligação</option>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="email">E-mail</option>
+              <option value="reuniao">Reunião</option>
+              <option value="demonstracao">Demonstração</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label ds-text-xs mb-1">Data *</label>
+            <input class="form-control form-control-sm" type="date" id="hData">
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label ds-text-xs mb-1">Descrição</label>
+            <input class="form-control form-control-sm" id="hDescricao">
+          </div>
+          <div class="col-12 col-md-2">
+            <button class="btn btn-primary btn-sm w-100" id="btnRegistrarHistorico">Registrar</button>
+          </div>
+        </div>
+        <div id="hErrMsg" class="alert alert-danger py-2 small d-none"></div>
+
+        <div class="ds-table-card">
+          <table class="ds-table">
+            <thead><tr><th>Data</th><th>Tipo</th><th>Descrição</th></tr></thead>
+            <tbody id="hBody"><tr><td colspan="3" class="ds-table-empty">Carregando…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/bootstrap.bundle.min.js"></script>
+<script type="module">
+  import { requirePlatformAccess, db } from "./assets/admin-auth.js";
+  import { renderAdminNav } from "./assets/admin-nav.js";
+  import { collection, doc, getDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+  import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-functions.js";
+  import { getApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+
+  const STATUS_LABELS = {
+    novo: '<span class="badge bg-secondary">Novo</span>',
+    qualificado: '<span class="badge bg-info text-dark">Qualificado</span>',
+    negociacao: '<span class="badge bg-warning text-dark">Em negociação</span>',
+    cliente: '<span class="badge bg-success">Cliente</span>',
+    perdido: '<span class="badge bg-danger">Perdido</span>',
+  };
+  const HISTORY_TIPO_LABELS = { ligacao: "Ligação", whatsapp: "WhatsApp", email: "E-mail", reuniao: "Reunião", demonstracao: "Demonstração", outro: "Outro" };
+
+  const params = new URLSearchParams(location.search);
+  const leadId = params.get("id");
+
+  const functionsApi = getFunctions(getApp(), "us-central1");
+  const fnUpdateLead = httpsCallable(functionsApi, "updateLead");
+  const fnArchiveLead = httpsCallable(functionsApi, "archiveLead");
+  const fnAddLeadHistory = httpsCallable(functionsApi, "addLeadHistory");
+
+  let lead = null;
+
+  requirePlatformAccess({
+    requiredRole: ["administrator", "owner"],
+    onRole: () => {
+      renderAdminNav({ active: "leads" });
+      if (!leadId) {
+        document.getElementById("leadTitulo").textContent = "Lead não informado";
+        return;
+      }
+      loadAdmins().then(load);
+    },
+  });
+
+  async function loadAdmins() {
+    const snap = await getDocs(query(collection(db, "platformAdmins"), orderBy("nome")));
+    const sel = document.getElementById("dResponsavel");
+    sel.innerHTML = snap.docs.map((d) => `<option value="${d.id}">${d.data().nome || d.id}</option>`).join("");
+  }
+
+  function toDateInputValue(ts) {
+    if (!ts?.toDate) return "";
+    const d = ts.toDate();
+    return d.toISOString().slice(0, 10);
+  }
+
+  async function load() {
+    const snap = await getDoc(doc(db, "leads", leadId));
+    if (!snap.exists()) {
+      document.getElementById("leadTitulo").textContent = "Lead não encontrado";
+      return;
+    }
+    lead = { id: snap.id, ...snap.data() };
+    fillForm();
+    loadHistory();
+  }
+
+  function fillForm() {
+    document.getElementById("leadTitulo").textContent = lead.organizacaoNome || "—";
+    document.getElementById("leadStatusBadge").innerHTML = STATUS_LABELS[lead.status] || lead.status;
+    document.getElementById("btnArquivar").textContent = lead.archived ? "Desarquivar lead" : "Arquivar lead";
+
+    document.getElementById("dOrganizacaoNome").value = lead.organizacaoNome || "";
+    document.getElementById("dSegmento").value = lead.segmento || "";
+    document.getElementById("dCidade").value = lead.cidade || "";
+    document.getElementById("dEstado").value = lead.estado || "";
+    document.getElementById("dContatoNome").value = lead.contatoNome || "";
+    document.getElementById("dContatoCargo").value = lead.contatoCargo || "";
+    document.getElementById("dContatoWhatsapp").value = lead.contatoWhatsapp || "";
+    document.getElementById("dContatoEmail").value = lead.contatoEmail || "";
+    document.getElementById("dStatus").value = lead.status || "novo";
+    document.getElementById("dOrigem").value = lead.origem || "";
+    document.getElementById("dPrioridade").value = lead.prioridade || "media";
+    document.getElementById("dResponsavel").value = lead.responsavelUid || "";
+    document.getElementById("dSistemaAtual").value = lead.sistemaAtual || "nenhum";
+    document.getElementById("dSistemaAtualNome").value = lead.sistemaAtualNome || "";
+    document.getElementById("dSistemaAtualNomeWrap").classList.toggle("d-none", lead.sistemaAtual !== "outro");
+    document.getElementById("dAssociadosEstimados").value = lead.associadosEstimados ?? "";
+    document.getElementById("dDores").value = lead.dores || "";
+    document.getElementById("dNecessidades").value = lead.necessidades || "";
+    document.getElementById("dObservacoes").value = lead.observacoes || "";
+
+    const pa = lead.proximaAcao || {};
+    document.getElementById("dProximaAcaoTipo").value = pa.tipo || "";
+    document.getElementById("dProximaAcaoData").value = toDateInputValue(pa.data);
+    document.getElementById("dProximaAcaoDescricao").value = pa.descricao || "";
+    document.getElementById("dProximaAcaoConcluida").checked = !!pa.concluida;
+  }
+
+  async function loadHistory() {
+    const body = document.getElementById("hBody");
+    try {
+      const snap = await getDocs(query(collection(db, "leads", leadId, "history"), orderBy("data", "desc")));
+      const items = snap.docs.map((d) => d.data());
+      body.innerHTML = items.map((h) => `
+        <tr>
+          <td class="ds-text-sm">${h.data?.toDate ? h.data.toDate().toLocaleDateString("pt-BR") : "—"}</td>
+          <td class="ds-text-sm">${HISTORY_TIPO_LABELS[h.tipo] || h.tipo}</td>
+          <td class="ds-text-sm">${h.descricao || "—"}</td>
+        </tr>`).join("") || '<tr><td colspan="3" class="ds-table-empty">Nenhuma interação registrada ainda</td></tr>';
+    } catch (e) {
+      body.innerHTML = '<tr><td colspan="3" class="ds-table-empty">Erro ao carregar histórico</td></tr>';
+      console.error(e);
+    }
+  }
+
+  document.getElementById("dSistemaAtual").addEventListener("change", (e) => {
+    document.getElementById("dSistemaAtualNomeWrap").classList.toggle("d-none", e.target.value !== "outro");
+  });
+
+  document.getElementById("btnSalvarDados").addEventListener("click", async () => {
+    const errMsg = document.getElementById("dErrMsg");
+    errMsg.classList.add("d-none");
+    const organizacaoNome = document.getElementById("dOrganizacaoNome").value.trim();
+    if (!organizacaoNome) { errMsg.textContent = "Nome da organização é obrigatório."; errMsg.classList.remove("d-none"); return; }
+
+    const associadosRaw = document.getElementById("dAssociadosEstimados").value;
+    const payload = {
+      id: leadId,
+      organizacaoNome,
+      segmento: document.getElementById("dSegmento").value || null,
+      cidade: document.getElementById("dCidade").value.trim(),
+      estado: document.getElementById("dEstado").value.trim().toUpperCase(),
+      contatoNome: document.getElementById("dContatoNome").value.trim(),
+      contatoCargo: document.getElementById("dContatoCargo").value.trim(),
+      contatoWhatsapp: document.getElementById("dContatoWhatsapp").value.trim(),
+      contatoEmail: document.getElementById("dContatoEmail").value.trim(),
+      status: document.getElementById("dStatus").value,
+      origem: document.getElementById("dOrigem").value || null,
+      prioridade: document.getElementById("dPrioridade").value,
+      responsavelUid: document.getElementById("dResponsavel").value,
+      sistemaAtual: document.getElementById("dSistemaAtual").value,
+      sistemaAtualNome: document.getElementById("dSistemaAtualNome").value.trim(),
+      associadosEstimados: associadosRaw ? Number(associadosRaw) : null,
+      dores: document.getElementById("dDores").value.trim(),
+      necessidades: document.getElementById("dNecessidades").value.trim(),
+      observacoes: document.getElementById("dObservacoes").value.trim(),
+      proximaAcao: {
+        tipo: document.getElementById("dProximaAcaoTipo").value || null,
+        data: document.getElementById("dProximaAcaoData").value || null,
+        descricao: document.getElementById("dProximaAcaoDescricao").value.trim(),
+        concluida: document.getElementById("dProximaAcaoConcluida").checked,
+      },
+    };
+
+    const btn = document.getElementById("btnSalvarDados");
+    btn.disabled = true;
+    try {
+      await fnUpdateLead(payload);
+      await load();
+      const note = document.getElementById("dSavedNote");
+      note.textContent = "Salvo.";
+      setTimeout(() => { note.textContent = ""; }, 3000);
+    } catch (e) {
+      errMsg.textContent = "Erro: " + e.message;
+      errMsg.classList.remove("d-none");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById("btnArquivar").addEventListener("click", async () => {
+    const willArchive = !lead.archived;
+    const msg = willArchive
+      ? `Arquivar "${lead.organizacaoNome}"? Ele some da listagem principal — não é excluído de verdade.`
+      : `Desarquivar "${lead.organizacaoNome}"? Ele volta a aparecer na listagem principal.`;
+    if (!confirm(msg)) return;
+    try {
+      await fnArchiveLead({ id: leadId, archived: willArchive });
+      await load();
+    } catch (e) {
+      alert("Erro: " + e.message);
+    }
+  });
+
+  document.getElementById("btnRegistrarHistorico").addEventListener("click", async () => {
+    const errMsg = document.getElementById("hErrMsg");
+    errMsg.classList.add("d-none");
+    const tipo = document.getElementById("hTipo").value;
+    const dataVal = document.getElementById("hData").value;
+    if (!tipo || !dataVal) { errMsg.textContent = "Tipo e data são obrigatórios."; errMsg.classList.remove("d-none"); return; }
+
+    const btn = document.getElementById("btnRegistrarHistorico");
+    btn.disabled = true;
+    try {
+      await fnAddLeadHistory({ leadId, tipo, data: dataVal, descricao: document.getElementById("hDescricao").value.trim() });
+      document.getElementById("hTipo").value = "";
+      document.getElementById("hData").value = "";
+      document.getElementById("hDescricao").value = "";
+      await load();
+    } catch (e) {
+      errMsg.textContent = "Erro: " + e.message;
+      errMsg.classList.remove("d-none");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

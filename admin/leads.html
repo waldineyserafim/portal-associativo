@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Leads — Painel Master · Portal Associativo</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/images/icons/favicon.svg">
+  <link rel="apple-touch-icon" href="../assets/images/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#A85A34">
+  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../css/design-system.css?v=portal-2026-08b">
+  <link rel="stylesheet" href="../shared/layouts/admin-shell.css?v=2026.08.7">
+  <link rel="stylesheet" href="../shared/components/index.css?v=2026.08.7">
+</head>
+<body>
+
+<div class="ds-admin-shell">
+  <main class="ds-admin-main">
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+      <div>
+        <h1 class="h4 mb-0">Leads</h1>
+        <p class="ds-text-sm ds-text-muted mb-0">Agenda comercial simples — substitui a planilha de prospecção. Não é um CRM completo.</p>
+      </div>
+      <button class="btn btn-primary btn-sm" id="btnNovoLead" data-bs-toggle="modal" data-bs-target="#modalLead">
+        <i class="bi bi-plus-lg me-1"></i>Novo lead
+      </button>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="ds-kpi-card">
+          <div class="ds-kpi-value" id="kpiAtivos">—</div>
+          <div class="ds-kpi-label">Leads ativos</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="ds-kpi-card">
+          <div class="ds-kpi-value" id="kpiNovos">—</div>
+          <div class="ds-kpi-label">Novos</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="ds-kpi-card">
+          <div class="ds-kpi-value ds-kpi-warn" id="kpiNegociacao">—</div>
+          <div class="ds-kpi-label">Em negociação</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="ds-kpi-card">
+          <div class="ds-kpi-value ds-kpi-success" id="kpiClientes">—</div>
+          <div class="ds-kpi-label">Clientes</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="d-flex gap-2 flex-wrap mb-3">
+      <select class="form-select form-select-sm" id="fStatus" style="max-width:200px;">
+        <option value="">Todos os status</option>
+      </select>
+      <select class="form-select form-select-sm" id="fResponsavel" style="max-width:220px;">
+        <option value="">Todos os responsáveis</option>
+      </select>
+      <input class="form-control form-control-sm" id="fBusca" placeholder="Buscar organização ou contato…" style="max-width:260px;">
+    </div>
+
+    <div class="ds-table-card">
+      <div class="text-center py-4 ds-text-muted ds-text-sm" id="loading">Carregando…</div>
+      <div class="table-responsive">
+        <table class="ds-table d-none" id="tbl">
+          <thead>
+            <tr>
+              <th>Organização</th><th>Cidade</th><th>Contato</th><th>Status</th>
+              <th>Prioridade</th><th>Sistema</th><th>Próxima ação</th><th>Responsável</th>
+              <th>Última interação</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal Novo Lead -->
+<div class="modal ds-modal fade" id="modalLead" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Novo lead</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <h6 class="ds-text-sm fw-bold">Organização</h6>
+        <div class="row g-2 mb-3">
+          <div class="col-12">
+            <label class="form-label ds-text-xs mb-1">Nome da organização *</label>
+            <input class="form-control form-control-sm" id="lOrganizacaoNome">
+          </div>
+          <div class="col-6 col-md-3">
+            <label class="form-label ds-text-xs mb-1">Segmento</label>
+            <select class="form-select form-select-sm" id="lSegmento">
+              <option value="">—</option>
+              <option value="clube">Clube</option>
+              <option value="associacao">Associação</option>
+              <option value="sindicato">Sindicato</option>
+              <option value="conselho">Conselho</option>
+              <option value="ong">ONG</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+          <div class="col-6 col-md-5">
+            <label class="form-label ds-text-xs mb-1">Cidade</label>
+            <input class="form-control form-control-sm" id="lCidade">
+          </div>
+          <div class="col-6 col-md-4">
+            <label class="form-label ds-text-xs mb-1">Estado (UF)</label>
+            <input class="form-control form-control-sm" id="lEstado" maxlength="2" style="text-transform:uppercase;">
+          </div>
+        </div>
+
+        <h6 class="ds-text-sm fw-bold">Contato principal</h6>
+        <div class="row g-2 mb-3">
+          <div class="col-6"><label class="form-label ds-text-xs mb-1">Nome</label><input class="form-control form-control-sm" id="lContatoNome"></div>
+          <div class="col-6"><label class="form-label ds-text-xs mb-1">Cargo</label><input class="form-control form-control-sm" id="lContatoCargo"></div>
+          <div class="col-6"><label class="form-label ds-text-xs mb-1">WhatsApp</label><input class="form-control form-control-sm" id="lContatoWhatsapp"></div>
+          <div class="col-6"><label class="form-label ds-text-xs mb-1">E-mail</label><input class="form-control form-control-sm" type="email" id="lContatoEmail"></div>
+        </div>
+
+        <h6 class="ds-text-sm fw-bold">Comercial</h6>
+        <div class="row g-2 mb-3">
+          <div class="col-6 col-md-6">
+            <label class="form-label ds-text-xs mb-1">Origem</label>
+            <select class="form-select form-select-sm" id="lOrigem">
+              <option value="">—</option>
+              <option value="indicacao">Indicação</option>
+              <option value="site">Site</option>
+              <option value="linkedin">LinkedIn</option>
+              <option value="evento">Evento</option>
+              <option value="prospeccao">Prospecção</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+          <div class="col-6 col-md-6">
+            <label class="form-label ds-text-xs mb-1">Prioridade</label>
+            <select class="form-select form-select-sm" id="lPrioridade">
+              <option value="baixa">Baixa</option>
+              <option value="media" selected>Média</option>
+              <option value="alta">Alta</option>
+            </select>
+          </div>
+        </div>
+        <p class="ds-text-xs ds-text-muted">Você será automaticamente definido como responsável inicial — reatribuir é possível depois, na tela do lead.</p>
+
+        <h6 class="ds-text-sm fw-bold">Sistema atual</h6>
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label ds-text-xs mb-1">Utiliza algum sistema atualmente?</label>
+            <select class="form-select form-select-sm" id="lSistemaAtual">
+              <option value="nenhum">Nenhum</option>
+              <option value="proprio">Sistema próprio</option>
+              <option value="outro">Outro fornecedor</option>
+            </select>
+          </div>
+          <div class="col-6 d-none" id="lSistemaAtualNomeWrap">
+            <label class="form-label ds-text-xs mb-1">Nome do sistema</label>
+            <input class="form-control form-control-sm" id="lSistemaAtualNome">
+          </div>
+        </div>
+
+        <h6 class="ds-text-sm fw-bold">Estimativa</h6>
+        <div class="row g-2 mb-3">
+          <div class="col-6 col-md-4">
+            <label class="form-label ds-text-xs mb-1">Qtd. aproximada de associados</label>
+            <input class="form-control form-control-sm" type="number" min="0" id="lAssociadosEstimados">
+          </div>
+        </div>
+
+        <h6 class="ds-text-sm fw-bold">Informações</h6>
+        <div class="row g-2 mb-3">
+          <div class="col-12"><label class="form-label ds-text-xs mb-1">Dores</label><textarea class="form-control form-control-sm" id="lDores" rows="2"></textarea></div>
+          <div class="col-12"><label class="form-label ds-text-xs mb-1">Necessidades</label><textarea class="form-control form-control-sm" id="lNecessidades" rows="2"></textarea></div>
+          <div class="col-12"><label class="form-label ds-text-xs mb-1">Observações</label><textarea class="form-control form-control-sm" id="lObservacoes" rows="2"></textarea></div>
+        </div>
+
+        <h6 class="ds-text-sm fw-bold">Próxima ação</h6>
+        <div class="row g-2 mb-2">
+          <div class="col-6 col-md-4">
+            <label class="form-label ds-text-xs mb-1">Tipo</label>
+            <select class="form-select form-select-sm" id="lProximaAcaoTipo">
+              <option value="">—</option>
+              <option value="ligacao">Ligação</option>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="reuniao">Reunião</option>
+              <option value="email">E-mail</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+          <div class="col-6 col-md-4">
+            <label class="form-label ds-text-xs mb-1">Data</label>
+            <input class="form-control form-control-sm" type="date" id="lProximaAcaoData">
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label ds-text-xs mb-1">Descrição</label>
+            <input class="form-control form-control-sm" id="lProximaAcaoDescricao">
+          </div>
+        </div>
+
+        <div id="lErrMsg" class="alert alert-danger py-2 small d-none"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="btnSalvarLead">Criar lead</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/bootstrap.bundle.min.js"></script>
+<script type="module">
+  import { requirePlatformAccess, db } from "./assets/admin-auth.js";
+  import { renderAdminNav } from "./assets/admin-nav.js";
+  import { collection, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+  import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-functions.js";
+  import { getApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+
+  const STATUS_LABELS = {
+    novo: '<span class="badge bg-secondary">Novo</span>',
+    qualificado: '<span class="badge bg-info text-dark">Qualificado</span>',
+    negociacao: '<span class="badge bg-warning text-dark">Em negociação</span>',
+    cliente: '<span class="badge bg-success">Cliente</span>',
+    perdido: '<span class="badge bg-danger">Perdido</span>',
+  };
+  const STATUS_ORDER = ["novo", "qualificado", "negociacao", "cliente", "perdido"];
+  const PRIORIDADE_LABELS = {
+    baixa: '<span class="ds-text-xs ds-text-muted">● Baixa</span>',
+    media: '<span class="ds-text-xs" style="color:var(--warning,#B8863B);">● Média</span>',
+    alta: '<span class="ds-text-xs" style="color:var(--danger,#A23B2E);">● Alta</span>',
+  };
+  const PROXIMA_ACAO_TIPO_LABELS = { ligacao: "Ligação", whatsapp: "WhatsApp", reuniao: "Reunião", email: "E-mail", outro: "Outro" };
+
+  const functionsApi = getFunctions(getApp(), "us-central1");
+  const fnCreateLead = httpsCallable(functionsApi, "createLead");
+  const fnUpdateLead = httpsCallable(functionsApi, "updateLead");
+  const fnArchiveLead = httpsCallable(functionsApi, "archiveLead");
+
+  let leads = [];
+  let adminsById = {};
+  const modal = new bootstrap.Modal(document.getElementById("modalLead"));
+
+  requirePlatformAccess({
+    requiredRole: ["administrator", "owner"],
+    onRole: () => {
+      renderAdminNav({ active: "leads" });
+      populateStatusFilter();
+      load();
+    },
+  });
+
+  const STATUS_TEXT_LABELS = { novo: "Novo", qualificado: "Qualificado", negociacao: "Em negociação", cliente: "Cliente", perdido: "Perdido" };
+
+  function populateStatusFilter() {
+    const sel = document.getElementById("fStatus");
+    STATUS_ORDER.forEach((s) => {
+      const opt = document.createElement("option");
+      opt.value = s;
+      opt.textContent = STATUS_TEXT_LABELS[s];
+      sel.appendChild(opt);
+    });
+  }
+
+  async function load() {
+    try {
+      const [leadsSnap, adminsSnap] = await Promise.all([
+        getDocs(query(collection(db, "leads"), where("archived", "==", false), orderBy("proximaAcao.data"))),
+        getDocs(query(collection(db, "platformAdmins"), orderBy("nome"))),
+      ]);
+      leads = leadsSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      adminsById = Object.fromEntries(adminsSnap.docs.map((d) => [d.id, d.data().nome || d.id]));
+      populateResponsavelFilter();
+      renderDashboard();
+      renderTable();
+    } catch (e) {
+      document.getElementById("loading").textContent = "Erro ao carregar leads.";
+      console.error(e);
+    }
+  }
+
+  function populateResponsavelFilter() {
+    const sel = document.getElementById("fResponsavel");
+    const current = sel.value;
+    sel.innerHTML = '<option value="">Todos os responsáveis</option>' +
+      Object.entries(adminsById).map(([uid, nome]) => `<option value="${uid}">${nome}</option>`).join("");
+    sel.value = current;
+  }
+
+  function renderDashboard() {
+    document.getElementById("kpiAtivos").textContent = leads.filter((l) => l.status !== "cliente" && l.status !== "perdido").length;
+    document.getElementById("kpiNovos").textContent = leads.filter((l) => l.status === "novo").length;
+    document.getElementById("kpiNegociacao").textContent = leads.filter((l) => l.status === "negociacao").length;
+    document.getElementById("kpiClientes").textContent = leads.filter((l) => l.status === "cliente").length;
+  }
+
+  function fmtDate(ts) {
+    if (!ts?.toDate) return null;
+    return ts.toDate().toLocaleDateString("pt-BR");
+  }
+
+  function sistemaLabel(lead) {
+    if (lead.sistemaAtual === "proprio") return "Sistema próprio";
+    if (lead.sistemaAtual === "outro") return lead.sistemaAtualNome ? lead.sistemaAtualNome : "Outro";
+    return "Nenhum";
+  }
+
+  function proximaAcaoCell(lead) {
+    const pa = lead.proximaAcao || {};
+    const dataFmt = fmtDate(pa.data);
+    if (!dataFmt) return '<span class="ds-text-xs ds-text-muted">—</span>';
+    const tipoLabel = pa.tipo ? PROXIMA_ACAO_TIPO_LABELS[pa.tipo] : "";
+    const desc = pa.descricao ? ` — ${pa.descricao}` : "";
+    const style = pa.concluida ? 'text-decoration:line-through;' : "";
+    return `
+      <div class="form-check form-check-inline m-0 align-middle">
+        <input class="form-check-input proxima-check" type="checkbox" data-id="${lead.id}" ${pa.concluida ? "checked" : ""}>
+      </div>
+      <span class="ds-text-xs" style="${style}">${dataFmt}${tipoLabel ? " · " + tipoLabel : ""}${desc}</span>`;
+  }
+
+  function paToPayload(pa) {
+    return {
+      tipo: pa?.tipo || null,
+      data: pa?.data?.toDate ? pa.data.toDate().toISOString() : null,
+      descricao: pa?.descricao || "",
+      concluida: !!pa?.concluida,
+    };
+  }
+
+  function matchesFilters(lead) {
+    const status = document.getElementById("fStatus").value;
+    const responsavel = document.getElementById("fResponsavel").value;
+    const busca = document.getElementById("fBusca").value.trim().toLowerCase();
+    if (status && lead.status !== status) return false;
+    if (responsavel && lead.responsavelUid !== responsavel) return false;
+    if (busca) {
+      const haystack = `${lead.organizacaoNome || ""} ${lead.contatoNome || ""}`.toLowerCase();
+      if (!haystack.includes(busca)) return false;
+    }
+    return true;
+  }
+
+  function renderTable() {
+    const filtered = leads.filter(matchesFilters);
+    document.getElementById("tbody").innerHTML = filtered.map((lead) => `
+      <tr>
+        <td><a href="./lead-detail.html?id=${lead.id}"><strong>${lead.organizacaoNome || "—"}</strong></a></td>
+        <td class="ds-text-sm">${lead.cidade || "—"}</td>
+        <td class="ds-text-sm">${lead.contatoNome || "—"}</td>
+        <td>${STATUS_LABELS[lead.status] || lead.status}</td>
+        <td>${PRIORIDADE_LABELS[lead.prioridade] || ""}</td>
+        <td class="ds-text-xs">${sistemaLabel(lead)}</td>
+        <td>${proximaAcaoCell(lead)}</td>
+        <td class="ds-text-sm">${adminsById[lead.responsavelUid] || "—"}</td>
+        <td class="ds-text-xs ds-text-muted">${fmtDate(lead.ultimaInteracao) || "—"}</td>
+        <td class="text-end">
+          <a class="btn btn-sm btn-outline-secondary" href="./lead-detail.html?id=${lead.id}">Ver</a>
+          <button class="btn btn-sm btn-outline-danger btn-arquivar" data-id="${lead.id}" data-nome="${(lead.organizacaoNome || "").replace(/"/g, "&quot;")}">Arquivar</button>
+        </td>
+      </tr>`).join("") || `<tr><td colspan="10" class="ds-table-empty">Nenhum lead encontrado</td></tr>`;
+
+    document.querySelectorAll(".proxima-check").forEach((chk) => {
+      chk.addEventListener("change", async () => {
+        const lead = leads.find((l) => l.id === chk.dataset.id);
+        chk.disabled = true;
+        try {
+          const payload = paToPayload(lead.proximaAcao);
+          payload.concluida = chk.checked;
+          await fnUpdateLead({ id: lead.id, proximaAcao: payload });
+          await load();
+        } catch (e) {
+          alert("Erro: " + e.message);
+          chk.disabled = false;
+        }
+      });
+    });
+
+    document.querySelectorAll(".btn-arquivar").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const nome = btn.dataset.nome || "este lead";
+        if (!confirm(`Arquivar "${nome}"? Ele some da listagem — não é excluído de verdade.`)) return;
+        btn.disabled = true;
+        try {
+          await fnArchiveLead({ id: btn.dataset.id, archived: true });
+          await load();
+        } catch (e) {
+          alert("Erro: " + e.message);
+          btn.disabled = false;
+        }
+      });
+    });
+
+    document.getElementById("loading").classList.add("d-none");
+    document.getElementById("tbl").classList.remove("d-none");
+  }
+
+  ["fStatus", "fResponsavel", "fBusca"].forEach((id) => {
+    document.getElementById(id).addEventListener("input", renderTable);
+    document.getElementById(id).addEventListener("change", renderTable);
+  });
+
+  document.getElementById("lSistemaAtual").addEventListener("change", (e) => {
+    document.getElementById("lSistemaAtualNomeWrap").classList.toggle("d-none", e.target.value !== "outro");
+  });
+
+  document.getElementById("modalLead").addEventListener("hidden.bs.modal", () => {
+    ["lOrganizacaoNome", "lCidade", "lEstado", "lContatoNome", "lContatoCargo", "lContatoWhatsapp", "lContatoEmail",
+      "lSistemaAtualNome", "lAssociadosEstimados", "lDores", "lNecessidades", "lObservacoes",
+      "lProximaAcaoData", "lProximaAcaoDescricao"].forEach((id) => { document.getElementById(id).value = ""; });
+    document.getElementById("lSegmento").value = "";
+    document.getElementById("lOrigem").value = "";
+    document.getElementById("lPrioridade").value = "media";
+    document.getElementById("lSistemaAtual").value = "nenhum";
+    document.getElementById("lSistemaAtualNomeWrap").classList.add("d-none");
+    document.getElementById("lProximaAcaoTipo").value = "";
+    document.getElementById("lErrMsg").classList.add("d-none");
+  });
+
+  document.getElementById("btnSalvarLead").addEventListener("click", async () => {
+    const errMsg = document.getElementById("lErrMsg");
+    errMsg.classList.add("d-none");
+    const organizacaoNome = document.getElementById("lOrganizacaoNome").value.trim();
+    if (!organizacaoNome) { errMsg.textContent = "Nome da organização é obrigatório."; errMsg.classList.remove("d-none"); return; }
+
+    const associadosRaw = document.getElementById("lAssociadosEstimados").value;
+    const payload = {
+      organizacaoNome,
+      segmento: document.getElementById("lSegmento").value || null,
+      cidade: document.getElementById("lCidade").value.trim(),
+      estado: document.getElementById("lEstado").value.trim().toUpperCase(),
+      contatoNome: document.getElementById("lContatoNome").value.trim(),
+      contatoCargo: document.getElementById("lContatoCargo").value.trim(),
+      contatoWhatsapp: document.getElementById("lContatoWhatsapp").value.trim(),
+      contatoEmail: document.getElementById("lContatoEmail").value.trim(),
+      origem: document.getElementById("lOrigem").value || null,
+      prioridade: document.getElementById("lPrioridade").value,
+      sistemaAtual: document.getElementById("lSistemaAtual").value,
+      sistemaAtualNome: document.getElementById("lSistemaAtualNome").value.trim(),
+      associadosEstimados: associadosRaw ? Number(associadosRaw) : null,
+      dores: document.getElementById("lDores").value.trim(),
+      necessidades: document.getElementById("lNecessidades").value.trim(),
+      observacoes: document.getElementById("lObservacoes").value.trim(),
+      proximaAcao: {
+        tipo: document.getElementById("lProximaAcaoTipo").value || null,
+        data: document.getElementById("lProximaAcaoData").value || null,
+        descricao: document.getElementById("lProximaAcaoDescricao").value.trim(),
+        concluida: false,
+      },
+    };
+
+    const btn = document.getElementById("btnSalvarLead");
+    btn.disabled = true;
+    try {
+      await fnCreateLead(payload);
+      modal.hide();
+      await load();
+    } catch (e) {
+      errMsg.textContent = "Erro: " + e.message;
+      errMsg.classList.remove("d-none");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

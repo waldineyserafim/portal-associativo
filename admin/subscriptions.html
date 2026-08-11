@@ -89,7 +89,14 @@
   import { createListController } from "../shared/utils/list-controls.js?v=2026.08.7";
   import { collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-  const PLAN_LABELS = { starter: "Starter", professional: "Professional", enterprise: "Enterprise" };
+  // Evolução Multi-Tenant (Fase 4): PLAN_LABELS era um mapa fixo, e ainda mais
+  // incompleto que os outros 3 lugares duplicados (sem "custom" — achado #27
+  // da auditoria). Populado em runtime a partir de systemPlans.
+  let PLAN_LABELS = {};
+  async function loadPlanLabels() {
+    const snap = await getDocs(collection(db, "systemPlans"));
+    PLAN_LABELS = Object.fromEntries(snap.docs.map((d) => [d.id, d.data().label || d.id]));
+  }
   function fmtBRL(v) { return (v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); }
   function fmtDate(ts) {
     if (!ts) return "—";
@@ -110,8 +117,9 @@
   const controller = createListController({ pageSize: 20, searchFields: ["orgNome"] });
 
   requirePlatformAccess({
-    onRole: () => {
+    onRole: async () => {
       renderAdminNav({ active: "subscriptions" });
+      await loadPlanLabels();
       loadAll();
     },
   });
