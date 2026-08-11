@@ -1,0 +1,15 @@
+name = "sandbox-demo-proxy"
+main = "worker.js"
+compatibility_date = "2026-08-01"
+
+# Descomente e preencha se `wrangler deploy` reclamar de conta ambígua
+# (só acontece se a conta Cloudflare logada tiver acesso a mais de uma
+# conta/organização Cloudflare). Achar o valor: `npx wrangler whoami`.
+# account_id = "SEU_ACCOUNT_ID_AQUI"
+
+# Custom Domain — provisiona DNS + certificado TLS automaticamente no deploy,
+# na MESMA zona (portalassociativo.com.br) já em Cloudflare. Nenhum passo
+# manual de DNS necessário: `wrangler deploy` faz tudo.
+[[routes]]
+pattern = "demo.portalassociativo.com.br"
+custom_domain = true
