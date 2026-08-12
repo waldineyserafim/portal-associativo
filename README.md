@@ -1,43 +1,56 @@
 # Portal Associativo
 
-Plataforma de gestão para clubes e associações — site institucional,
-marketing, SEO, planos e ponto de entrada para o Login Master.
+Plataforma SaaS multi-tenant para clubes e associações — site institucional
+(marketing, SEO, planos) **e** o Painel Master (`admin/`), usado pela equipe
+da Serafim Technologies para administrar todas as organizações da
+plataforma.
 
-> Este é o produto institucional da plataforma. O sistema operacional que
-> os clubes usam no dia a dia (associados, financeiro, eventos) é um projeto
-> irmão: [Clube do Cavalo de Bonfim MG](https://github.com/waldineyserafim/clubedocavalobonfimmg),
-> que hoje atende um cliente e evoluirá para o SaaS multi-tenant da
-> plataforma. Este repositório **não** contém esse sistema nem o modifica.
+> Este repositório é o produto/plataforma: site institucional + Painel
+> Master + núcleo de frontend compartilhado (`shared/`, consumido por
+> qualquer tenant). O sistema operacional que um clube usa no dia a dia
+> (associados, financeiro, eventos) é implementado no projeto irmão
+> [Clube do Cavalo de Bonfim MG](https://github.com/waldineyserafim/clubedocavalobonfimmg)
+> — hoje o único tenant de produção real, mais um tenant Sandbox oficial de
+> demonstração. Os dois repositórios compartilham o mesmo projeto Firebase.
+> Para o modelo de arquitetura completo, ver **[CLAUDE.md](CLAUDE.md)**.
 
 ---
 
 ## Objetivo do projeto
 
-Dar à plataforma uma presença institucional própria — landing page, SEO,
-apresentação de planos e funcionalidades, captação de leads (demonstração/
-contato) e, futuramente, o Painel Master — sem acoplar esse conteúdo de
-marketing ao deploy do sistema operacional de nenhum cliente.
+Dar à plataforma uma presença institucional própria (landing page, SEO,
+apresentação de planos e funcionalidades, captação de leads) **e** hospedar
+o Painel Master — administração cross-tenant (organizações, planos,
+assinaturas, módulos, domínios, feature flags, equipe de plataforma,
+auditoria) — sem acoplar esse conteúdo ao deploy do sistema operacional de
+nenhum tenant.
 
 **Em produção desde ago/2026**, em `https://portalassociativo.com.br/`:
-Design System consolidado, Home e páginas internas com copy final (4
-iterações de Direção de Arte/Conversão), formulários funcionais, domínio
-próprio com DNS/HTTPS/e-mail configurados. Ver [docs/roadmap/](docs/roadmap/)
-para o histórico completo por fase e as pendências reais em aberto.
+Design System consolidado, Home e páginas internas com copy final, Painel
+Master completo em `admin/`, formulários funcionais, domínio próprio com
+DNS/HTTPS/e-mail configurados. Ver [CLAUDE.md](CLAUDE.md) para o estado
+atual e [docs/roadmap/](docs/roadmap/) para o histórico completo por fase.
 
 ---
 
 ## Arquitetura
 
-Site estático, publicado direto no GitHub Pages, sem build step. Mesma
-filosofia do projeto CCBMG — ver [docs/architecture/](docs/architecture/)
-para as decisões técnicas detalhadas (por que sem sistema de include, como
-o Firebase é compartilhado, como formulários serão resolvidos, etc.).
+Site estático (marketing) + Painel Master autenticado, ambos publicados
+direto no GitHub Pages, sem build step. Mesma filosofia do projeto CCBMG —
+ver [CLAUDE.md](CLAUDE.md) (estado atual do modelo multi-tenant) e
+[docs/architecture/](docs/architecture/) (decisões técnicas: por que sem
+sistema de include, como o Firebase é compartilhado, como formulários são
+resolvidos).
 
 ```
 Visitante → Portal Associativo (marketing, SEO, planos, contato)
                   │
-                  └── "Login Master" → redireciona para
-                      clubedocavalobonfim.com.br/login_master.html
+                  └── "Login Master" → admin/login.html (Painel Master,
+                      neste mesmo repositório — equipe da plataforma)
+
+Associado/Admin de um tenant → clubedocavalobonfim.com.br (ou outro
+                  domínio registrado) → resolvido para a organização
+                  correta pelo Tenant Resolver (ver CLAUDE.md)
 ```
 
 ---
@@ -46,6 +59,16 @@ Visitante → Portal Associativo (marketing, SEO, planos, contato)
 
 ```
 portal-associativo/
+├── admin/                      # Painel Master — administração cross-tenant
+│   ├── login.html, index.html, organizations.html, organization-detail.html,
+│   │   organization-provision.html, domains.html, plans.html, subscriptions.html,
+│   │   modules.html, feature-flags.html, platform-operators.html, audit.html,
+│   │   leads.html, lead-detail.html, settings.html
+│   └── assets/                 # admin-auth.js, admin-nav.js (deste painel)
+├── shared/                     # núcleo compartilhado consumido cross-origin por qualquer tenant
+│   ├── core/                   # auth/Firebase, tenant (resolução por hostname, branding, features), módulos
+│   └── components/             # sidebar, KPI card, tabela de dados, modal (ver shared/README.md)
+├── cloudflare-worker-demo-proxy/  # Worker de proxy reverso do domínio de demonstração
 ├── assets/
 │   ├── images/
 │   │   ├── brand/          # logo, og-cover — definitivos (docs/brand-system)
@@ -63,7 +86,7 @@ portal-associativo/
 │   ├── bootstrap.min.css     # vendorizado (Bootstrap 5.3.3)
 ├── js/
 │   ├── app.js                 # bootstrap de cada página (nav ativa + ano do rodapé)
-│   ├── firebase.js            # SDK do Firebase compartilhado — preparado, não usado ainda
+│   ├── firebase.js            # SDK do Firebase compartilhado (site institucional)
 │   ├── forms.js                # formulários → mailto: (js/forms.js)
 │   ├── utils.js                # helpers puros
 │   └── bootstrap.bundle.min.js
@@ -71,6 +94,7 @@ portal-associativo/
 ├── docs/                     # documentação interna (brand, DS, arquitetura, UX/UI, roadmap…)
 ├── index.html                 # home — precisa ficar na raiz (requisito do GitHub Pages)
 ├── CNAME                      # domínio próprio do GitHub Pages (portalassociativo.com.br)
+├── CLAUDE.md                  # arquitetura da plataforma multi-tenant — estado atual
 ├── robots.txt / sitemap.xml / manifest.webmanifest
 └── README.md
 ```
@@ -89,8 +113,9 @@ limitação:
 
 - HTML5 + CSS3 + Bootstrap 5.3 (vendorizado, sem CDN para o core)
 - JavaScript vanilla, ES Modules, `async/await`
-- Firebase SDK (via CDN modular) — mesmo projeto Firebase do CCBMG, preparado
-  para uso futuro (Painel Master, Fase 5)
+- Firebase SDK (via CDN modular) — mesmo projeto Firebase do CCBMG; usado
+  ativamente pelo Painel Master (`admin/`) e pelo núcleo compartilhado
+  (`shared/`), que o site institucional (`index.html`/`pages/`) não usa
 - Bootstrap Icons via CDN
 
 **Sem** React/Vue/Angular/Next/Nuxt/Vite/TypeScript, sem build, sem
@@ -165,13 +190,18 @@ ver justificativa em [docs/architecture/](docs/architecture/).
 
 A tabela de fases detalhada, com o histórico de cada commit relevante e as
 pendências reais em aberto, vive só em [docs/roadmap/](docs/roadmap/) — não
-duplicada aqui, para não haver duas fontes de verdade divergentes.
+duplicada aqui, para não haver duas fontes de verdade divergentes. O estado
+**atual** (não histórico) do modelo multi-tenant vive em [CLAUDE.md](CLAUDE.md).
 
-Resumo de alto nível: fundação (Fase 1) → conteúdo definitivo e go-live em
-produção (Fase 2, **onde o projeto está hoje**) → páginas de
-segmento/marketplace (Fase 3) → divulgação do aplicativo (Fase 4) → Painel
-Master migra para este domínio (Fase 5) → páginas institucionais sobre IA e
-automações (Fase 6).
+Resumo de alto nível: fundação e conteúdo definitivo do site institucional
+(Fases 1–2, em produção) → Painel Master reconstruído e publicado, junto com
+todo o mecanismo multi-tenant da plataforma (Fases 3.1–3.12 + Fase 4, **onde
+o projeto está hoje**, todas já em produção) → páginas de segmento/marketplace
+do site institucional (Fase 3 local) → divulgação do aplicativo (Fase 4
+local) → páginas institucionais sobre IA e automações (Fase 6 local). Ver a
+nota sobre numeração em [docs/roadmap/README.md](docs/roadmap/README.md) —
+"Fase 3.x"/"Fase 4" têm significados diferentes conforme o contexto (site
+institucional vs. plataforma SaaS).
 
 ---
 

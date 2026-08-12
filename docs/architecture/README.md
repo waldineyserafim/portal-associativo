@@ -1,32 +1,46 @@
 # Arquitetura — Portal Associativo
 
+> **Atualizado em agosto de 2026** durante a reorganização de documentação da
+> plataforma — as seções abaixo, escritas na Fase 2 (site institucional
+> ainda sem o Painel Master), ficaram desatualizadas pelo trabalho posterior
+> das Fases 3.1+ (o Painel Master migrou para este repositório de verdade).
+> Para o estado atual completo do modelo multi-tenant, ver
+> **[`CLAUDE.md`](../../CLAUDE.md)** na raiz deste repositório — este
+> documento mantém só as decisões de arquitetura do site institucional que
+> continuam válidas.
+
 ## Visão geral
 
 O Portal Associativo é um site estático (HTML + CSS + JS vanilla), publicado
-via GitHub Pages, sem build step. É o produto institucional/marketing da
-plataforma — não o sistema operacional dos clubes (esse papel continua com o
-projeto **Clube do Cavalo de Bonfim MG**, que se tornará o SaaS multi-tenant
-na Fase 5).
+via GitHub Pages, sem build step. Hospeda tanto o produto institucional/
+marketing da plataforma quanto o **Painel Master** (`admin/`, autenticado,
+equipe da plataforma) — o sistema operacional que cada tenant usa no dia a
+dia (associados, financeiro, eventos) continua no projeto irmão
+**Clube do Cavalo de Bonfim MG**, hoje o único tenant de produção real.
 
 ```
 Visitante → Portal Associativo (marketing, SEO, planos, contato)
                   │
-                  └── "Login Master" → redireciona para
-                      clubedocavalobonfim.com.br/login_master.html
-                      (Painel Master ainda vive lá — ver roadmap)
+                  └── "Login Master" → admin/login.html
+                      (Painel Master vive neste repositório desde a Fase 3.1
+                      da plataforma — ver docs/roadmap/README.md)
 ```
 
 ## Por que dois repositórios separados
 
-- O CCBMG é hoje o produto operacional de UM cliente (Clube do Cavalo de
-  Bonfim MG) — suas páginas, textos e módulos são específicos desse clube.
-- O Portal Associativo é o produto institucional da EMPRESA (marketing,
-  planos, SEO) — não deve herdar conteúdo específico de um cliente.
+- O CCBMG é hoje o único tenant de produção real (Clube do Cavalo de Bonfim
+  MG) — suas páginas, textos e módulos são específicos desse clube; o mesmo
+  código também serve o tenant Sandbox oficial de demonstração via Tenant
+  Resolver (ver `CLAUDE.md`).
+- O Portal Associativo é o produto da EMPRESA: site institucional (marketing,
+  planos, SEO) + Painel Master (administração cross-tenant) + núcleo de
+  frontend compartilhado (`shared/`) — não deve herdar conteúdo específico
+  de um cliente.
 - Separar os repositórios evita acoplar deploys: uma alteração de marketing
-  não arrisca quebrar o sistema em produção de um clube pagante, e vice-versa.
-- Quando o Painel Master migrar para cá (Fase 5), ele passa a ser uma área
-  autenticada dentro deste mesmo repositório/domínio — o Portal já nasce
-  preparado para isso (ver `js/firebase.js`).
+  não arrisca quebrar o sistema em produção de um tenant pagante, e vice-versa.
+- O backend (Cloud Functions, Firestore Rules, Storage Rules) mora fisicamente
+  no repositório do CCBMG, mesmo sendo infraestrutura compartilhada por toda
+  a plataforma — ver "Onde as coisas moram" em `CLAUDE.md`.
 
 ## Firebase compartilhado
 
@@ -85,7 +99,7 @@ fica isolada em `js/forms.js` — os formulários em si (`pages/contato.html`,
 
 O Portal Associativo passou a hospedar, em `shared/`, o núcleo de código reutilizável pela plataforma inteira: autenticação/Firebase, resolução de tenant, módulos habilitados, auditoria, utilitários e componentes visuais (sidebar, KPI card, tabela de dados, modal). Qualquer tenant — hoje só o CCBMG, futuramente outros — consome via `import` cross-origin de URL absoluta (`https://portalassociativo.com.br/shared/...`), sem duplicar nada localmente.
 
-Contrato completo, política de versionamento e o que nunca entra no núcleo: ver `shared/README.md` neste mesmo repositório. Contexto de por que isso existe e como se encaixa no roadmap multi-tenant mais amplo: `docs/SAAS_MULTITENANT.md` no repositório do CCBMG (documento pré-existente, com um modelo de arquitetura ligeiramente diferente — resolução dinâmica por domínio num único app — que este núcleo complementa sem substituir; ver a seção "Reconciliação" no plano de implementação desta fase).
+Contrato completo, política de versionamento e o que nunca entra no núcleo: ver `shared/README.md` neste mesmo repositório. Contexto de por que isso existe: `docs/archive/SAAS_MULTITENANT.md` no repositório do CCBMG (gap-analysis original que motivou este núcleo — hoje arquivado como histórico, porque o gap G4 que ele documentava foi resolvido pelas Fases 3.9/3.10, ver `CLAUDE.md` deste repositório).
 
 Decisão de design que vale registrar aqui: `shared/core/tenant/tenant-context.js` expõe `getTenant()` como **assíncrona** mesmo hoje, quando a resolução é só ler um arquivo de config local (`tenant.config.js`) declarado por cada tenant. Isso é proposital — quando a resolução dinâmica por domínio existir de fato, só o corpo interno dessa função muda; nenhum consumidor precisa ser reescrito.
 
