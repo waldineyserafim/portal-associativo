@@ -26,6 +26,9 @@
         <p class="ds-text-sm ds-text-muted mb-0">Agenda comercial simples — substitui a planilha de prospecção. Não é um CRM completo.</p>
       </div>
       <div class="d-flex gap-2">
+        <button class="btn btn-outline-primary btn-sm d-none" id="btnGerarLeadsIA">
+          <i class="bi bi-search me-1"></i>Gerar Leads IA
+        </button>
         <button class="btn btn-outline-primary btn-sm" id="btnExecutarOutboundIA">
           <i class="bi bi-robot me-1"></i>Executar Outbound IA
         </button>
@@ -34,6 +37,9 @@
         </button>
       </div>
     </div>
+
+    <!-- Status da última execução da Prospecção IA (botão "Gerar Leads IA" acima) -->
+    <div class="alert alert-info d-none py-2 ds-text-sm" id="prospectingRunBanner"></div>
 
     <!-- Status da última execução remota do Outbound IA (botão acima) -->
     <div class="alert alert-info d-none py-2 ds-text-sm d-flex align-items-center justify-content-between gap-2 flex-wrap" id="outboundRunBanner">
@@ -222,6 +228,32 @@
   </div>
 </div>
 
+<!-- Modal Gerar Leads IA -->
+<div class="modal ds-modal fade" id="modalProspeccaoIA" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-search me-1"></i>Gerar Leads com IA</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="ds-text-sm mb-3">A Prospecção IA pesquisará a internet usando Gemini + Google Search e tentará encontrar até <strong id="prospModalLimite"></strong> novos leads qualificados.</p>
+        <ul class="ds-text-sm mb-3">
+          <li>Campanha: <strong id="prospModalCampanha"></strong></li>
+          <li>Limite: <strong id="prospModalLimite2"></strong> leads</li>
+        </ul>
+        <p class="ds-text-xs ds-text-muted mb-2">A execução pode levar alguns minutos. Leads já existentes serão automaticamente ignorados pelo mecanismo de deduplicação.</p>
+        <div id="prospModalBlocked" class="alert alert-warning py-2 ds-text-sm d-none mb-0">Já existe uma prospecção em andamento para esta campanha.</div>
+        <div id="prospModalError" class="alert alert-danger py-2 ds-text-sm d-none mb-0"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="btnConfirmarProspeccaoIA">Gerar Leads</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal Executar Outbound IA -->
 <div class="modal ds-modal fade" id="modalOutboundIA" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
@@ -283,6 +315,7 @@
   const fnRequestOutboundBatch = httpsCallable(functionsApi, "requestOutboundBatch");
   const fnPreviewOutboundRemoteRun = httpsCallable(functionsApi, "previewOutboundRemoteRun");
   const fnRequestOutboundRemoteRun = httpsCallable(functionsApi, "requestOutboundRemoteRun");
+  const fnRequestProspectingRun = httpsCallable(functionsApi, "requestProspectingRun");
 
   let leads = [];
   let adminsById = {};
@@ -562,6 +595,105 @@
       btn.disabled = false;
     }
   });
+
+  /* =========================================================================
+     Botão "Gerar Leads IA" — dispara a MESMA Prospecção IA que já roda no
+     scheduler semanal (requestProspectingRun, engine.requestRun — nenhum
+     motor novo, ver CLAUDE.md "Botão Gerar Leads IA"). trigger:"manual" fica
+     registrado no doc de prospectingRuns (mesmo campo que já distingue do
+     scheduler, trigger:"scheduled" — nada de schema novo).
+     ========================================================================= */
+
+  const prospModalEl = document.getElementById("modalProspeccaoIA");
+  const prospModal = new bootstrap.Modal(prospModalEl);
+  let activeCampaigns = [];
+  let unsubscribeProspectingRun = null;
+
+  function prospectingBanner(text) {
+    const banner = document.getElementById("prospectingRunBanner");
+    banner.classList.remove("d-none");
+    banner.textContent = text;
+  }
+
+  async function loadActiveCampaigns() {
+    try {
+      const snap = await getDocs(query(collection(db, "prospectingCampaigns"), where("status", "==", "active")));
+      activeCampaigns = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      document.getElementById("btnGerarLeadsIA").classList.toggle("d-none", activeCampaigns.length === 0);
+    } catch (e) {
+      console.error("Erro ao carregar campanhas de prospecção:", e);
+    }
+  }
+
+  document.getElementById("btnGerarLeadsIA").addEventListener("click", () => {
+    if (!activeCampaigns.length) return;
+    // Só uma campanha ativa hoje — usa direto, sem complicar a interface
+    // (Parte 6: "se existir claramente uma única campanha ativa, não
+    // complicar"). Se um dia houver mais de uma, pega a primeira por
+    // enquanto — seleção múltipla fica pra quando isso acontecer de verdade.
+    const campaign = activeCampaigns[0];
+    document.getElementById("prospModalCampanha").textContent = campaign.name;
+    document.getElementById("prospModalLimite").textContent = campaign.execution?.maxLeadsPerRun ?? 20;
+    document.getElementById("prospModalLimite2").textContent = campaign.execution?.maxLeadsPerRun ?? 20;
+    document.getElementById("btnConfirmarProspeccaoIA").dataset.campaignId = campaign.id;
+
+    const running = campaign.campaignStatus === "running";
+    document.getElementById("prospModalBlocked").classList.toggle("d-none", !running);
+    document.getElementById("prospModalError").classList.add("d-none");
+    document.getElementById("btnConfirmarProspeccaoIA").disabled = running;
+
+    prospModal.show();
+  });
+
+  document.getElementById("btnConfirmarProspeccaoIA").addEventListener("click", async (e) => {
+    const campaignId = e.currentTarget.dataset.campaignId;
+    const btn = e.currentTarget;
+    btn.disabled = true;
+    btn.textContent = "Solicitando…";
+    try {
+      await fnRequestProspectingRun({ campaignId });
+      prospModal.hide();
+      prospectingBanner("Prospecção IA iniciada.");
+      watchProspectingRun(campaignId);
+    } catch (err) {
+      document.getElementById("prospModalError").textContent = "Erro: " + err.message;
+      document.getElementById("prospModalError").classList.remove("d-none");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Gerar Leads";
+    }
+  });
+
+  function watchProspectingRun(campaignId) {
+    // requestProspectingRun não devolve o runId (é fire-and-forget, mesmo
+    // padrão do resto do módulo) — acompanha pelo campo lastRunSummary da
+    // própria campanha, que o motor atualiza ao final (ver
+    // lib/prospecting/engine.js, bloco finally).
+    if (unsubscribeProspectingRun) unsubscribeProspectingRun();
+    unsubscribeProspectingRun = onSnapshot(doc(db, "prospectingCampaigns", campaignId), (snap) => {
+      if (!snap.exists()) return;
+      const campaign = snap.data();
+      if (campaign.campaignStatus === "running") {
+        prospectingBanner("Prospecção IA em andamento…");
+        return;
+      }
+      // campaignStatus voltou pra "idle" — terminou (ver se lastRunSummary é recente o suficiente pra ser desta execução).
+      const summary = campaign.lastRunSummary;
+      if (!summary) return;
+      if (summary.status === "failed") {
+        prospectingBanner("Não foi possível concluir a Prospecção IA. Verifique o histórico de execução em Prospecção IA.");
+      } else {
+        prospectingBanner(
+          `Prospecção concluída. ${summary.candidatosAnalisados ?? "—"} candidato(s) analisados, ${summary.leadsCriados ?? 0} novo(s) lead(s), ${summary.leadsDuplicados ?? 0} duplicado(s).`
+        );
+        load(); // atualiza a lista de Leads automaticamente
+      }
+      unsubscribeProspectingRun();
+      unsubscribeProspectingRun = null;
+    });
+  }
+
+  loadActiveCampaigns();
 
   /* =========================================================================
      Botão "Executar Outbound IA" — dispara o Claude Code remotamente via

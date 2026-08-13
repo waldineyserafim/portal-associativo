@@ -184,8 +184,77 @@ Gerados 4 leads reais frescos via uma nova campanha de Prospecção controlada (
 
 **Nunca é necessário abrir Claude Code ou digitar comando nenhum.** A Prospecção roda sozinha toda segunda-feira 08:00; o Outbound roda quando você clicar no botão.
 
-## Classificação final
+---
+
+## FASE 3 — Botão "Gerar Leads IA" + achado crítico (Cloud Tasks nunca funcionou)
+
+### 1. Arquitetura utilizada
+
+Extensão mínima, exatamente como pedido: o botão em `admin/leads.html` reaproveita a Cloud Function `requestProspectingRun`, **já existente e já deployada** (é a mesma que o botão "Executar agora" de `admin/prospeccao-ia.html` já usava). Nenhum motor novo, nenhum endpoint novo — só frontend.
+
+### 2. Função/backend reutilizado
+
+`requestProspectingRun` → `lib/prospecting/engine.js#requestRun` (lock atômico, cria `prospectingRuns/{runId}` com `trigger:"manual"`) → task enfileirada → `executeProspectingRun` → `GeminiProvider` → scoring/dedup/persistência — **tudo idêntico ao caminho do scheduler**, único ponto de distinção é o campo `trigger` (já existia).
+
+### 3-4. Arquivos alterados/criados
+
+- `admin/leads.html` (portal-associativo) — botão "Gerar Leads IA", modal de confirmação com números reais (não fictícios), acompanhamento via `onSnapshot` no doc da campanha.
+- `functions-prospecting/test/prospecting-callables.test.js` — cobertura de autorização da callable.
+- `functions-prospecting/lib/cloudTasksDispatch.js` (novo) + `index.js` alterado — ver achado crítico abaixo.
+
+### Achado crítico #1 — `getFunctions().taskQueue().enqueue()` nunca funcionou em produção
+
+Ao testar o disparo manual pela primeira vez de verdade (não só localmente com o motor direto, mas através da Cloud Function real), toda tentativa falhava com `"Queue does not exist"`, mesmo com a fila existindo e o IAM aparentemente correto. Investigação (não hipótese):
+
+1. Confirmei a fila existe e está `RUNNING` (`gcloud tasks queues describe`).
+2. Verifiquei e corrigi IAM: `roles/run.invoker` no Cloud Run alvo (`executeprospectingrun`/`executeoutboundbatch`) e `roles/cloudtasks.enqueuer` na service account chamadora (`appspot`) — ambos estavam **totalmente ausentes** (política vazia). Corrigido.
+3. Mesmo assim, a Cloud Function real continuava falhando com a mensagem literal vinda da própria API do Google.
+4. Reproduzi a MESMA chamada manualmente via REST puro (`POST cloudtasks.googleapis.com/v2/.../tasks`, mesmo payload, mesma identidade OIDC) — **funcionou, task criada com sucesso**.
+
+Conclusão: o wrapper `getFunctions().taskQueue()` do `firebase-admin` tem uma incompatibilidade real com este ambiente — não é falta de permissão. **Isso significa que o scheduler semanal (`prospectingScheduledRun`) provavelmente nunca completou uma execução de verdade desde que foi implementado** — sempre falhava nesse mesmo passo, silenciosamente (o erro ficava só nos logs da Cloud Function, nunca chegava a um humano).
+
+**Correção**: `lib/cloudTasksDispatch.js` (novo) chama a API REST do Cloud Tasks diretamente via `fetch()` — mesmo padrão já usado em `lib/outbound/githubDispatch.js`, nenhuma dependência nova (`google-auth-library` já era dependência direta). Substituiu `getFunctions().taskQueue()` em `enqueueProspectingRun`/`enqueueOutboundBatch`, sem alterar nenhuma lógica de negócio.
+
+### Achado crítico #2 — secrets inacessíveis para as functions Gen2
+
+Depois da correção acima, a execução real chegou a rodar, mas falhou com `PERMISSION_DENIED: secretmanager.versions.access` no `gemini-api-key`. Causa: `executeProspectingRun`/`executeOutboundBatch` são funções **Gen2** e rodam sob a service account default do **Compute Engine** (`{project-number}-compute@developer.gserviceaccount.com`), não a `appspot` — só a `appspot` tinha sido concedida acesso aos secrets quando eles foram criados. Corrigido concedendo `roles/secretmanager.secretAccessor` também à SA do Compute, para `gemini-api-key`, `anthropic-api-key`, `email-user` e `email-password`.
+
+### Achado adicional — nenhuma campanha ativa em produção
+
+Não havia nenhuma campanha `status:"active"` em produção — só campanhas de teste já arquivadas. Isso significava que, mesmo corrigindo os dois achados acima, nem o scheduler nem o botão teriam o que executar. Criada a campanha oficial `nIyOtBX8JBzm0uZAWZIX` ("Prospecção Portal Associativo — Clubes e Associações (Brasil)"), com o mesmo ICP documentado em `systemConfig/salesContext`.
+
+### 7. Limite de 20 aplicado no servidor
+
+`requestProspectingRun` nunca aceita um `maxLeads` do cliente — só `campaignId`. O teto vem de `campaign.execution.maxLeadsPerRun`, sempre sanitizado/clampado no servidor (`sanitizeExecution` em `lib/prospecting/campaigns.js`, min 1/max 100) — impossível de contornar pelo frontend.
+
+### 8. Controle de concorrência
+
+Reaproveita o lock já existente (`campaignStatus`, transação atômica em `engine.requestRun`) — nenhum mecanismo novo. O modal mostra "Já existe uma prospecção em andamento" quando `campaignStatus === "running"`.
+
+### 10. Testes automatizados
+
+118 testes (0 falhas): 2 novos em `prospecting-callables.test.js` (autorização da callable), 4 novos em `cloud-tasks-dispatch.test.js` (payload/URL/erro do novo mecanismo de enqueue, `getAccessToken`/`fetchImpl` mockados, nunca toca o Cloud Tasks real).
+
+### 11. Teste real (dois estágios, Parte 21)
+
+**Estágio 1 — 3 leads (limite temporariamente reduzido, depois restaurado para 20)**: disparado via chamada real à Cloud Function deployada (ID token genuíno, não simulado) — `status:"completed"`, 3 leads reais criados (Clube Recreativo São Pedro, Sindicato dos Servidores Públicos Municipais de Sorocaba, Clube Fonte São Paulo), scores 90-95.
+
+**Estágio 2 — 20 leads (limite normal)**: mesma chamada real, campanha já restaurada ao limite de produção — `status:"completed"`, `stoppedReason:"meta_atingida"`, **20/20 leads criados**, 5 duplicados corretamente ignorados, custo estimado US$0,208 (custo real: US$0, dentro do free tier).
+
+### 13. Deploy realizado
+
+`firebase deploy --only functions:prospecting --project clubecavalobonfim` — 18 functions atualizadas (incluindo a correção do Cloud Tasks).
+
+### 14. Scheduler confirmado
+
+`firebase-schedule-prospectingScheduledRun-us-central1` — `ENABLED`, `0 8 * * 1` — e agora, pela primeira vez, com o mecanismo de disparo (`enqueueProspectingRun`) realmente funcional.
+
+### 16. Pendências
+
+Nenhuma bloqueante. Recomendação de observação: acompanhar a execução automática da próxima segunda-feira (primeira desde a correção) para confirmar que o scheduler completa sozinho, sem intervenção.
+
+## Classificação final (atualizada)
 
 **PRONTO PARA OPERAÇÃO.**
 
-Os dois agentes estão implementados, testados (112 testes automatizados), deployados em produção, e validados de ponta a ponta com dados reais — não simulados: 6 leads reais criados pela Prospecção (Gemini), 5 abordagens reais geradas pelo Outbound (Claude Code/Pro, via botão, sem terminal), custo real de API paga: **US$0**. Nenhuma mensagem foi enviada a ninguém em nenhum momento — todo o fluxo termina em revisão humana obrigatória.
+Além de tudo já validado nas Fases 1-2, esta fase encontrou e corrigiu dois defeitos reais e pré-existentes que impediam tanto o novo botão quanto o scheduler semanal de funcionar de ponta a ponta — nenhum dos dois nunca tinha sido exercido através do caminho real de produção antes de agora. Validado com dois disparos reais via a Cloud Function deployada de verdade (não simulação): 3 leads, depois 20/20 leads no limite normal. Custo real total: **US$0**.
