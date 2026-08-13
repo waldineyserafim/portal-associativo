@@ -26,6 +26,7 @@
       <div>
         <h1 class="h4 mb-0" id="leadTitulo">—</h1>
         <div id="leadStatusBadge"></div>
+        <div id="leadAiProspectingNote" class="ds-text-xs ds-text-muted mt-1"></div>
       </div>
       <button class="btn btn-outline-danger btn-sm d-none" id="btnArquivar">Arquivar lead</button>
     </div>
@@ -39,6 +40,9 @@
       </li>
       <li class="nav-item" role="presentation">
         <button class="nav-link" id="tab-historico-btn" data-bs-toggle="tab" data-bs-target="#tab-historico" type="button" role="tab">Histórico</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-outbound-btn" data-bs-toggle="tab" data-bs-target="#tab-outbound" type="button" role="tab">Outbound IA</button>
       </li>
     </ul>
 
@@ -220,6 +224,94 @@
           </table>
         </div>
       </div>
+
+      <!-- ===================== Outbound IA ===================== -->
+      <div class="tab-pane fade" id="tab-outbound" role="tabpanel">
+        <p class="ds-text-sm ds-text-muted">
+          Abordagem comercial personalizada gerada por IA a partir dos dados deste lead — nunca enviada
+          automaticamente. Revise, edite se precisar, aprove e envie manualmente pelo canal escolhido.
+        </p>
+
+        <div id="obEmptyState">
+          <div class="row g-2 align-items-end mb-3">
+            <div class="col-6 col-md-3">
+              <label class="form-label ds-text-xs mb-1">Canal</label>
+              <select class="form-select form-select-sm" id="obChannel">
+                <option value="email">E-mail</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="linkedin">LinkedIn</option>
+                <option value="sms">SMS</option>
+                <option value="outro">Outro</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-5 d-flex align-items-end">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="obAllowResearch">
+                <label class="form-check-label ds-text-xs" for="obAllowResearch">Permitir pesquisa web adicional se necessário (custo extra controlado)</label>
+              </div>
+            </div>
+            <div class="col-12 col-md-4">
+              <button class="btn btn-primary btn-sm" id="btnGerarOutbound">Gerar abordagem com IA</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="obErrMsg" class="alert alert-danger py-2 small d-none"></div>
+
+        <div id="obContent" class="d-none">
+          <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+            <span id="obStatusBadge"></span>
+            <span class="ds-text-xs ds-text-muted" id="obMeta"></span>
+          </div>
+
+          <div class="row g-2 mb-2" id="obSubjectWrap">
+            <div class="col-12">
+              <label class="form-label ds-text-xs mb-1">Assunto</label>
+              <input class="form-control form-control-sm" id="obSubject">
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label ds-text-xs mb-1">Mensagem</label>
+            <textarea class="form-control form-control-sm" id="obMessage" rows="6"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label ds-text-xs mb-1">CTA</label>
+            <input class="form-control form-control-sm" id="obCta">
+          </div>
+
+          <div class="d-flex flex-wrap gap-2 mb-4">
+            <button class="btn btn-outline-secondary btn-sm" id="btnSalvarEdicaoOutbound">Salvar edição</button>
+            <button class="btn btn-success btn-sm" id="btnAprovarOutbound">Aprovar</button>
+            <button class="btn btn-outline-danger btn-sm" id="btnRejeitarOutbound">Rejeitar</button>
+            <button class="btn btn-outline-primary btn-sm" id="btnRegenerarOutbound">Gerar novamente</button>
+            <button class="btn btn-dark btn-sm" id="btnMarcarEnviadoOutbound">Marcar como enviada</button>
+          </div>
+
+          <div class="ds-table-card mb-3">
+            <div class="ds-table-card-header"><h2 class="h6 mb-0">Por que esta abordagem foi criada?</h2></div>
+            <div class="p-3">
+              <p class="ds-text-sm mb-2" id="obPersonalizationSummary"></p>
+              <ul class="ds-text-sm" id="obMotivos"></ul>
+            </div>
+          </div>
+
+          <div class="ds-table-card mb-3">
+            <div class="ds-table-card-header"><h2 class="h6 mb-0">Evidências (verifique antes de enviar)</h2></div>
+            <table class="table ds-table">
+              <thead><tr><th>Fonte</th><th>Tipo</th><th>Informação usada</th></tr></thead>
+              <tbody id="obEvidenceBody"></tbody>
+            </table>
+          </div>
+
+          <div class="ds-table-card">
+            <div class="ds-table-card-header"><h2 class="h6 mb-0">Histórico de versões</h2></div>
+            <table class="table ds-table">
+              <thead><tr><th>Quando</th><th>Origem</th><th>Prévia</th></tr></thead>
+              <tbody id="obVersionsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
     </div>
   </main>
@@ -249,8 +341,26 @@
   const fnUpdateLead = httpsCallable(functionsApi, "updateLead");
   const fnArchiveLead = httpsCallable(functionsApi, "archiveLead");
   const fnAddLeadHistory = httpsCallable(functionsApi, "addLeadHistory");
+  const fnGenerateOutbound = httpsCallable(functionsApi, "generateOutboundMessage");
+  const fnEditOutbound = httpsCallable(functionsApi, "editOutboundMessage");
+  const fnApproveOutbound = httpsCallable(functionsApi, "approveOutboundMessage");
+  const fnRejectOutbound = httpsCallable(functionsApi, "rejectOutboundMessage");
+  const fnMarkSentOutbound = httpsCallable(functionsApi, "markOutboundMessageSent");
+
+  const OB_STATUS_LABELS = {
+    generating: '<span class="badge bg-warning text-dark">Gerando…</span>',
+    ready_for_review: '<span class="badge bg-info text-dark">Pronta para revisão</span>',
+    approved: '<span class="badge bg-success">Aprovada</span>',
+    rejected: '<span class="badge bg-danger">Rejeitada</span>',
+    edited: '<span class="badge bg-primary">Editada</span>',
+    sent: '<span class="badge bg-dark">Enviada</span>',
+    responded: '<span class="badge bg-success">Respondida</span>',
+    failed: '<span class="badge bg-danger">Falhou</span>',
+  };
+  const OB_SOURCE_LABELS = { ai_generated: "Gerada pela IA", human_edited: "Editada pelo comercial" };
 
   let lead = null;
+  let outboundMsg = null;
 
   requirePlatformAccess({
     requiredRole: ["administrator", "owner"],
@@ -322,6 +432,11 @@
     document.getElementById("leadStatusBadge").innerHTML = STATUS_LABELS[lead.status] || lead.status;
     document.getElementById("btnArquivar").textContent = lead.archived ? "Desarquivar lead" : "Arquivar lead";
     document.getElementById("btnArquivar").classList.remove("d-none");
+
+    const ai = lead.aiProspecting;
+    document.getElementById("leadAiProspectingNote").textContent = ai
+      ? `Encontrado pela Prospecção IA — score ${ai.score}, classificação "${ai.qualificacao}".`
+      : "";
   }
 
   // Recarrega só o documento do lead (pra header/badge/botão refletirem o
@@ -346,11 +461,135 @@
       updateHeader();
       fillForm();
       await loadHistory();
+      await loadOutbound();
+      // Vindo de outbound-ia.html ("Revisar") — abre direto na aba certa.
+      if (params.get("tab") === "outbound") {
+        bootstrap.Tab.getOrCreateInstance(document.getElementById("tab-outbound-btn")).show();
+      }
     } catch (e) {
       console.error(e);
       showLoadError("Erro ao carregar o lead. Tente recarregar a página.");
     }
   }
+
+  /* =========================================================================
+     Outbound IA
+     ========================================================================= */
+
+  async function loadOutbound() {
+    const snap = await getDoc(doc(db, "outboundMessages", leadId));
+    outboundMsg = snap.exists() ? snap.data() : null;
+    renderOutbound();
+    await loadOutboundVersions();
+  }
+
+  function renderOutbound() {
+    const hasContent = outboundMsg && ["ready_for_review", "approved", "rejected", "edited", "sent", "responded", "failed"].includes(outboundMsg.status);
+    document.getElementById("obEmptyState").classList.toggle("d-none", !!outboundMsg && outboundMsg.status !== "failed");
+    document.getElementById("obContent").classList.toggle("d-none", !hasContent);
+    if (!outboundMsg) return;
+
+    document.getElementById("obStatusBadge").innerHTML = OB_STATUS_LABELS[outboundMsg.status] || outboundMsg.status;
+    const generatedNote = outboundMsg.generationCount ? `${outboundMsg.generationCount} geração(ões) · canal: ${outboundMsg.channel}` : "";
+    document.getElementById("obMeta").textContent = outboundMsg.status === "failed" ? `Erro: ${outboundMsg.error || ""}` : generatedNote;
+
+    if (!hasContent) return;
+
+    document.getElementById("obSubjectWrap").classList.toggle("d-none", outboundMsg.channel !== "email");
+    document.getElementById("obSubject").value = outboundMsg.subject || "";
+    document.getElementById("obMessage").value = outboundMsg.message || "";
+    document.getElementById("obCta").value = outboundMsg.cta || "";
+    document.getElementById("obPersonalizationSummary").textContent = outboundMsg.personalizationSummary || "—";
+    document.getElementById("obMotivos").innerHTML = (outboundMsg.motivos || []).map((m) => `<li>${m}</li>`).join("") || '<li class="ds-text-muted">Nenhum motivo registrado.</li>';
+    document.getElementById("obEvidenceBody").innerHTML = (outboundMsg.evidence || []).map((e) => `
+      <tr>
+        <td class="ds-text-sm">${e.url ? `<a href="${e.url}" target="_blank" rel="noopener">${e.titulo || e.url}</a>` : (e.titulo || "—")}</td>
+        <td class="ds-text-xs ds-text-muted">${e.tipoFonte || "—"}</td>
+        <td class="ds-text-sm">${e.informacaoExtraida || "—"}</td>
+      </tr>`).join("") || '<tr><td colspan="3" class="ds-table-empty">Nenhuma evidência específica — personalização baseada em dados já cadastrados.</td></tr>';
+
+    const canDecide = ["ready_for_review", "edited"].includes(outboundMsg.status);
+    const canSend = ["approved", "edited"].includes(outboundMsg.status);
+    document.getElementById("btnAprovarOutbound").disabled = !canDecide;
+    document.getElementById("btnRejeitarOutbound").disabled = !canDecide;
+    document.getElementById("btnMarcarEnviadoOutbound").disabled = !canSend;
+    document.getElementById("btnMarcarEnviadoOutbound").textContent = outboundMsg.status === "sent" || outboundMsg.status === "responded" ? "Já enviada" : "Marcar como enviada";
+  }
+
+  async function loadOutboundVersions() {
+    const body = document.getElementById("obVersionsBody");
+    if (!outboundMsg) { body.innerHTML = ""; return; }
+    try {
+      const snap = await getDocs(query(collection(db, "outboundMessages", leadId, "versions"), orderBy("createdAt", "desc")));
+      body.innerHTML = snap.docs.map((d) => {
+        const v = d.data();
+        const when = v.createdAt?.toDate ? v.createdAt.toDate().toLocaleString("pt-BR") : "—";
+        return `<tr>
+          <td class="ds-text-xs ds-text-muted">${when}</td>
+          <td class="ds-text-sm">${OB_SOURCE_LABELS[v.source] || v.source}</td>
+          <td class="ds-text-sm">${(v.message || "").slice(0, 90)}${(v.message || "").length > 90 ? "…" : ""}</td>
+        </tr>`;
+      }).join("") || '<tr><td colspan="3" class="ds-table-empty">Nenhuma versão ainda</td></tr>';
+    } catch (e) {
+      body.innerHTML = '<tr><td colspan="3" class="ds-table-empty">Erro ao carregar histórico</td></tr>';
+      console.error(e);
+    }
+  }
+
+  async function generateOutbound() {
+    const errMsg = document.getElementById("obErrMsg");
+    errMsg.classList.add("d-none");
+    const btns = [document.getElementById("btnGerarOutbound"), document.getElementById("btnRegenerarOutbound")];
+    btns.forEach((b) => { if (b) b.disabled = true; });
+    try {
+      await fnGenerateOutbound({
+        leadId,
+        channel: document.getElementById("obChannel")?.value || outboundMsg?.channel || "email",
+        allowResearch: document.getElementById("obAllowResearch")?.checked === true,
+      });
+      await loadOutbound();
+    } catch (e) {
+      errMsg.textContent = "Erro: " + e.message;
+      errMsg.classList.remove("d-none");
+    } finally {
+      btns.forEach((b) => { if (b) b.disabled = false; });
+    }
+  }
+
+  document.getElementById("btnGerarOutbound").addEventListener("click", generateOutbound);
+  document.getElementById("btnRegenerarOutbound").addEventListener("click", () => {
+    if (confirm("Gerar uma nova versão da abordagem? A versão atual continua no histórico.")) generateOutbound();
+  });
+
+  document.getElementById("btnSalvarEdicaoOutbound").addEventListener("click", async () => {
+    const errMsg = document.getElementById("obErrMsg");
+    errMsg.classList.add("d-none");
+    const message = document.getElementById("obMessage").value.trim();
+    if (!message) { errMsg.textContent = "Mensagem não pode ficar vazia."; errMsg.classList.remove("d-none"); return; }
+    try {
+      await fnEditOutbound({
+        leadId, message,
+        subject: document.getElementById("obSubject").value.trim(),
+        cta: document.getElementById("obCta").value.trim(),
+      });
+      await loadOutbound();
+    } catch (e) {
+      errMsg.textContent = "Erro: " + e.message;
+      errMsg.classList.remove("d-none");
+    }
+  });
+
+  document.getElementById("btnAprovarOutbound").addEventListener("click", async () => {
+    try { await fnApproveOutbound({ leadId }); await loadOutbound(); } catch (e) { alert("Erro: " + e.message); }
+  });
+  document.getElementById("btnRejeitarOutbound").addEventListener("click", async () => {
+    if (!confirm("Rejeitar esta abordagem?")) return;
+    try { await fnRejectOutbound({ leadId }); await loadOutbound(); } catch (e) { alert("Erro: " + e.message); }
+  });
+  document.getElementById("btnMarcarEnviadoOutbound").addEventListener("click", async () => {
+    if (!confirm("Confirma que você JÁ ENVIOU esta mensagem manualmente pelo canal escolhido? Isto só registra o status — nada é enviado automaticamente pelo sistema.")) return;
+    try { await fnMarkSentOutbound({ leadId }); await loadOutbound(); } catch (e) { alert("Erro: " + e.message); }
+  });
 
   function fillForm() {
     document.getElementById("dOrganizacaoNome").value = lead.organizacaoNome || "";

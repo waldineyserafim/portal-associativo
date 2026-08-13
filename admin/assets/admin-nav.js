@@ -9,6 +9,8 @@ const NAV_ITEMS = [
   { key: "dashboard", href: "./index.html", label: "Dashboard", icon: "bi-speedometer2" },
   { key: "organizations", href: "./organizations.html", label: "Organizações", icon: "bi-buildings" },
   { key: "leads", href: "./leads.html", label: "Leads", icon: "bi-person-lines-fill" },
+  { key: "prospeccao-ia", href: "./prospeccao-ia.html", label: "Prospecção IA", icon: "bi-robot" },
+  { key: "outbound-ia", href: "./outbound-ia.html", label: "Outbound IA", icon: "bi-send-check" },
   { key: "domains", href: "./domains.html", label: "Domínios", icon: "bi-globe2" },
   { key: "plans", href: "./plans.html", label: "Planos", icon: "bi-layers" },
   { key: "module-catalog", href: "./module-catalog.html", label: "Catálogo de Módulos", icon: "bi-boxes" },

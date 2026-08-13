@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Prospecção IA — Painel Master · Portal Associativo</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/images/icons/favicon.svg">
+  <link rel="apple-touch-icon" href="../assets/images/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#A85A34">
+  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../css/design-system.css?v=portal-2026-08b">
+  <link rel="stylesheet" href="../shared/layouts/admin-shell.css?v=2026.08.7">
+  <link rel="stylesheet" href="../shared/components/index.css?v=2026.08.7">
+  <style>
+    .ds-run-badge-running { animation: ds-pulse 1.5s ease-in-out infinite; }
+    @keyframes ds-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
+  </style>
+</head>
+<body>
+
+<div class="ds-admin-shell">
+  <main class="ds-admin-main">
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+      <div>
+        <h1 class="h4 mb-0">Prospecção IA</h1>
+        <p class="ds-text-sm ds-text-muted mb-0">
+          Agente autônomo (Claude) que pesquisa a web e alimenta o
+          <a href="./leads.html">funil comercial da plataforma</a> com organizações candidatas a virar novos tenants —
+          nunca um CRM por organização.
+        </p>
+      </div>
+      <button class="btn btn-primary btn-sm d-none" id="btnNovaCampanha" data-bs-toggle="modal" data-bs-target="#modalCampanha">
+        <i class="bi bi-plus-lg me-1"></i>Nova campanha
+      </button>
+    </div>
+
+    <div class="ds-table-card mb-4">
+      <div class="ds-table-card-header"><h2 class="h6 mb-0">Campanhas</h2></div>
+      <div class="text-center py-4 ds-text-muted ds-text-sm" id="loadingCampaigns">Carregando…</div>
+      <table class="table ds-table d-none" id="tblCampaigns">
+        <thead>
+          <tr><th>Campanha</th><th>Status</th><th>Frequência</th><th>Última execução</th><th>Meta</th><th></th></tr>
+        </thead>
+        <tbody id="tbodyCampaigns"></tbody>
+      </table>
+    </div>
+
+    <div class="ds-table-card">
+      <div class="ds-table-card-header"><h2 class="h6 mb-0">Execuções recentes</h2></div>
+      <div class="text-center py-4 ds-text-muted ds-text-sm" id="loadingRuns">Carregando…</div>
+      <table class="table ds-table d-none" id="tblRuns">
+        <thead>
+          <tr><th>Campanha</th><th>Início</th><th>Status</th><th>Leads criados</th><th>Score médio</th><th></th></tr>
+        </thead>
+        <tbody id="tbodyRuns"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- Modal Nova/Editar Campanha -->
+<div class="modal ds-modal fade" id="modalCampanha" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="cModalTitle">Nova campanha de Prospecção IA</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <ul class="nav nav-tabs mb-3" role="tablist">
+          <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-id" type="button">Identificação</button></li>
+          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-icp" type="button">ICP</button></li>
+          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-pesquisa" type="button">Pesquisa</button></li>
+          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-qualificacao" type="button">Qualificação</button></li>
+          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-execucao" type="button">Execução</button></li>
+        </ul>
+
+        <div class="tab-content">
+          <div class="tab-pane fade show active" id="tab-id">
+            <div class="mb-3">
+              <label class="form-label">Nome da campanha *</label>
+              <input class="form-control" id="cName" placeholder="ex.: Prospecção — Clubes e Associações MG">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Descrição</label>
+              <textarea class="form-control" id="cDescription" rows="2"></textarea>
+            </div>
+          </div>
+
+          <div class="tab-pane fade" id="tab-icp">
+            <p class="ds-text-xs ds-text-muted">Perfil de Cliente Ideal — o que o agente deve procurar. Campos de lista aceitam vários itens separados por vírgula.</p>
+            <div class="mb-3">
+              <label class="form-label">Segmentos aceitos</label>
+              <div class="d-flex flex-wrap gap-3" id="cSegmentoWrap"></div>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Estados (UF, separados por vírgula)</label>
+                <input class="form-control" id="cEstados" placeholder="MG, SP, RJ">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Porte</label>
+                <input class="form-control" id="cPorte" placeholder="ex.: 50 a 500 associados">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Características OBRIGATÓRIAS (separadas por vírgula)</label>
+              <input class="form-control" id="cCaracObrig" placeholder="ex.: tem site ativo, tem CNPJ próprio">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Características desejadas (somam ao score)</label>
+              <input class="form-control" id="cCaracDesej" placeholder="ex.: presença em redes sociais, eventos recentes">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Características de EXCLUSÃO (nunca incluir)</label>
+              <input class="form-control" id="cCaracExcl" placeholder="ex.: já é cliente, inativo há mais de 2 anos">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Palavras-chave</label>
+              <input class="form-control" id="cPalavrasChave">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Sinais de oportunidade</label>
+              <input class="form-control" id="cSinais" placeholder="ex.: buscando sistema de gestão, reclamação pública de planilha manual">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Perfil do decisor</label>
+              <input class="form-control" id="cPerfilDecisor" placeholder="ex.: presidente, diretor administrativo">
+            </div>
+          </div>
+
+          <div class="tab-pane fade" id="tab-pesquisa">
+            <div class="mb-3">
+              <label class="form-label">Fontes/tipos de fonte priorizados</label>
+              <input class="form-control" id="cFontes" placeholder="ex.: site oficial, notícias, redes sociais, páginas de eventos">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Termos de pesquisa sugeridos (ponto de partida)</label>
+              <input class="form-control" id="cTermosBase" placeholder="ex.: associação recreativa Minas Gerais, clube de campo MG">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Profundidade</label>
+              <select class="form-select" id="cProfundidade">
+                <option value="padrao">Padrão</option>
+                <option value="rasa">Rasa (mais rápida, menos aprofundada)</option>
+                <option value="profunda">Profunda (mais buscas por candidato)</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Critérios de validação de uma fonte confiável</label>
+              <input class="form-control" id="cCriteriosValidacao" placeholder="ex.: site oficial ou veículo de notícia reconhecido">
+            </div>
+          </div>
+
+          <div class="tab-pane fade" id="tab-qualificacao">
+            <div class="mb-3">
+              <label class="form-label">Critérios de lead quente</label>
+              <input class="form-control" id="cCriteriosLeadQuente" placeholder="ex.: decisor identificável, contato público disponível">
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-md-4">
+                <label class="form-label">Score mínimo (0-100)</label>
+                <input type="number" min="0" max="100" class="form-control" id="cScoreMinimo" value="70">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Evidências mínimas por lead</label>
+                <input type="number" min="0" class="form-control" id="cEvidenciasObrigatorias" value="1">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Dados obrigatórios</label>
+                <input class="form-control" id="cDadosObrigatorios" placeholder="ex.: contatoWhatsapp">
+              </div>
+            </div>
+            <p class="ds-text-xs ds-text-muted">"Dados obrigatórios" usa os nomes de campo do lead: contatoWhatsapp, contatoEmail, contatoNome, cidade, estado.</p>
+          </div>
+
+          <div class="tab-pane fade" id="tab-execucao">
+            <div class="row g-2 mb-3">
+              <div class="col-md-4">
+                <label class="form-label">Frequência</label>
+                <select class="form-select" id="cFrequencia">
+                  <option value="weekly">Semanal (automática)</option>
+                  <option value="manual">Só manual</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Meta máxima de leads por execução</label>
+                <input type="number" min="1" max="100" class="form-control" id="cMaxLeads" value="20">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Máximo de iterações de pesquisa</label>
+                <input type="number" min="1" max="15" class="form-control" id="cMaxIterations" value="5">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Máximo de candidatos analisados</label>
+                <input type="number" min="1" max="500" class="form-control" id="cMaxCandidatos" value="100">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Timeout (segundos)</label>
+                <input type="number" min="60" max="1740" class="form-control" id="cTimeoutSeconds" value="1500">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Limite de consumo (US$)</label>
+                <input type="number" min="0.1" step="0.1" class="form-control" id="cLimiteConsumo" value="5">
+              </div>
+            </div>
+            <p class="ds-text-xs ds-text-muted">
+              "Até N leads" é sempre um teto, nunca uma garantia — o agente nunca reduz o critério de qualidade
+              (score mínimo) só para atingir a meta. A execução para antes disso se atingir qualquer um dos limites acima.
+            </p>
+          </div>
+        </div>
+
+        <div id="cErrMsg" class="alert alert-danger py-2 small d-none mt-3"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="btnSalvarCampanha">Salvar campanha</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/bootstrap.bundle.min.js"></script>
+<script type="module">
+  import { requirePlatformAccess, db } from "./assets/admin-auth.js";
+  import { renderAdminNav } from "./assets/admin-nav.js";
+  import { collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+  import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-functions.js";
+  import { getApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+
+  const SEGMENTOS = [
+    ["clube", "Clube"], ["associacao", "Associação"], ["sindicato", "Sindicato"],
+    ["conselho", "Conselho"], ["ong", "ONG"], ["outro", "Outro"],
+  ];
+  document.getElementById("cSegmentoWrap").innerHTML = SEGMENTOS.map(([value, label]) => `
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" value="${value}" id="cSeg_${value}">
+      <label class="form-check-label ds-text-sm" for="cSeg_${value}">${label}</label>
+    </div>`).join("");
+
+  const CAMPAIGN_STATUS_LABELS = {
+    active: '<span class="badge bg-success">Ativa</span>',
+    paused: '<span class="badge bg-secondary">Pausada</span>',
+    archived: '<span class="badge bg-dark">Arquivada</span>',
+  };
+  const RUN_STATUS_LABELS = {
+    queued: '<span class="badge bg-secondary">Na fila</span>',
+    running: '<span class="badge bg-warning text-dark ds-run-badge-running">Executando…</span>',
+    completed: '<span class="badge bg-success">Concluída</span>',
+    interrompida: '<span class="badge bg-warning text-dark">Interrompida (limite)</span>',
+    failed: '<span class="badge bg-danger">Erro</span>',
+  };
+
+  const functionsApi = getFunctions(getApp(), "us-central1");
+  const fnCreate = httpsCallable(functionsApi, "createProspectingCampaign");
+  const fnUpdate = httpsCallable(functionsApi, "updateProspectingCampaign");
+  const fnSetStatus = httpsCallable(functionsApi, "setProspectingCampaignStatus");
+  const fnArchive = httpsCallable(functionsApi, "archiveProspectingCampaign");
+  const fnRequestRun = httpsCallable(functionsApi, "requestProspectingRun");
+
+  let myRole = null;
+  let campaigns = [];
+  let editingId = null;
+  const modal = new bootstrap.Modal(document.getElementById("modalCampanha"));
+
+  // Mesmo nível de acesso de leads.html: administrator/owner, Platform
+  // Operator bloqueado por inteiro (não só leitura) — Firestore Rules exigem
+  // isPlatformAdministrator() pra ler prospectingCampaigns/prospectingRuns,
+  // mais estrito que featureFlags/platformAdmins (que liberam operator).
+  requirePlatformAccess({
+    requiredRole: ["administrator", "owner"],
+    onRole: (role) => {
+      myRole = role;
+      renderAdminNav({ active: "prospeccao-ia" });
+      document.getElementById("btnNovaCampanha").classList.remove("d-none");
+      loadCampaigns();
+      loadRuns();
+    },
+  });
+
+  function splitList(value) {
+    return String(value || "").split(",").map((s) => s.trim()).filter(Boolean);
+  }
+
+  function fmtDate(ts) {
+    return ts?.toDate ? ts.toDate().toLocaleString("pt-BR") : "—";
+  }
+
+  /* =========================================================================
+     Campanhas
+     ========================================================================= */
+
+  async function loadCampaigns() {
+    try {
+      const snap = await getDocs(query(collection(db, "prospectingCampaigns"), orderBy("createdAt", "desc")));
+      campaigns = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((c) => c.status !== "archived");
+      renderCampaigns();
+    } catch (e) {
+      document.getElementById("loadingCampaigns").textContent = "Erro ao carregar campanhas.";
+      console.error(e);
+    }
+  }
+
+  function renderCampaigns() {
+    const canManage = myRole === "administrator" || myRole === "owner";
+    document.getElementById("tbodyCampaigns").innerHTML = campaigns.map((c) => {
+      const running = c.campaignStatus === "running";
+      const statusHtml = running ? '<span class="badge bg-warning text-dark ds-run-badge-running">Executando…</span>' : (CAMPAIGN_STATUS_LABELS[c.status] || c.status);
+      const summary = c.lastRunSummary
+        ? `${c.lastRunSummary.leadsCriados ?? 0} lead(s) — ${fmtDate(c.lastRunAt)}`
+        : "Nunca executada";
+      return `<tr>
+        <td><strong>${c.name}</strong><div class="ds-text-xs ds-text-muted">${c.description || ""}</div></td>
+        <td>${statusHtml}</td>
+        <td class="ds-text-sm">${c.execution?.frequencia === "weekly" ? "Semanal" : "Manual"}</td>
+        <td class="ds-text-sm">${summary}</td>
+        <td class="ds-text-sm">até ${c.execution?.maxLeadsPerRun ?? "—"} lead(s)</td>
+        <td class="text-end">
+          ${canManage ? `
+            <button class="btn btn-sm btn-outline-primary btn-run" data-id="${c.id}" ${running ? "disabled" : ""}>Executar agora</button>
+            <button class="btn btn-sm btn-outline-secondary btn-edit" data-id="${c.id}">Editar</button>
+            <button class="btn btn-sm btn-outline-secondary btn-toggle" data-id="${c.id}" data-status="${c.status}">${c.status === "active" ? "Pausar" : "Ativar"}</button>
+            <button class="btn btn-sm btn-outline-danger btn-archive" data-id="${c.id}">Arquivar</button>
+          ` : ""}
+        </td>
+      </tr>`;
+    }).join("") || '<tr><td colspan="6" class="ds-table-empty">Nenhuma campanha criada ainda</td></tr>';
+
+    document.querySelectorAll(".btn-run").forEach((btn) => btn.addEventListener("click", () => runNow(btn.dataset.id, btn)));
+    document.querySelectorAll(".btn-edit").forEach((btn) => btn.addEventListener("click", () => openEdit(btn.dataset.id)));
+    document.querySelectorAll(".btn-toggle").forEach((btn) => btn.addEventListener("click", () => toggleStatus(btn.dataset.id, btn.dataset.status)));
+    document.querySelectorAll(".btn-archive").forEach((btn) => btn.addEventListener("click", () => archiveCampaign(btn.dataset.id)));
+
+    document.getElementById("loadingCampaigns").classList.add("d-none");
+    document.getElementById("tblCampaigns").classList.remove("d-none");
+  }
+
+  async function runNow(id, btn) {
+    btn.disabled = true;
+    btn.textContent = "Solicitando…";
+    try {
+      await fnRequestRun({ campaignId: id });
+      await Promise.all([loadCampaigns(), loadRuns()]);
+    } catch (e) {
+      alert("Erro: " + e.message);
+      btn.disabled = false;
+      btn.textContent = "Executar agora";
+    }
+  }
+
+  async function toggleStatus(id, currentStatus) {
+    const next = currentStatus === "active" ? "paused" : "active";
+    try {
+      await fnSetStatus({ id, status: next });
+      await loadCampaigns();
+    } catch (e) {
+      alert("Erro: " + e.message);
+    }
+  }
+
+  async function archiveCampaign(id) {
+    if (!confirm("Arquivar esta campanha? Ela para de executar (agendada ou manual) e some desta lista.")) return;
+    try {
+      await fnArchive({ id });
+      await loadCampaigns();
+    } catch (e) {
+      alert("Erro: " + e.message);
+    }
+  }
+
+  function openEdit(id) {
+    const c = campaigns.find((x) => x.id === id);
+    if (!c) return;
+    editingId = id;
+    document.getElementById("cModalTitle").textContent = `Editar campanha — ${c.name}`;
+    fillForm(c);
+    modal.show();
+  }
+
+  document.getElementById("btnNovaCampanha").addEventListener("click", () => {
+    editingId = null;
+    document.getElementById("cModalTitle").textContent = "Nova campanha de Prospecção IA";
+    fillForm(null);
+  });
+
+  function fillForm(c) {
+    const icp = c?.icp || {};
+    const research = c?.research || {};
+    const qualification = c?.qualification || {};
+    const execution = c?.execution || {};
+
+    document.getElementById("cErrMsg").classList.add("d-none");
+    document.getElementById("cName").value = c?.name || "";
+    document.getElementById("cDescription").value = c?.description || "";
+
+    SEGMENTOS.forEach(([value]) => {
+      document.getElementById(`cSeg_${value}`).checked = (icp.segmento || []).includes(value);
+    });
+    document.getElementById("cEstados").value = (icp.localizacao?.estados || []).join(", ");
+    document.getElementById("cPorte").value = icp.porte || "";
+    document.getElementById("cCaracObrig").value = (icp.caracteristicasObrigatorias || []).join(", ");
+    document.getElementById("cCaracDesej").value = (icp.caracteristicasDesejadas || []).join(", ");
+    document.getElementById("cCaracExcl").value = (icp.caracteristicasExclusao || []).join(", ");
+    document.getElementById("cPalavrasChave").value = (icp.palavrasChave || []).join(", ");
+    document.getElementById("cSinais").value = (icp.sinaisOportunidade || []).join(", ");
+    document.getElementById("cPerfilDecisor").value = icp.perfilDecisor || "";
+
+    document.getElementById("cFontes").value = (research.fontesPermitidas || []).join(", ");
+    document.getElementById("cTermosBase").value = (research.termosBase || []).join(", ");
+    document.getElementById("cProfundidade").value = research.profundidade || "padrao";
+    document.getElementById("cCriteriosValidacao").value = (research.criteriosValidacao || []).join(", ");
+
+    document.getElementById("cCriteriosLeadQuente").value = (qualification.criteriosLeadQuente || []).join(", ");
+    document.getElementById("cScoreMinimo").value = qualification.scoreMinimo ?? 70;
+    document.getElementById("cEvidenciasObrigatorias").value = qualification.evidenciasObrigatorias ?? 1;
+    document.getElementById("cDadosObrigatorios").value = (qualification.dadosObrigatorios || []).join(", ");
+
+    document.getElementById("cFrequencia").value = execution.frequencia || "weekly";
+    document.getElementById("cMaxLeads").value = execution.maxLeadsPerRun ?? 20;
+    document.getElementById("cMaxIterations").value = execution.maxIterations ?? 5;
+    document.getElementById("cMaxCandidatos").value = execution.maxCandidatesProcessed ?? 100;
+    document.getElementById("cTimeoutSeconds").value = execution.timeoutSeconds ?? 1500;
+    document.getElementById("cLimiteConsumo").value = execution.limiteConsumoUsd ?? 5;
+  }
+
+  function readForm() {
+    return {
+      name: document.getElementById("cName").value.trim(),
+      description: document.getElementById("cDescription").value.trim(),
+      icp: {
+        segmento: SEGMENTOS.map(([value]) => value).filter((value) => document.getElementById(`cSeg_${value}`).checked),
+        localizacao: { estados: splitList(document.getElementById("cEstados").value) },
+        porte: document.getElementById("cPorte").value.trim(),
+        caracteristicasObrigatorias: splitList(document.getElementById("cCaracObrig").value),
+        caracteristicasDesejadas: splitList(document.getElementById("cCaracDesej").value),
+        caracteristicasExclusao: splitList(document.getElementById("cCaracExcl").value),
+        palavrasChave: splitList(document.getElementById("cPalavrasChave").value),
+        sinaisOportunidade: splitList(document.getElementById("cSinais").value),
+        perfilDecisor: document.getElementById("cPerfilDecisor").value.trim(),
+      },
+      research: {
+        fontesPermitidas: splitList(document.getElementById("cFontes").value),
+        termosBase: splitList(document.getElementById("cTermosBase").value),
+        profundidade: document.getElementById("cProfundidade").value,
+        criteriosValidacao: splitList(document.getElementById("cCriteriosValidacao").value),
+      },
+      qualification: {
+        criteriosLeadQuente: splitList(document.getElementById("cCriteriosLeadQuente").value),
+        scoreMinimo: Number(document.getElementById("cScoreMinimo").value),
+        evidenciasObrigatorias: Number(document.getElementById("cEvidenciasObrigatorias").value),
+        dadosObrigatorios: splitList(document.getElementById("cDadosObrigatorios").value),
+      },
+      execution: {
+        frequencia: document.getElementById("cFrequencia").value,
+        maxLeadsPerRun: Number(document.getElementById("cMaxLeads").value),
+        maxIterations: Number(document.getElementById("cMaxIterations").value),
+        maxCandidatesProcessed: Number(document.getElementById("cMaxCandidatos").value),
+        timeoutSeconds: Number(document.getElementById("cTimeoutSeconds").value),
+        limiteConsumoUsd: Number(document.getElementById("cLimiteConsumo").value),
+      },
+    };
+  }
+
+  document.getElementById("btnSalvarCampanha").addEventListener("click", async () => {
+    const errMsg = document.getElementById("cErrMsg");
+    errMsg.classList.add("d-none");
+    const payload = readForm();
+    if (!payload.name) {
+      errMsg.textContent = "Nome da campanha é obrigatório.";
+      errMsg.classList.remove("d-none");
+      return;
+    }
+
+    const btn = document.getElementById("btnSalvarCampanha");
+    btn.disabled = true;
+    try {
+      if (editingId) {
+        await fnUpdate({ id: editingId, ...payload });
+      } else {
+        await fnCreate(payload);
+      }
+      modal.hide();
+      await loadCampaigns();
+    } catch (e) {
+      errMsg.textContent = "Erro: " + e.message;
+      errMsg.classList.remove("d-none");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  /* =========================================================================
+     Execuções recentes
+     ========================================================================= */
+
+  async function loadRuns() {
+    try {
+      const snap = await getDocs(query(collection(db, "prospectingRuns"), orderBy("createdAt", "desc"), limit(20)));
+      const runs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      const campaignNames = Object.fromEntries(campaigns.map((c) => [c.id, c.name]));
+      document.getElementById("tbodyRuns").innerHTML = runs.map((r) => `
+        <tr>
+          <td class="ds-text-sm">${campaignNames[r.campaignId] || r.campaignId}</td>
+          <td class="ds-text-sm">${fmtDate(r.startedAt || r.createdAt)}</td>
+          <td>${RUN_STATUS_LABELS[r.status] || r.status}</td>
+          <td class="ds-text-sm">${r.metrics?.leadsCriados ?? 0}</td>
+          <td class="ds-text-sm">${r.metrics?.scoreMedio ?? "—"}</td>
+          <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="./prospeccao-execucao.html?id=${r.id}">Ver</a></td>
+        </tr>`).join("") || '<tr><td colspan="6" class="ds-table-empty">Nenhuma execução ainda</td></tr>';
+
+      document.getElementById("loadingRuns").classList.add("d-none");
+      document.getElementById("tblRuns").classList.remove("d-none");
+    } catch (e) {
+      document.getElementById("loadingRuns").textContent = "Erro ao carregar execuções.";
+      console.error(e);
+    }
+  }
+</script>
+</body>
+</html>

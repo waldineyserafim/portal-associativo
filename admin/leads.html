@@ -25,9 +25,20 @@
         <h1 class="h4 mb-0">Leads</h1>
         <p class="ds-text-sm ds-text-muted mb-0">Agenda comercial simples — substitui a planilha de prospecção. Não é um CRM completo.</p>
       </div>
-      <button class="btn btn-primary btn-sm" id="btnNovoLead" data-bs-toggle="modal" data-bs-target="#modalLead">
-        <i class="bi bi-plus-lg me-1"></i>Novo lead
-      </button>
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-primary btn-sm" id="btnExecutarOutboundIA">
+          <i class="bi bi-robot me-1"></i>Executar Outbound IA
+        </button>
+        <button class="btn btn-primary btn-sm" id="btnNovoLead" data-bs-toggle="modal" data-bs-target="#modalLead">
+          <i class="bi bi-plus-lg me-1"></i>Novo lead
+        </button>
+      </div>
+    </div>
+
+    <!-- Status da última execução remota do Outbound IA (botão acima) -->
+    <div class="alert alert-info d-none py-2 ds-text-sm d-flex align-items-center justify-content-between gap-2 flex-wrap" id="outboundRunBanner">
+      <span id="outboundRunBannerText"></span>
+      <a href="./outbound-ia.html" class="btn btn-sm btn-outline-primary d-none" id="outboundRunBannerLink">Revisar abordagens</a>
     </div>
 
     <!-- Filtros -->
@@ -41,12 +52,30 @@
       <input class="form-control form-control-sm" id="fBusca" placeholder="Buscar organização ou contato…" style="max-width:260px;">
     </div>
 
+    <!-- Barra de ação em lote — só aparece com pelo menos 1 lead selecionado -->
+    <div class="alert alert-secondary d-none d-flex align-items-center gap-2 flex-wrap py-2" id="bulkBar">
+      <span class="ds-text-sm" id="bulkCount"></span>
+      <select class="form-select form-select-sm" id="bulkChannel" style="max-width:160px;">
+        <option value="email">E-mail</option>
+        <option value="whatsapp">WhatsApp</option>
+        <option value="linkedin">LinkedIn</option>
+        <option value="sms">SMS</option>
+        <option value="outro">Outro</option>
+      </select>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="bulkAllowResearch">
+        <label class="form-check-label ds-text-xs" for="bulkAllowResearch">Permitir pesquisa web adicional</label>
+      </div>
+      <button class="btn btn-primary btn-sm" id="btnGerarOutboundLote">Gerar abordagens (Outbound IA)</button>
+    </div>
+
     <div class="ds-table-card">
       <div class="text-center py-4 ds-text-muted ds-text-sm" id="loading">Carregando…</div>
       <div class="table-responsive">
         <table class="ds-table d-none" id="tbl">
           <thead>
             <tr>
+              <th><input class="form-check-input" type="checkbox" id="chkSelectAll"></th>
               <th>Organização</th><th>Cidade</th><th>Contato</th><th>Status</th>
               <th>Prioridade</th><th>Sistema</th><th>Próxima ação</th><th>Responsável</th>
               <th>Última interação</th><th></th>
@@ -193,11 +222,42 @@
   </div>
 </div>
 
+<!-- Modal Executar Outbound IA -->
+<div class="modal ds-modal fade" id="modalOutboundIA" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-robot me-1"></i>Executar Outbound IA</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="outboundModalLoading" class="text-center py-3 ds-text-muted ds-text-sm">Consultando leads elegíveis…</div>
+        <div id="outboundModalContent" class="d-none">
+          <p class="mb-2">Executar o Outbound IA agora?</p>
+          <ul class="ds-text-sm mb-3">
+            <li>Leads qualificados disponíveis: <strong id="outboundModalTotal"></strong></li>
+            <li>Leads já abordados: <strong id="outboundModalJaAbordados"></strong></li>
+            <li>Leads elegíveis: <strong id="outboundModalElegiveis"></strong></li>
+          </ul>
+          <p class="ds-text-sm fw-bold mb-1">Serão processados: <span id="outboundModalSeraoProcessados"></span></p>
+          <p class="ds-text-xs ds-text-muted mb-0">Nenhuma mensagem será enviada automaticamente — as abordagens geradas ficam em "aguardando revisão" no Outbound IA.</p>
+        </div>
+        <div id="outboundModalBlocked" class="alert alert-warning py-2 ds-text-sm d-none mb-0">Já existe uma execução de Outbound em andamento.</div>
+        <div id="outboundModalError" class="alert alert-danger py-2 ds-text-sm d-none mb-0"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="btnConfirmarOutboundIA" disabled>Executar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="../js/bootstrap.bundle.min.js"></script>
 <script type="module">
   import { requirePlatformAccess, db } from "./assets/admin-auth.js";
   import { renderAdminNav } from "./assets/admin-nav.js";
-  import { collection, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+  import { collection, getDocs, getDoc, query, where, orderBy, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
   import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-functions.js";
   import { getApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 
@@ -220,9 +280,16 @@
   const fnCreateLead = httpsCallable(functionsApi, "createLead");
   const fnUpdateLead = httpsCallable(functionsApi, "updateLead");
   const fnArchiveLead = httpsCallable(functionsApi, "archiveLead");
+  const fnRequestOutboundBatch = httpsCallable(functionsApi, "requestOutboundBatch");
+  const fnPreviewOutboundRemoteRun = httpsCallable(functionsApi, "previewOutboundRemoteRun");
+  const fnRequestOutboundRemoteRun = httpsCallable(functionsApi, "requestOutboundRemoteRun");
 
   let leads = [];
   let adminsById = {};
+  // Set de leadIds selecionados pra geração em lote — precisa viver FORA de
+  // renderTable() (que reconstrói o <tbody> inteiro a cada filtro), senão a
+  // seleção se perderia a cada re-render.
+  const selectedIds = new Set();
   const modal = new bootstrap.Modal(document.getElementById("modalLead"));
 
   requirePlatformAccess({
@@ -327,8 +394,14 @@
 
   function renderTable() {
     const filtered = leads.filter(matchesFilters);
+    // Leads que somem do conjunto filtrado (mudou o filtro, ou o lead foi
+    // arquivado) não devem continuar "selecionados" invisivelmente.
+    const filteredIds = new Set(filtered.map((l) => l.id));
+    [...selectedIds].forEach((id) => { if (!filteredIds.has(id)) selectedIds.delete(id); });
+
     document.getElementById("tbody").innerHTML = filtered.map((lead) => `
       <tr>
+        <td><input class="form-check-input lead-select" type="checkbox" data-id="${lead.id}" ${selectedIds.has(lead.id) ? "checked" : ""}></td>
         <td><a href="./lead-detail.html?id=${lead.id}"><strong>${lead.organizacaoNome || "—"}</strong></a></td>
         <td class="ds-text-sm">${lead.cidade || "—"}</td>
         <td class="ds-text-sm">${lead.contatoNome || "—"}</td>
@@ -342,7 +415,16 @@
           <a class="btn btn-sm btn-outline-secondary" href="./lead-detail.html?id=${lead.id}">Ver</a>
           <button class="btn btn-sm btn-outline-danger btn-arquivar" data-id="${lead.id}" data-nome="${(lead.organizacaoNome || "").replace(/"/g, "&quot;")}">Arquivar</button>
         </td>
-      </tr>`).join("") || `<tr><td colspan="10" class="ds-table-empty">Nenhum lead encontrado</td></tr>`;
+      </tr>`).join("") || `<tr><td colspan="11" class="ds-table-empty">Nenhum lead encontrado</td></tr>`;
+
+    document.querySelectorAll(".lead-select").forEach((chk) => {
+      chk.addEventListener("change", () => {
+        if (chk.checked) selectedIds.add(chk.dataset.id); else selectedIds.delete(chk.dataset.id);
+        renderBulkBar();
+      });
+    });
+    document.getElementById("chkSelectAll").checked = filtered.length > 0 && filtered.every((l) => selectedIds.has(l.id));
+    renderBulkBar();
 
     document.querySelectorAll(".proxima-check").forEach((chk) => {
       chk.addEventListener("change", async () => {
@@ -382,6 +464,40 @@
   ["fStatus", "fResponsavel", "fBusca"].forEach((id) => {
     document.getElementById(id).addEventListener("input", renderTable);
     document.getElementById(id).addEventListener("change", renderTable);
+  });
+
+  /* =========================================================================
+     Seleção em lote → Outbound IA
+     ========================================================================= */
+
+  function renderBulkBar() {
+    document.getElementById("bulkBar").classList.toggle("d-none", selectedIds.size === 0);
+    document.getElementById("bulkCount").textContent = `${selectedIds.size} lead(s) selecionado(s)`;
+  }
+
+  document.getElementById("chkSelectAll").addEventListener("change", (e) => {
+    const filtered = leads.filter(matchesFilters);
+    filtered.forEach((l) => { if (e.target.checked) selectedIds.add(l.id); else selectedIds.delete(l.id); });
+    renderTable();
+  });
+
+  document.getElementById("btnGerarOutboundLote").addEventListener("click", async () => {
+    if (!selectedIds.size) return;
+    const btn = document.getElementById("btnGerarOutboundLote");
+    btn.disabled = true;
+    btn.textContent = "Solicitando…";
+    try {
+      const result = await fnRequestOutboundBatch({
+        leadIds: [...selectedIds],
+        channel: document.getElementById("bulkChannel").value,
+        allowResearch: document.getElementById("bulkAllowResearch").checked,
+      });
+      location.href = `./outbound-ia.html?batchId=${encodeURIComponent(result.data.batchId)}`;
+    } catch (e) {
+      alert("Erro: " + e.message);
+      btn.disabled = false;
+      btn.textContent = "Gerar abordagens (Outbound IA)";
+    }
   });
 
   document.getElementById("lSistemaAtual").addEventListener("change", (e) => {
@@ -446,6 +562,114 @@
       btn.disabled = false;
     }
   });
+
+  /* =========================================================================
+     Botão "Executar Outbound IA" — dispara o Claude Code remotamente via
+     GitHub Actions (Claude Pro, nunca Anthropic API). Ver CLAUDE.md "Botão
+     Executar Outbound IA".
+     ========================================================================= */
+
+  const outboundModalEl = document.getElementById("modalOutboundIA");
+  const outboundModal = new bootstrap.Modal(outboundModalEl);
+  let unsubscribeOutboundRun = null;
+
+  function outboundBanner(text, { showLink = false } = {}) {
+    const banner = document.getElementById("outboundRunBanner");
+    banner.classList.remove("d-none");
+    document.getElementById("outboundRunBannerText").textContent = text;
+    document.getElementById("outboundRunBannerLink").classList.toggle("d-none", !showLink);
+  }
+
+  document.getElementById("btnExecutarOutboundIA").addEventListener("click", async () => {
+    outboundModal.show();
+    document.getElementById("outboundModalLoading").classList.remove("d-none");
+    document.getElementById("outboundModalContent").classList.add("d-none");
+    document.getElementById("outboundModalBlocked").classList.add("d-none");
+    document.getElementById("outboundModalError").classList.add("d-none");
+    document.getElementById("btnConfirmarOutboundIA").disabled = true;
+
+    try {
+      const { data } = await fnPreviewOutboundRemoteRun();
+      document.getElementById("outboundModalLoading").classList.add("d-none");
+
+      if (data.jaExisteExecucaoEmAndamento) {
+        document.getElementById("outboundModalBlocked").classList.remove("d-none");
+        return;
+      }
+      document.getElementById("outboundModalContent").classList.remove("d-none");
+      document.getElementById("outboundModalTotal").textContent = data.totalQualificados;
+      document.getElementById("outboundModalJaAbordados").textContent = data.jaAbordados;
+      document.getElementById("outboundModalElegiveis").textContent = data.elegiveis;
+      document.getElementById("outboundModalSeraoProcessados").textContent = data.seraoProcessados;
+      document.getElementById("btnConfirmarOutboundIA").disabled = data.seraoProcessados === 0;
+    } catch (e) {
+      document.getElementById("outboundModalLoading").classList.add("d-none");
+      document.getElementById("outboundModalError").textContent = "Erro: " + e.message;
+      document.getElementById("outboundModalError").classList.remove("d-none");
+    }
+  });
+
+  document.getElementById("btnConfirmarOutboundIA").addEventListener("click", async () => {
+    const btn = document.getElementById("btnConfirmarOutboundIA");
+    btn.disabled = true;
+    btn.textContent = "Executando…";
+    try {
+      const { data } = await fnRequestOutboundRemoteRun();
+      outboundModal.hide();
+      outboundBanner(`Outbound IA solicitado — processando até ${data.leadsPlanejados} lead(s)…`);
+      watchOutboundRun(data.runId);
+    } catch (e) {
+      document.getElementById("outboundModalError").textContent = "Erro: " + e.message;
+      document.getElementById("outboundModalError").classList.remove("d-none");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Executar";
+    }
+  });
+
+  outboundModalEl.addEventListener("hidden.bs.modal", () => {
+    document.getElementById("btnConfirmarOutboundIA").textContent = "Executar";
+  });
+
+  function watchOutboundRun(runId) {
+    if (unsubscribeOutboundRun) unsubscribeOutboundRun();
+    unsubscribeOutboundRun = onSnapshot(doc(db, "outboundRemoteRuns", runId), (snap) => {
+      if (!snap.exists()) return;
+      const run = snap.data();
+      if (run.status === "pending") {
+        outboundBanner(`Outbound IA solicitado — aguardando início (até ${run.leadIdsPlanned?.length ?? "?"} lead(s))…`);
+      } else if (run.status === "running") {
+        outboundBanner(`Outbound IA em execução — até ${run.leadIdsPlanned?.length ?? "?"} lead(s)…`);
+      } else if (run.status === "completed") {
+        const s = run.summary || {};
+        outboundBanner(
+          `Outbound concluído. ${s.total ?? run.leadIdsPlanned?.length ?? 0} lead(s) analisados, ${s.gerados ?? "—"} abordagem(ns) gerada(s), ${s.falharam ?? 0} erro(s).`,
+          { showLink: true }
+        );
+        unsubscribeOutboundRun();
+      } else if (run.status === "failed") {
+        outboundBanner(`Outbound IA falhou: ${run.error || "erro desconhecido"}.`);
+        unsubscribeOutboundRun();
+      }
+    });
+  }
+
+  // Se já houver uma execução pending/running (ex.: usuário recarregou a
+  // página no meio de uma execução), retoma o acompanhamento ao vivo.
+  (async () => {
+    try {
+      const { data } = await fnPreviewOutboundRemoteRun();
+      if (data.jaExisteExecucaoEmAndamento) {
+        const lockSnap = await getDoc(doc(db, "outboundRemoteRuns", "_lock"));
+        if (lockSnap.exists() && lockSnap.data().runId) {
+          outboundBanner("Outbound IA em execução…");
+          watchOutboundRun(lockSnap.data().runId);
+        }
+      }
+    } catch (e) {
+      // Silencioso — não é crítico pra carga inicial da página.
+    }
+  })();
 </script>
 </body>
 </html>

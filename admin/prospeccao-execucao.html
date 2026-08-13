@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Execução — Prospecção IA · Painel Master</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/images/icons/favicon.svg">
+  <link rel="apple-touch-icon" href="../assets/images/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#A85A34">
+  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../css/design-system.css?v=portal-2026-08b">
+  <link rel="stylesheet" href="../shared/layouts/admin-shell.css?v=2026.08.7">
+  <link rel="stylesheet" href="../shared/components/index.css?v=2026.08.7">
+  <style>
+    .ds-step-list { list-style: none; margin: 0; padding: 0; }
+    .ds-step-list li {
+      display: flex; align-items: flex-start; gap: .5rem;
+      padding: .5rem 0; border-bottom: 1px solid rgba(33,29,24,0.08);
+      font-size: .875rem;
+    }
+    .ds-step-list li:last-child { border-bottom: none; }
+    .ds-step-icon { width: 1.25rem; text-align: center; flex-shrink: 0; margin-top: .1rem; }
+    .ds-step-icon .spinner-border { width: .9rem; height: .9rem; }
+    .ds-run-badge-running { animation: ds-pulse 1.5s ease-in-out infinite; }
+    @keyframes ds-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
+  </style>
+</head>
+<body>
+
+<div class="ds-admin-shell">
+  <main class="ds-admin-main">
+    <div class="mb-3">
+      <a href="./prospeccao-ia.html" class="ds-text-sm"><i class="bi bi-arrow-left"></i> Voltar para Prospecção IA</a>
+    </div>
+
+    <div id="runLoadError" class="alert alert-danger d-none"></div>
+
+    <div id="runContent" class="d-none">
+      <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+        <div>
+          <h1 class="h4 mb-0" id="runTitulo">—</h1>
+          <p class="ds-text-sm ds-text-muted mb-0" id="runSubtitulo"></p>
+        </div>
+        <div id="runStatusBadge"></div>
+      </div>
+
+      <div id="runErrorAlert" class="alert alert-danger d-none"></div>
+
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3"><div class="ds-kpi-card"><div class="ds-kpi-value ds-kpi-success" id="kpiLeads">0</div><div class="ds-kpi-label">Leads criados</div></div></div>
+        <div class="col-6 col-md-3"><div class="ds-kpi-card"><div class="ds-kpi-value" id="kpiAnalisados">0</div><div class="ds-kpi-label">Candidatos analisados</div></div></div>
+        <div class="col-6 col-md-3"><div class="ds-kpi-card"><div class="ds-kpi-value" id="kpiRejeitados">0</div><div class="ds-kpi-label">Candidatos rejeitados</div></div></div>
+        <div class="col-6 col-md-3"><div class="ds-kpi-card"><div class="ds-kpi-value" id="kpiDuplicados">0</div><div class="ds-kpi-label">Leads duplicados (ignorados)</div></div></div>
+        <div class="col-6 col-md-3"><div class="ds-kpi-card"><div class="ds-kpi-value" id="kpiBuscas">0</div><div class="ds-kpi-label">Pesquisas realizadas</div></div></div>
+        <div class="col-6 col-md-3"><div class="ds-kpi-card"><div class="ds-kpi-value" id="kpiScore">—</div><div class="ds-kpi-label">Score médio</div></div></div>
+        <div class="col-6 col-md-3"><div class="ds-kpi-card"><div class="ds-kpi-value" id="kpiCusto">—</div><div class="ds-kpi-label">Custo estimado (US$)</div></div></div>
+        <div class="col-6 col-md-3"><div class="ds-kpi-card"><div class="ds-kpi-value" id="kpiIteracoes">0</div><div class="ds-kpi-label">Iterações de pesquisa</div></div></div>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-lg-5">
+          <div class="ds-table-card">
+            <div class="ds-table-card-header"><h2 class="h6 mb-0">Progresso</h2></div>
+            <div class="p-3">
+              <ul class="ds-step-list" id="stepList"></ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-7">
+          <div class="ds-table-card">
+            <div class="ds-table-card-header"><h2 class="h6 mb-0">Leads criados nesta execução</h2></div>
+            <table class="table ds-table" id="tblLeads">
+              <thead><tr><th>Organização</th><th>Score</th><th>Evidências</th><th></th></tr></thead>
+              <tbody id="tbodyLeads"><tr><td colspan="4" class="ds-table-empty">Carregando…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/bootstrap.bundle.min.js"></script>
+<script type="module">
+  import { requirePlatformAccess, db } from "./assets/admin-auth.js";
+  import { renderAdminNav } from "./assets/admin-nav.js";
+  import { doc, getDoc, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+  const RUN_STATUS_LABELS = {
+    queued: '<span class="badge bg-secondary">Na fila</span>',
+    running: '<span class="badge bg-warning text-dark ds-run-badge-running">Executando…</span>',
+    completed: '<span class="badge bg-success">Concluída</span>',
+    interrompida: '<span class="badge bg-warning text-dark">Interrompida por limite de consumo</span>',
+    failed: '<span class="badge bg-danger">Erro</span>',
+  };
+  const STOPPED_REASON_LABELS = {
+    meta_atingida: "Meta de leads atingida",
+    max_iterations: "Limite de iterações de pesquisa atingido",
+    max_candidatos: "Limite de candidatos analisados atingido",
+    timeout: "Tempo máximo de execução atingido",
+    limite_consumo: "Limite de consumo (US$) atingido",
+  };
+
+  const params = new URLSearchParams(location.search);
+  const runId = params.get("id");
+  let leadsUnsub = null;
+
+  function showLoadError(message) {
+    document.getElementById("runContent").classList.add("d-none");
+    const err = document.getElementById("runLoadError");
+    err.textContent = message;
+    err.classList.remove("d-none");
+  }
+
+  requirePlatformAccess({
+    requiredRole: ["administrator", "owner"],
+    onRole: () => {
+      renderAdminNav({ active: "prospeccao-ia" });
+      if (!runId) {
+        showLoadError("Execução não informada — volte para Prospecção IA e escolha uma execução pela lista.");
+        return;
+      }
+      watchRun();
+    },
+  });
+
+  function fmtDate(ts) {
+    return ts?.toDate ? ts.toDate().toLocaleString("pt-BR") : "—";
+  }
+
+  async function campaignName(campaignId) {
+    try {
+      const snap = await getDoc(doc(db, "prospectingCampaigns", campaignId));
+      return snap.exists() ? snap.data().name : campaignId;
+    } catch {
+      return campaignId;
+    }
+  }
+
+  function renderSteps(steps) {
+    const list = document.getElementById("stepList");
+    list.innerHTML = (steps || []).map((step) => {
+      let icon;
+      if (step.status === "ok") icon = '<i class="bi bi-check-circle-fill text-success"></i>';
+      else if (step.status === "error") icon = '<i class="bi bi-x-circle-fill text-danger"></i>';
+      else icon = '<div class="spinner-border spinner-border-sm text-muted" role="status"></div>';
+      const label = step.name.startsWith("pesquisa_") ? `Iteração de pesquisa ${step.name.replace("pesquisa_", "")}` : step.name;
+      const detail = step.status === "error"
+        ? `<div class="ds-text-xs text-danger">${step.error}</div>`
+        : (step.resumo ? `<div class="ds-text-xs ds-text-muted">${step.resumo}</div>` : "");
+      return `<li><span class="ds-step-icon">${icon}</span><div><div>${label}</div>${detail}</div></li>`;
+    }).join("") || '<li class="ds-text-muted ds-text-sm">Aguardando início…</li>';
+  }
+
+  function renderMetrics(m) {
+    const metrics = m || {};
+    document.getElementById("kpiLeads").textContent = metrics.leadsCriados ?? 0;
+    document.getElementById("kpiAnalisados").textContent = metrics.candidatosAnalisados ?? 0;
+    document.getElementById("kpiRejeitados").textContent = metrics.candidatosRejeitados ?? 0;
+    document.getElementById("kpiDuplicados").textContent = metrics.leadsDuplicados ?? 0;
+    document.getElementById("kpiBuscas").textContent = metrics.searchesPerformed ?? 0;
+    document.getElementById("kpiScore").textContent = metrics.scoreMedio ?? "—";
+    document.getElementById("kpiCusto").textContent = metrics.custoEstimadoUsd != null ? metrics.custoEstimadoUsd.toFixed(4) : "—";
+    document.getElementById("kpiIteracoes").textContent = metrics.iteracoes ?? 0;
+  }
+
+  function watchLeads() {
+    if (leadsUnsub) return;
+    leadsUnsub = onSnapshot(
+      query(collection(db, "leads"), where("aiProspecting.runId", "==", runId)),
+      (snap) => {
+        const leads = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => (b.aiProspecting?.score || 0) - (a.aiProspecting?.score || 0));
+        document.getElementById("tbodyLeads").innerHTML = leads.map((lead) => `
+          <tr>
+            <td><strong>${lead.organizacaoNome}</strong><div class="ds-text-xs ds-text-muted">${lead.cidade || ""}${lead.cidade && lead.estado ? "/" : ""}${lead.estado || ""}</div></td>
+            <td>${lead.aiProspecting?.score ?? "—"}</td>
+            <td class="ds-text-sm">${(lead.aiProspecting?.evidence || []).length} fonte(s)</td>
+            <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="./lead-detail.html?id=${lead.id}">Ver lead</a></td>
+          </tr>`).join("") || '<tr><td colspan="4" class="ds-table-empty">Nenhum lead criado ainda nesta execução</td></tr>';
+      },
+      (err) => console.warn("watchLeads: falha ao observar leads (ignorado):", err.message)
+    );
+  }
+
+  async function watchRun() {
+    onSnapshot(doc(db, "prospectingRuns", runId), async (snap) => {
+      if (!snap.exists()) {
+        showLoadError("Execução não encontrada — pode ter sido removida ou o link está incorreto.");
+        return;
+      }
+      const run = snap.data();
+      document.getElementById("runLoadError").classList.add("d-none");
+      document.getElementById("runContent").classList.remove("d-none");
+
+      document.getElementById("runTitulo").textContent = await campaignName(run.campaignId);
+      const trigger = run.trigger === "scheduled" ? "Execução agendada" : `Execução manual${run.requestedByEmail ? " — solicitada por " + run.requestedByEmail : ""}`;
+      document.getElementById("runSubtitulo").textContent = `${trigger} · Início: ${fmtDate(run.startedAt || run.createdAt)}${run.finishedAt ? " · Fim: " + fmtDate(run.finishedAt) : ""}`;
+
+      let statusHtml = RUN_STATUS_LABELS[run.status] || run.status;
+      if (run.stoppedReason && STOPPED_REASON_LABELS[run.stoppedReason]) {
+        statusHtml += ` <span class="ds-text-xs ds-text-muted">(${STOPPED_REASON_LABELS[run.stoppedReason]})</span>`;
+      }
+      document.getElementById("runStatusBadge").innerHTML = statusHtml;
+
+      const errorAlert = document.getElementById("runErrorAlert");
+      if (run.status === "failed" && run.error) {
+        errorAlert.textContent = run.error;
+        errorAlert.classList.remove("d-none");
+      } else {
+        errorAlert.classList.add("d-none");
+      }
+
+      renderSteps(run.steps);
+      renderMetrics(run.metrics);
+      watchLeads();
+    }, (err) => {
+      showLoadError("Erro ao carregar a execução: " + err.message);
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Outbound IA — Painel Master · Portal Associativo</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/images/icons/favicon.svg">
+  <link rel="apple-touch-icon" href="../assets/images/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#A85A34">
+  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../css/design-system.css?v=portal-2026-08b">
+  <link rel="stylesheet" href="../shared/layouts/admin-shell.css?v=2026.08.7">
+  <link rel="stylesheet" href="../shared/components/index.css?v=2026.08.7">
+</head>
+<body>
+
+<div class="ds-admin-shell">
+  <main class="ds-admin-main">
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+      <div>
+        <h1 class="h4 mb-0">Outbound IA</h1>
+        <p class="ds-text-sm ds-text-muted mb-0">
+          Abordagens comerciais geradas por IA a partir dos leads qualificados — revise, edite, aprove e envie
+          manualmente. Nenhum envio automático acontece por aqui.
+        </p>
+      </div>
+      <button class="btn btn-outline-secondary btn-sm" id="btnContextoComercial" data-bs-toggle="modal" data-bs-target="#modalContexto">
+        <i class="bi bi-gear me-1"></i>Contexto comercial
+      </button>
+    </div>
+
+    <!-- Progresso de lote (só aparece quando a página abre com ?batchId=) -->
+    <div id="batchPanel" class="ds-table-card mb-4 d-none">
+      <div class="ds-table-card-header"><h2 class="h6 mb-0">Gerando abordagens em lote…</h2></div>
+      <div class="p-3">
+        <div id="batchSummary" class="ds-text-sm mb-2"></div>
+        <ul class="ds-step-list" id="batchResultsList" style="list-style:none;padding:0;margin:0;"></ul>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap mb-3">
+      <select class="form-select form-select-sm" id="fStatus" style="max-width:220px;">
+        <option value="">Todos os status</option>
+        <option value="ready_for_review">Prontas para revisão</option>
+        <option value="edited">Editadas</option>
+        <option value="approved">Aprovadas</option>
+        <option value="rejected">Rejeitadas</option>
+        <option value="sent">Enviadas</option>
+        <option value="responded">Respondidas</option>
+        <option value="failed">Falharam</option>
+      </select>
+    </div>
+
+    <div class="ds-table-card">
+      <div class="text-center py-4 ds-text-muted ds-text-sm" id="loading">Carregando…</div>
+      <table class="table ds-table d-none" id="tbl">
+        <thead>
+          <tr><th>Lead</th><th>Canal</th><th>Status</th><th>Prévia</th><th>Atualizado</th><th></th></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- Modal Contexto Comercial -->
+<div class="modal ds-modal fade" id="modalContexto" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Contexto comercial</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="ds-text-xs ds-text-muted">
+          O que o Agente de Outbound usa pra saber o que a Serafim Technologies está vendendo — altere aqui sem
+          precisar mexer em código.
+        </p>
+        <div class="row g-2 mb-3">
+          <div class="col-6"><label class="form-label ds-text-xs mb-1">Empresa</label><input class="form-control form-control-sm" id="scEmpresa"></div>
+          <div class="col-6"><label class="form-label ds-text-xs mb-1">Produto</label><input class="form-control form-control-sm" id="scProduto"></div>
+        </div>
+        <div class="mb-3"><label class="form-label ds-text-xs mb-1">Descrição</label><textarea class="form-control form-control-sm" id="scDescricao" rows="2"></textarea></div>
+        <div class="mb-3"><label class="form-label ds-text-xs mb-1">Proposta de valor</label><textarea class="form-control form-control-sm" id="scPropostaValor" rows="2"></textarea></div>
+        <div class="mb-3"><label class="form-label ds-text-xs mb-1">Diferenciais (separados por vírgula)</label><input class="form-control form-control-sm" id="scDiferenciais"></div>
+        <div class="mb-3"><label class="form-label ds-text-xs mb-1">Público-alvo</label><input class="form-control form-control-sm" id="scPublicoAlvo"></div>
+        <div class="mb-3"><label class="form-label ds-text-xs mb-1">Problemas que resolvemos (separados por vírgula)</label><input class="form-control form-control-sm" id="scProblemasResolvidos"></div>
+        <div class="mb-3"><label class="form-label ds-text-xs mb-1">Benefícios (separados por vírgula)</label><input class="form-control form-control-sm" id="scBeneficios"></div>
+        <div class="mb-3"><label class="form-label ds-text-xs mb-1">Módulos relevantes (separados por vírgula)</label><input class="form-control form-control-sm" id="scModulosRelevantes"></div>
+        <div class="row g-2 mb-3">
+          <div class="col-6"><label class="form-label ds-text-xs mb-1">Tom de comunicação</label><input class="form-control form-control-sm" id="scTom"></div>
+          <div class="col-6"><label class="form-label ds-text-xs mb-1">CTA padrão</label><input class="form-control form-control-sm" id="scCta"></div>
+        </div>
+        <div class="mb-2"><label class="form-label ds-text-xs mb-1">Nunca usar (separados por vírgula)</label><input class="form-control form-control-sm" id="scRestricoesLinguagem"></div>
+        <div id="scErrMsg" class="alert alert-danger py-2 small d-none"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="btnSalvarContexto">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/bootstrap.bundle.min.js"></script>
+<script type="module">
+  import { requirePlatformAccess, db } from "./assets/admin-auth.js";
+  import { renderAdminNav } from "./assets/admin-nav.js";
+  import { doc, getDoc, collection, getDocs, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+  import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-functions.js";
+  import { getApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+
+  const STATUS_LABELS = {
+    generating: '<span class="badge bg-warning text-dark">Gerando…</span>',
+    ready_for_review: '<span class="badge bg-info text-dark">Pronta para revisão</span>',
+    approved: '<span class="badge bg-success">Aprovada</span>',
+    rejected: '<span class="badge bg-danger">Rejeitada</span>',
+    edited: '<span class="badge bg-primary">Editada</span>',
+    sent: '<span class="badge bg-dark">Enviada</span>',
+    responded: '<span class="badge bg-success">Respondida</span>',
+    failed: '<span class="badge bg-danger">Falhou</span>',
+  };
+  const CHANNEL_LABELS = { email: "E-mail", whatsapp: "WhatsApp", linkedin: "LinkedIn", sms: "SMS", outro: "Outro" };
+
+  const functionsApi = getFunctions(getApp(), "us-central1");
+  const fnUpdateSalesContext = httpsCallable(functionsApi, "updateSalesContext");
+
+  let messages = [];
+  let leadNamesById = {};
+  const contextoModal = new bootstrap.Modal(document.getElementById("modalContexto"));
+
+  requirePlatformAccess({
+    requiredRole: ["administrator", "owner"],
+    onRole: () => {
+      renderAdminNav({ active: "outbound-ia" });
+      const batchId = new URLSearchParams(location.search).get("batchId");
+      if (batchId) watchBatch(batchId);
+      load();
+    },
+  });
+
+  function fmtDate(ts) {
+    return ts?.toDate ? ts.toDate().toLocaleString("pt-BR") : "—";
+  }
+
+  /* =========================================================================
+     Lista de abordagens
+     ========================================================================= */
+
+  async function load() {
+    try {
+      const snap = await getDocs(query(collection(db, "outboundMessages"), orderBy("updatedAt", "desc")));
+      messages = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+      const leadIds = [...new Set(messages.map((m) => m.leadId))];
+      const leadDocs = await Promise.all(leadIds.map((id) => getDoc(doc(db, "leads", id))));
+      leadNamesById = Object.fromEntries(leadDocs.filter((s) => s.exists()).map((s) => [s.id, s.data().organizacaoNome || s.id]));
+
+      render();
+    } catch (e) {
+      document.getElementById("loading").textContent = "Erro ao carregar abordagens.";
+      console.error(e);
+    }
+  }
+
+  function render() {
+    const statusFilter = document.getElementById("fStatus").value;
+    const filtered = statusFilter ? messages.filter((m) => m.status === statusFilter) : messages;
+
+    document.getElementById("tbody").innerHTML = filtered.map((m) => `
+      <tr>
+        <td><a href="./lead-detail.html?id=${m.leadId}&tab=outbound"><strong>${leadNamesById[m.leadId] || m.leadId}</strong></a></td>
+        <td class="ds-text-sm">${CHANNEL_LABELS[m.channel] || m.channel}</td>
+        <td>${STATUS_LABELS[m.status] || m.status}</td>
+        <td class="ds-text-sm">${(m.message || "").slice(0, 80)}${(m.message || "").length > 80 ? "…" : ""}</td>
+        <td class="ds-text-xs ds-text-muted">${fmtDate(m.updatedAt)}</td>
+        <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="./lead-detail.html?id=${m.leadId}&tab=outbound">Revisar</a></td>
+      </tr>`).join("") || '<tr><td colspan="6" class="ds-table-empty">Nenhuma abordagem gerada ainda</td></tr>';
+
+    document.getElementById("loading").classList.add("d-none");
+    document.getElementById("tbl").classList.remove("d-none");
+  }
+
+  document.getElementById("fStatus").addEventListener("change", render);
+
+  /* =========================================================================
+     Progresso de lote (?batchId=)
+     ========================================================================= */
+
+  function watchBatch(batchId) {
+    document.getElementById("batchPanel").classList.remove("d-none");
+    onSnapshot(doc(db, "outboundBatches", batchId), (snap) => {
+      if (!snap.exists()) return;
+      const batch = snap.data();
+      const s = batch.summary || {};
+      const statusLabel = { queued: "Na fila", running: "Gerando…", completed: "Concluído" }[batch.status] || batch.status;
+      document.getElementById("batchSummary").innerHTML =
+        `<strong>${statusLabel}</strong> — ${s.readyForReview || 0} pronta(s) para revisão, ${s.failed || 0} falha(s), de ${s.total || batch.leadIds?.length || 0} lead(s) selecionado(s).`;
+
+      document.getElementById("batchResultsList").innerHTML = (batch.leadIds || []).map((leadId) => {
+        const result = (batch.results || []).find((r) => r.leadId === leadId);
+        let icon = '<div class="spinner-border spinner-border-sm text-muted" role="status"></div>';
+        if (result?.status === "ready_for_review") icon = '<i class="bi bi-check-circle-fill text-success"></i>';
+        else if (result?.status === "failed") icon = '<i class="bi bi-x-circle-fill text-danger"></i>';
+        return `<li class="d-flex align-items-center gap-2 py-1">
+          <span style="width:1.25rem;text-align:center;">${icon}</span>
+          <span class="ds-text-sm">${leadNamesById[leadId] || leadId}</span>
+          ${result?.status === "failed" ? `<span class="ds-text-xs text-danger">${result.error || ""}</span>` : ""}
+        </li>`;
+      }).join("");
+
+      if (batch.status === "completed") load(); // atualiza a tabela principal com os resultados
+    }, (err) => console.warn("watchBatch: falha ao observar progresso (ignorado):", err.message));
+  }
+
+  /* =========================================================================
+     Contexto comercial
+     ========================================================================= */
+
+  document.getElementById("modalContexto").addEventListener("show.bs.modal", async () => {
+    document.getElementById("scErrMsg").classList.add("d-none");
+    try {
+      const snap = await getDoc(doc(db, "systemConfig", "salesContext"));
+      const c = snap.exists() ? snap.data() : {};
+      document.getElementById("scEmpresa").value = c.empresa || "Serafim Technologies";
+      document.getElementById("scProduto").value = c.produto || "Portal Associativo";
+      document.getElementById("scDescricao").value = c.descricao || "";
+      document.getElementById("scPropostaValor").value = c.propostaValor || "";
+      document.getElementById("scDiferenciais").value = (c.diferenciais || []).join(", ");
+      document.getElementById("scPublicoAlvo").value = c.publicoAlvo || "";
+      document.getElementById("scProblemasResolvidos").value = (c.problemasResolvidos || []).join(", ");
+      document.getElementById("scBeneficios").value = (c.beneficios || []).join(", ");
+      document.getElementById("scModulosRelevantes").value = (c.modulosRelevantes || []).join(", ");
+      document.getElementById("scTom").value = c.tom || "";
+      document.getElementById("scCta").value = c.cta || "";
+      document.getElementById("scRestricoesLinguagem").value = (c.restricoesLinguagem || []).join(", ");
+    } catch (e) {
+      console.error(e);
+    }
+  });
+
+  function splitList(value) {
+    return String(value || "").split(",").map((s) => s.trim()).filter(Boolean);
+  }
+
+  document.getElementById("btnSalvarContexto").addEventListener("click", async () => {
+    const errMsg = document.getElementById("scErrMsg");
+    errMsg.classList.add("d-none");
+    const btn = document.getElementById("btnSalvarContexto");
+    btn.disabled = true;
+    try {
+      await fnUpdateSalesContext({
+        empresa: document.getElementById("scEmpresa").value.trim(),
+        produto: document.getElementById("scProduto").value.trim(),
+        descricao: document.getElementById("scDescricao").value.trim(),
+        propostaValor: document.getElementById("scPropostaValor").value.trim(),
+        diferenciais: splitList(document.getElementById("scDiferenciais").value),
+        publicoAlvo: document.getElementById("scPublicoAlvo").value.trim(),
+        problemasResolvidos: splitList(document.getElementById("scProblemasResolvidos").value),
+        beneficios: splitList(document.getElementById("scBeneficios").value),
+        modulosRelevantes: splitList(document.getElementById("scModulosRelevantes").value),
+        tom: document.getElementById("scTom").value.trim(),
+        cta: document.getElementById("scCta").value.trim(),
+        restricoesLinguagem: splitList(document.getElementById("scRestricoesLinguagem").value),
+      });
+      contextoModal.hide();
+    } catch (e) {
+      errMsg.textContent = "Erro: " + e.message;
+      errMsg.classList.remove("d-none");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
