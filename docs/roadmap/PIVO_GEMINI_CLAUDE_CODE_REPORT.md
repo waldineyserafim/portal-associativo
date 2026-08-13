@@ -144,7 +144,7 @@ Clique → `previewOutboundRemoteRun` (só leitura, mostra os números) → moda
 
 ### 10-11. Testes e resultado
 
-122 testes automatizados (0 falhas) — nenhum chama Claude/Gemini/GitHub de verdade (mocks/fakes em todos os pontos de I/O externo). Lint: 0 erros.
+112 testes automatizados (0 falhas) — nenhum chama Claude/Gemini/GitHub de verdade (mocks/fakes em todos os pontos de I/O externo). Lint: 0 erros.
 
 ### 12. Deploy realizado
 
@@ -188,4 +188,4 @@ Gerados 4 leads reais frescos via uma nova campanha de Prospecção controlada (
 
 **PRONTO PARA OPERAÇÃO.**
 
-Os dois agentes estão implementados, testados (122 testes automatizados), deployados em produção, e validados de ponta a ponta com dados reais — não simulados: 6 leads reais criados pela Prospecção (Gemini), 5 abordagens reais geradas pelo Outbound (Claude Code/Pro, via botão, sem terminal), custo real de API paga: **US$0**. Nenhuma mensagem foi enviada a ninguém em nenhum momento — todo o fluxo termina em revisão humana obrigatória.
+Os dois agentes estão implementados, testados (112 testes automatizados), deployados em produção, e validados de ponta a ponta com dados reais — não simulados: 6 leads reais criados pela Prospecção (Gemini), 5 abordagens reais geradas pelo Outbound (Claude Code/Pro, via botão, sem terminal), custo real de API paga: **US$0**. Nenhuma mensagem foi enviada a ninguém em nenhum momento — todo o fluxo termina em revisão humana obrigatória.
