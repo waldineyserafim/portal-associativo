@@ -82,7 +82,8 @@ Autorização resolvida por `requirePlatformAccess({ requiredRole })` (`admin/as
 - `domains/{hostname}` — índice hostname→orgId, único escritor `setOrganizationDomains`, leitura pública (precisa resolver antes de qualquer login).
 - `organizations/{orgId}/public/branding` — projeção pública curada (nome, logo, cores, contato institucional, `isSandbox`), mantida por trigger, nunca escrita direta.
 - `featureFlags/{flagKey}` — kill-switch/rollout por organização, leitura direta restrita à equipe de plataforma; cliente só via callable `resolveFeatureFlags`.
-- `systemPlans/{planId}` — catálogo de planos SaaS (módulos incluídos), editável em `admin/plans.html`.
+- `moduleCatalog/{moduleKey}` — fonte central de verdade dos módulos comerciais (label, descrição, valor econômico mensal, dependências entre módulos), editável em `admin/module-catalog.html`. `systemPlans`/`organizations` só referenciam módulos por chave, nunca duplicam metadado.
+- `systemPlans/{planId}` — os 5 planos comerciais oficiais (Essencial/Comunidade/Gestão/Plataforma/Customizado): `price` (comercial, independente da soma econômica dos módulos), `modules` (map de chaves do `moduleCatalog`), `recommended`, `isCustom`, `active`. Editável em `admin/plans.html`, escrita só via Cloud Function (`createPlan`/`updatePlan`/`archivePlan`).
 - `systemConfig/global` — configuração global da plataforma, editável em `admin/settings.html`.
 - `systemLogs` — auditoria (toda mutação relevante de plataforma), consultável em `admin/audit.html`.
 - `leads` — funil comercial (leads com `proximaAcao` agendada, atribuíveis a `platformAdmins`), gerido em `admin/leads.html`/`admin/lead-detail.html`.
@@ -97,7 +98,8 @@ Autorização resolvida por `requirePlatformAccess({ requiredRole })` (`admin/as
 | `organization-provision.html` | Assistente de provisionamento (progresso ao vivo via `onSnapshot` sobre `provisioningRuns`) |
 | `organization-detail.html` | Detalhe de uma organização — abas Dados, Central de Configuração (8 categorias), Equipe, Domínios |
 | `domains.html` | Visão global de todos os domínios cadastrados (cross-organização), busca, criar/promover/remover |
-| `plans.html` | CRUD de `systemPlans` |
+| `plans.html` | CRUD dos 5 planos comerciais oficiais (`systemPlans`) — preço, módulos, destaque, plano Customizado |
+| `module-catalog.html` | CRUD do catálogo de módulos (`moduleCatalog`) — valor econômico, dependências |
 | `subscriptions.html` | Assinaturas SaaS das organizações |
 | `modules.html` | Catálogo de módulos habilitáveis |
 | `feature-flags.html` | CRUD de `featureFlags`, status/rollout/overrides por organização |
@@ -124,6 +126,18 @@ Adicionar um domínio novo para uma organização (cliente com domínio próprio
 ### Feature Flags
 
 `featureFlags/{flagKey}` — `status` (`off`/`on`/`rollout` com bucket determinístico por `orgId`) + `overrides` por organização (sempre vence) + `environments` (filtra por `organizations/{orgId}.environment`). **Fail-closed** para flag desconhecida/arquivada (diferente do fail-open de módulos/branding — flag nova e não configurada nunca vaza). Cliente nunca lê a coleção direto (vazaria `overrides` de outras organizações) — só via callable `resolveFeatureFlags`, que devolve o mapa já resolvido para uma organização. Cache: 20s no servidor (`CACHE_TTL_MS`, é o SLA real de propagação de um kill-switch — cada instância de Cloud Function tem seu próprio cache de processo), 1 min no cliente (`shared/core/tenant/features.js`).
+
+### Planos, Módulos e Isenção de Cobrança (motor de configuração comercial)
+
+Modelo comercial oficial: 5 planos (`systemPlans`) — Essencial R$49, Comunidade R$149, Gestão R$299 (`recommended:true`), Plataforma R$499, e Customizado (`isCustom:true`, sem preço/módulos fixos no template). O preço comercial de um plano público é sempre uma **decisão de pricing independente** da soma do `economicValue` dos módulos que ele inclui (ex.: Gestão soma R$297 em módulos mas custa R$299 comercialmente — não é inconsistência, é intencional).
+
+`moduleCatalog/{moduleKey}` é a fonte central de verdade de cada módulo (10 hoje: institucional/associados/comunicação/financeiro/eventos/parceiros/classificados/leilões/relatórios/white label). Um módulo pode declarar `dependencies` (outros `moduleKey` que precisam estar selecionados junto) — hoje: `financeiro` requer `associados` (cobrança é sempre de um associado); `leilões` requer `associados`+`financeiro` (lance é de um membro da organização, arremate gera cobrança via o provider de billing da organização — ver `gerarCobrancaLeilao`/`placeBid`, repositório do CCBMG). Dependência é validada server-side (`functions/lib/pricing.js`, `validateModuleDependencies`) em toda escrita nova via `createPlan`/`updatePlan`/`applyOrgCustomPlan` — nunca reescaneia/muta retroativamente módulos já habilitados por uma organização antes desta fase.
+
+**Plano Customizado**: o Master seleciona módulos por organização (não no template do plano) — `applyOrgCustomPlan` (Cloud Function) recalcula sempre server-side `economicValue`/`desconto`/`finalPrice` (`functions/lib/pricing.js`, `calculateCustomPlanPrice`) e nunca aceita um preço final vindo do payload do cliente; o preview no Painel Master é só réplica da mesma aritmética em JS, para UX, nunca fonte de verdade. Resultado gravado em `organizationSubscriptions/{orgId}.customPlan` e espelhado em `organizations/{orgId}.modules`.
+
+**Isenção de cobrança** é característica da **assinatura** de uma organização, nunca do plano — nunca altera `organizations.plan`/`modules` (a organização mantém exatamente os módulos do plano contratado). Campos em `organizationSubscriptions/{orgId}` (não em `organizations` — essa coleção já não tem nenhum caminho de autoatendimento do Organization Master, então a exclusão é grátis por construção, sem allowlist pra manter): `exempt`, `exemptReason`, `exemptUntil` (`null` = permanente), `exemptBy`/`exemptAt`, e `exemptRevokedBy`/`exemptRevokedAt` (histórico, nunca limpo na revogação). "Está isenta agora?" é sempre **calculado na leitura** (`exempt && (!exemptUntil || exemptUntil > now)`, `functions/lib/orgExemption.js`) — deliberadamente sem nenhuma Cloud Function agendada para "expirar" isenção. Concessão/revogação só via `grantOrgExemption`/`revokeOrgExemption` (Cloud Function, `requirePlatformAdministrator`, auditadas) — Firestore Rules bloqueiam esses campos mesmo em escrita direta de um Platform Administrator legítimo (`organizationSubscriptions`, ver `firestore.rules`). Escopo desta fase é informativo (badge no Painel Master, exclusão de MRR/ARR) — não há enforcement de billing real ainda (`organizationSubscriptions` é um ledger manual, não conectado aos gatilhos reais de cobrança do CCBMG).
+
+`systemPlans`/`moduleCatalog` seguem o mesmo padrão estrutural de `featureFlags`: leitura restrita a `isPlatformStaff()`, escrita sempre via Cloud Function (`write: if false` nas Rules) — nunca `setDoc`/`deleteDoc` direto do cliente. Nenhum documento é apagado ao "excluir" — `archivePlan`/`archiveModuleCatalogEntry` só marcam `active:false` (mesma filosofia de `ativo:false` já usada no resto da base).
 
 ### Tenant Sandbox oficial
 
@@ -153,7 +167,7 @@ Termos específicos de negócio do tenant CCBMG (Associado, Associado Mirim, Anu
 
 Auditoria de prontidão comercial completa (isolamento cross-tenant, escalada de privilégio, billing, backup, alertas): `docs/roadmap/AUDITORIA_FINAL_RC1_REPORT.md` — resultado GO WITH CONDITIONS, achados P2/P3 aceitos como dívida técnica (forja de `systemLogs`, cobertura parcial de `functions.logger` nos alertas, conta Asaas compartilhada entre tenants, ausência de resolução hostname→orgId em tempo real — este último já resolvido pelas Fases 3.9/3.10, ver `docs/roadmap/`).
 
-**Achado adicional, verificado durante a reorganização de documentação de agosto de 2026**: `admin/plans.html` chama `requirePlatformAccess()` sem restringir `requiredRole`, ou seja, qualquer papel de plataforma (inclusive `operator`, que deveria ser só leitura) vê os controles de criar/editar/excluir plano na UI. Verificado contra `firestore.rules`: a escrita em `systemPlans` já exige `isPlatformAdministrator()`, então um `operator` que tentar salvar recebe `permission-denied` do servidor — **não é uma falha de segurança explorável**, é uma inconsistência de UX (botão visível para quem vai ser rejeitado). Candidato a issue: condicionar a exibição dos controles de escrita em `plans.html` ao papel real do usuário, junto com uma varredura das demais telas de plataforma para o mesmo padrão.
+**Achado da reorganização de documentação de agosto de 2026 — CORRIGIDO** na redesign do motor de Planos/Módulos/Pricing (mesmo mês): `admin/plans.html` chamava `requirePlatformAccess()` sem restringir `requiredRole`, então qualquer papel de plataforma (inclusive `operator`, que deveria ser só leitura) via os controles de criar/editar/excluir plano na UI — nunca foi uma falha explorável (a Rule já exigia `isPlatformAdministrator()`), só uma inconsistência de UX. Corrigido junto com o resto da fase: `plans.html`/`module-catalog.html` agora espelham o gate `canManage` (`myRole === "administrator" || myRole === "owner"`) já usado por `feature-flags.html`, e a escrita de `systemPlans`/`moduleCatalog` passou de `isPlatformAdministrator()` direto do cliente para `write: if false` (Cloud Function-only) — reforço estrutural, não só cosmético.
 
 ---
 

@@ -23,18 +23,22 @@
     <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
       <div>
         <h1 class="h4 mb-0">Planos</h1>
-        <p class="ds-text-sm ds-text-muted mb-0">Estrutura administrativa de planos — sem cobrança automática nesta fase.</p>
+        <p class="ds-text-sm ds-text-muted mb-0">Motor de configuração comercial — módulos, preço comercial e plano Customizado. Ver <a href="module-catalog.html">Catálogo de Módulos</a> para gerenciar o valor econômico de cada módulo.</p>
       </div>
-      <button class="btn btn-primary btn-sm" id="btnNovo" data-bs-toggle="modal" data-bs-target="#modalPlan">
+      <button class="btn btn-primary btn-sm d-none" id="btnNovo" data-bs-toggle="modal" data-bs-target="#modalPlan">
         <i class="bi bi-plus-lg me-1"></i>Novo plano
       </button>
+    </div>
+
+    <div id="readOnlyNote" class="alert alert-info d-none ds-text-sm">
+      Seu papel (Platform Operator) só permite visualizar — criar, editar ou arquivar planos exige Administrator ou Owner.
     </div>
 
     <div class="ds-table-card">
       <div class="text-center py-4 ds-text-muted ds-text-sm" id="loading">Carregando…</div>
       <table class="ds-table d-none" id="tbl">
         <thead>
-          <tr><th>Plano</th><th>Módulos incluídos</th><th>Limites</th><th>Organizações</th><th></th></tr>
+          <tr><th>Plano</th><th>Preço</th><th>Módulos</th><th>Organizações</th><th>Status</th><th></th></tr>
         </thead>
         <tbody id="tbody"></tbody>
       </table>
@@ -55,16 +59,48 @@
         <div class="row g-3">
           <div class="col-md-5">
             <label class="form-label">ID do plano *</label>
-            <input class="form-control" id="planId" placeholder="starter">
+            <input class="form-control" id="planId" placeholder="essencial">
           </div>
           <div class="col-md-7">
             <label class="form-label">Nome exibido *</label>
-            <input class="form-control" id="planLabel" placeholder="Starter">
+            <input class="form-control" id="planLabel" placeholder="Essencial">
           </div>
           <div class="col-12">
             <label class="form-label">Descrição</label>
-            <textarea class="form-control" id="planDesc" rows="2" placeholder="Para organizações pequenas…"></textarea>
+            <textarea class="form-control" id="planDesc" rows="2" placeholder="Presença digital…"></textarea>
           </div>
+          <div class="col-md-4">
+            <label class="form-label">Ordem de exibição</label>
+            <input class="form-control" id="planOrder" type="number" min="0" value="0">
+          </div>
+          <div class="col-md-4 d-flex align-items-end">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="planRecommended">
+              <label class="form-check-label" for="planRecommended">Plano recomendado</label>
+            </div>
+          </div>
+          <div class="col-md-4 d-flex align-items-end">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="planIsCustom">
+              <label class="form-check-label" for="planIsCustom">Plano Customizado (sem preço/módulos fixos)</label>
+            </div>
+          </div>
+
+          <div class="col-12" id="planPriceWrap">
+            <label class="form-label">Preço comercial (R$/mês) *</label>
+            <input class="form-control" id="planPrice" type="number" min="0" step="0.01" placeholder="299.00">
+            <div class="form-text ds-text-xs">Decisão de pricing — independente da soma do valor econômico dos módulos abaixo (ex.: Gestão soma R$297 em módulos mas o preço comercial é R$299, de propósito).</div>
+          </div>
+          <div class="col-12 alert alert-secondary ds-text-sm d-none" id="planCustomNote">
+            Plano Customizado não tem módulos/preço fixos no template — cada organização nesse plano tem seus módulos e preço definidos individualmente na aba "Assinatura" da própria organização (Detalhe da Organização).
+          </div>
+
+          <div class="col-12" id="planModulesSection">
+            <h6 class="ds-text-muted mb-0 mt-2">Módulos incluídos</h6><hr class="mt-1">
+            <div id="planModulesCheckboxes"></div>
+            <div class="ds-text-sm fw-bold mt-2">Valor econômico dos módulos selecionados: <span id="planEconomicValue">R$ 0</span></div>
+          </div>
+
           <div class="col-12"><h6 class="ds-text-muted mb-0 mt-2">Limites</h6><hr class="mt-1"></div>
           <div class="col-md-6">
             <label class="form-label">Máx. associados</label>
@@ -74,18 +110,12 @@
             <label class="form-label">Máx. usuários admin</label>
             <input class="form-control" id="planMaxAdmins" type="number" min="0" placeholder="Sem limite">
           </div>
-          <div class="col-12"><h6 class="ds-text-muted mb-0 mt-2">Módulos incluídos</h6><hr class="mt-1"></div>
-          <div class="col-12 d-flex flex-wrap gap-2" id="planModulesCheckboxes"></div>
-          <div class="col-12">
-            <div class="input-group" style="max-width: 360px;">
-              <input type="text" class="form-control" id="newModuleKey" placeholder="chave_do_modulo">
-              <button class="btn btn-outline-secondary" id="btnAddModule" type="button">Adicionar</button>
-            </div>
-          </div>
         </div>
+        <div id="planErrMsg" class="alert alert-danger py-2 small d-none mt-3"></div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-outline-danger me-auto d-none" id="btnExcluir">Excluir</button>
+        <button type="button" class="btn btn-outline-danger me-auto d-none" id="btnArquivar">Arquivar</button>
+        <button type="button" class="btn btn-outline-secondary me-auto d-none" id="btnReativar">Reativar</button>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         <button type="button" class="btn btn-primary" id="btnSalvar">Salvar</button>
       </div>
@@ -95,39 +125,47 @@
 
 <script src="../js/bootstrap.bundle.min.js"></script>
 <script type="module">
-  import { requirePlatformAccess, db, logPlatformAction } from "./assets/admin-auth.js";
+  import { requirePlatformAccess, db } from "./assets/admin-auth.js";
   import { renderAdminNav } from "./assets/admin-nav.js";
-  import {
-    collection, getDocs, doc, setDoc, deleteDoc, serverTimestamp,
-  } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+  import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+  import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-functions.js";
+  import { getApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 
+  const functionsApi = getFunctions(getApp(), "us-central1");
+  const fnCreatePlan = httpsCallable(functionsApi, "createPlan");
+  const fnUpdatePlan = httpsCallable(functionsApi, "updatePlan");
+  const fnArchivePlan = httpsCallable(functionsApi, "archivePlan");
+
+  let myRole = null;
   let plansCache = [];
   let orgsCache = [];
-  let moduleKeys = [];
-  let currentModules = {};
+  let catalogCache = []; // moduleCatalog ativo, ordenado
   const modalEl = document.getElementById("modalPlan");
   const modal = new bootstrap.Modal(modalEl);
 
+  const money = (v) => (typeof v === "number" ? `R$ ${v.toFixed(2).replace(".", ",")}` : "—");
+
   requirePlatformAccess({
-    onRole: () => {
+    onRole: (role) => {
+      myRole = role;
       renderAdminNav({ active: "plans" });
+      const canManage = myRole === "administrator" || myRole === "owner";
+      document.getElementById("btnNovo").classList.toggle("d-none", !canManage);
+      document.getElementById("readOnlyNote").classList.toggle("d-none", canManage);
       loadAll();
     },
   });
 
   async function loadAll() {
     try {
-      const [plansSnap, orgsSnap] = await Promise.all([
+      const [plansSnap, orgsSnap, catalogSnap] = await Promise.all([
         getDocs(collection(db, "systemPlans")),
         getDocs(collection(db, "organizations")),
+        getDocs(query(collection(db, "moduleCatalog"), orderBy("order"))),
       ]);
-      plansCache = plansSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      plansCache = plansSnap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (a.order || 0) - (b.order || 0));
       orgsCache = orgsSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-
-      const known = new Set();
-      orgsCache.forEach((o) => Object.keys(o.modules || {}).forEach((k) => known.add(k)));
-      plansCache.forEach((p) => Object.keys(p.modules || {}).forEach((k) => known.add(k)));
-      moduleKeys = [...known].sort();
+      catalogCache = catalogSnap.docs.map((d) => ({ key: d.id, ...d.data() })).filter((m) => m.active !== false);
 
       render();
     } catch (e) {
@@ -137,22 +175,26 @@
   }
 
   function render() {
+    const canManage = myRole === "administrator" || myRole === "owner";
     const tbody = document.getElementById("tbody");
     tbody.innerHTML = plansCache.map((p) => {
-      const mods = Object.entries(p.modules || {}).filter(([, v]) => v !== false).map(([k]) => k);
+      const modCount = Object.values(p.modules || {}).filter(Boolean).length;
       const orgsUsando = orgsCache.filter((o) => o.plan === p.id).length;
-      const limites = [
-        p.limits?.maxAssociados ? `${p.limits.maxAssociados} associados` : null,
-        p.limits?.maxAdmins ? `${p.limits.maxAdmins} admins` : null,
-      ].filter(Boolean).join(" · ") || "Sem limite definido";
+      const statusBadge = p.active === false
+        ? '<span class="badge bg-secondary">Arquivado</span>'
+        : '<span class="badge bg-success">Ativo</span>';
+      const nomeCol = p.recommended
+        ? `<strong>${p.label || p.id}</strong> <span class="badge bg-warning text-dark ms-1">Recomendado</span>`
+        : `<strong>${p.label || p.id}</strong>`;
       return `<tr>
-        <td><strong>${p.label || p.id}</strong><div class="ds-text-xs ds-text-muted">${p.id}</div></td>
-        <td class="ds-text-sm ds-text-muted">${mods.join(", ") || "—"}</td>
-        <td class="ds-text-sm ds-text-muted">${limites}</td>
+        <td>${nomeCol}<div class="ds-text-xs ds-text-muted">${p.id}</div></td>
+        <td class="ds-text-sm">${p.isCustom ? "Variável" : money(p.price)}</td>
+        <td class="ds-text-sm ds-text-muted">${p.isCustom ? "Definido por organização" : modCount}</td>
         <td class="ds-text-sm">${orgsUsando}</td>
-        <td class="text-end"><button class="btn btn-sm btn-outline-primary btn-edit" data-id="${p.id}">Editar</button></td>
+        <td>${statusBadge}</td>
+        <td class="text-end">${canManage ? `<button class="btn btn-sm btn-outline-primary btn-edit" data-id="${p.id}">Editar</button>` : ""}</td>
       </tr>`;
-    }).join("") || '<tr><td colspan="5" class="ds-table-empty">Nenhum plano cadastrado ainda</td></tr>';
+    }).join("") || '<tr><td colspan="6" class="ds-table-empty">Nenhum plano cadastrado ainda</td></tr>';
 
     document.querySelectorAll(".btn-edit").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -165,94 +207,127 @@
     document.getElementById("tbl").classList.remove("d-none");
   }
 
-  function renderModuleCheckboxes() {
-    const container = document.getElementById("planModulesCheckboxes");
-    container.innerHTML = moduleKeys.map((k) => `
-      <div class="form-check form-check-inline border rounded px-2 py-1">
-        <input class="form-check-input" type="checkbox" id="pmod_${k}" data-key="${k}" ${currentModules[k] !== false && currentModules[k] !== undefined ? "checked" : ""}>
-        <label class="form-check-label small" for="pmod_${k}">${k}</label>
-      </div>
-    `).join("") || '<span class="ds-text-sm ds-text-muted">Nenhum módulo conhecido ainda — adicione um abaixo.</span>';
+  function selectedModuleKeys() {
+    return catalogCache.filter((m) => document.getElementById(`pmod_${m.key}`)?.checked).map((m) => m.key);
   }
 
-  document.getElementById("btnAddModule").addEventListener("click", () => {
-    const input = document.getElementById("newModuleKey");
-    const key = input.value.trim().toLowerCase().replace(/\s+/g, "_");
-    if (!key) return;
-    if (!moduleKeys.includes(key)) moduleKeys.push(key);
-    currentModules[key] = true;
-    input.value = "";
-    renderModuleCheckboxes();
-  });
+  function updateEconomicValue() {
+    const total = selectedModuleKeys().reduce((sum, key) => sum + (catalogCache.find((m) => m.key === key)?.economicValue || 0), 0);
+    document.getElementById("planEconomicValue").textContent = money(total);
+  }
+
+  function renderModuleCheckboxes(currentModules) {
+    const container = document.getElementById("planModulesCheckboxes");
+    if (!catalogCache.length) {
+      container.innerHTML = '<span class="ds-text-sm ds-text-muted">Nenhum módulo cadastrado no catálogo ainda — ver <a href="module-catalog.html">Catálogo de Módulos</a>.</span>';
+      return;
+    }
+    container.innerHTML = catalogCache.map((m) => `
+      <div class="form-check border rounded px-2 py-1 mb-1">
+        <input class="form-check-input" type="checkbox" id="pmod_${m.key}" ${currentModules?.[m.key] ? "checked" : ""}>
+        <label class="form-check-label ds-text-sm" for="pmod_${m.key}">
+          <strong>${m.label}</strong> <span class="ds-text-muted">— ${money(m.economicValue)}</span>
+          ${m.description ? `<div class="ds-text-xs ds-text-muted">${m.description}</div>` : ""}
+          ${m.dependencies?.length ? `<div class="ds-text-xs ds-text-muted">Requer: ${m.dependencies.join(", ")}</div>` : ""}
+        </label>
+      </div>
+    `).join("");
+    catalogCache.forEach((m) => {
+      document.getElementById(`pmod_${m.key}`)?.addEventListener("change", updateEconomicValue);
+    });
+    updateEconomicValue();
+  }
+
+  function toggleCustomSections(isCustom) {
+    document.getElementById("planPriceWrap").classList.toggle("d-none", isCustom);
+    document.getElementById("planModulesSection").classList.toggle("d-none", isCustom);
+    document.getElementById("planCustomNote").classList.toggle("d-none", !isCustom);
+  }
+
+  document.getElementById("planIsCustom").addEventListener("change", (e) => toggleCustomSections(e.target.checked));
 
   function openModal(p) {
-    currentModules = { ...(p?.modules || {}) };
+    document.getElementById("planErrMsg").classList.add("d-none");
     document.getElementById("planEditId").value = p?.id || "";
     document.getElementById("planId").value = p?.id || "";
     document.getElementById("planId").readOnly = !!p;
     document.getElementById("planLabel").value = p?.label || "";
     document.getElementById("planDesc").value = p?.description || "";
+    document.getElementById("planOrder").value = p?.order ?? 0;
+    document.getElementById("planRecommended").checked = !!p?.recommended;
+    document.getElementById("planIsCustom").checked = !!p?.isCustom;
+    document.getElementById("planIsCustom").disabled = !!p; // tipo do plano é fixado na criação
+    document.getElementById("planPrice").value = p?.price ?? "";
     document.getElementById("planMaxAssociados").value = p?.limits?.maxAssociados || "";
     document.getElementById("planMaxAdmins").value = p?.limits?.maxAdmins || "";
     document.getElementById("modalPlanTitle").textContent = p ? "Editar plano" : "Novo plano";
-    document.getElementById("btnExcluir").classList.toggle("d-none", !p);
-    renderModuleCheckboxes();
+    document.getElementById("btnArquivar").classList.toggle("d-none", !p || p.active === false);
+    document.getElementById("btnReativar").classList.toggle("d-none", !p || p.active !== false);
+    toggleCustomSections(!!p?.isCustom);
+    renderModuleCheckboxes(p?.modules || {});
+    modal.show();
   }
 
   document.getElementById("btnNovo").addEventListener("click", () => openModal(null));
 
   document.getElementById("btnSalvar").addEventListener("click", async () => {
+    const errMsg = document.getElementById("planErrMsg");
+    errMsg.classList.add("d-none");
     const editId = document.getElementById("planEditId").value.trim();
     const planId = document.getElementById("planId").value.trim().toLowerCase().replace(/\s+/g, "_");
     const label = document.getElementById("planLabel").value.trim();
-    if (!planId || !label) { alert("ID e nome do plano são obrigatórios."); return; }
-
-    const modules = {};
-    moduleKeys.forEach((k) => {
-      const el = document.getElementById(`pmod_${k}`);
-      modules[k] = !!el?.checked;
-    });
+    const isCustom = document.getElementById("planIsCustom").checked;
+    if (!planId || !label) { errMsg.textContent = "ID e nome do plano são obrigatórios."; errMsg.classList.remove("d-none"); return; }
 
     const maxAssociados = parseInt(document.getElementById("planMaxAssociados").value, 10);
     const maxAdmins = parseInt(document.getElementById("planMaxAdmins").value, 10);
 
     const payload = {
+      id: planId,
       label,
       description: document.getElementById("planDesc").value.trim(),
-      modules,
+      order: Number(document.getElementById("planOrder").value) || 0,
+      recommended: document.getElementById("planRecommended").checked,
+      isCustom,
+      modules: isCustom ? [] : selectedModuleKeys(),
+      price: isCustom ? null : Number(document.getElementById("planPrice").value),
       limits: {
         maxAssociados: Number.isFinite(maxAssociados) ? maxAssociados : null,
         maxAdmins: Number.isFinite(maxAdmins) ? maxAdmins : null,
       },
-      updatedAt: serverTimestamp(),
     };
-    if (!editId) payload.createdAt = serverTimestamp();
 
+    const btn = document.getElementById("btnSalvar");
+    btn.disabled = true;
     try {
-      await setDoc(doc(db, "systemPlans", planId), payload, { merge: true });
-      await logPlatformAction(editId ? "plano_atualizado" : "plano_criado", { planId });
+      if (editId) await fnUpdatePlan(payload);
+      else await fnCreatePlan(payload);
       modal.hide();
       await loadAll();
     } catch (e) {
-      alert("Erro ao salvar: " + e.message);
+      errMsg.textContent = "Erro ao salvar: " + e.message;
+      errMsg.classList.remove("d-none");
+    } finally {
+      btn.disabled = false;
     }
   });
 
-  document.getElementById("btnExcluir").addEventListener("click", async () => {
+  async function setArchived(active) {
     const editId = document.getElementById("planEditId").value.trim();
     if (!editId) return;
     const emUso = orgsCache.filter((o) => o.plan === editId).length;
-    if (emUso > 0 && !confirm(`${emUso} organização(ões) usam este plano. Excluir mesmo assim? Isso não altera as organizações já configuradas.`)) return;
-    if (emUso === 0 && !confirm("Excluir este plano?")) return;
+    if (!active && emUso > 0 && !confirm(`${emUso} organização(ões) usam este plano. Arquivar mesmo assim? Isso não altera as organizações já configuradas — só impede que o plano seja escolhido em novos provisionamentos.`)) return;
     try {
-      await deleteDoc(doc(db, "systemPlans", editId));
-      await logPlatformAction("plano_excluido", { planId: editId });
+      await fnArchivePlan({ id: editId, active });
       modal.hide();
       await loadAll();
     } catch (e) {
-      alert("Erro ao excluir: " + e.message);
+      alert("Erro: " + e.message);
     }
-  });
+  }
+
+  document.getElementById("btnArquivar").addEventListener("click", () => setArchived(false));
+  document.getElementById("btnReativar").addEventListener("click", () => setArchived(true));
 </script>
 </body>
 </html>

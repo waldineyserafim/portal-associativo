@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Catálogo de Módulos — Painel Master · Portal Associativo</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/images/icons/favicon.svg">
+  <link rel="apple-touch-icon" href="../assets/images/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#A85A34">
+  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../css/design-system.css?v=portal-2026-08b">
+  <link rel="stylesheet" href="../shared/layouts/admin-shell.css?v=2026.08.7">
+  <link rel="stylesheet" href="../shared/components/index.css?v=2026.08.7">
+</head>
+<body>
+
+<div class="ds-admin-shell">
+  <main class="ds-admin-main">
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+      <div>
+        <h1 class="h4 mb-0">Catálogo de Módulos</h1>
+        <p class="ds-text-sm ds-text-muted mb-0">Fonte central de verdade dos módulos comerciais — nome, descrição, valor econômico e dependências. Usado por <a href="plans.html">Planos</a> e pela aba Assinatura de cada organização (plano Customizado).</p>
+      </div>
+      <button class="btn btn-primary btn-sm d-none" id="btnNovo" data-bs-toggle="modal" data-bs-target="#modalModule">
+        <i class="bi bi-plus-lg me-1"></i>Novo módulo
+      </button>
+    </div>
+
+    <div id="readOnlyNote" class="alert alert-info d-none ds-text-sm">
+      Seu papel (Platform Operator) só permite visualizar — criar, editar ou arquivar módulos exige Administrator ou Owner.
+    </div>
+
+    <div class="ds-table-card">
+      <div class="text-center py-4 ds-text-muted ds-text-sm" id="loading">Carregando…</div>
+      <table class="ds-table d-none" id="tbl">
+        <thead>
+          <tr><th>Módulo</th><th>Valor econômico</th><th>Dependências</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- Modal Módulo -->
+<div class="modal ds-modal fade" id="modalModule" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalModuleTitle">Novo módulo</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="modEditKey">
+        <div class="row g-3">
+          <div class="col-md-5">
+            <label class="form-label">Chave *</label>
+            <input class="form-control" id="modKey" placeholder="financeiro" pattern="[a-z][a-z0-9_]*">
+            <div class="form-text ds-text-xs">snake_case, minúsculo — vira o ID do documento, referenciado pelos planos.</div>
+          </div>
+          <div class="col-md-7">
+            <label class="form-label">Nome exibido *</label>
+            <input class="form-control" id="modLabel" placeholder="Financeiro & Cobrança">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Descrição</label>
+            <textarea class="form-control" id="modDesc" rows="2" placeholder="Cobrança recorrente, faturas e integração de pagamento."></textarea>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Valor econômico (R$/mês) *</label>
+            <input class="form-control" id="modEconomicValue" type="number" min="0" step="0.01" placeholder="99.00">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Ordem de exibição</label>
+            <input class="form-control" id="modOrder" type="number" min="0" value="0">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Dependências (módulos que este requer)</label>
+            <div id="modDependenciesCheckboxes" class="d-flex flex-wrap gap-2"></div>
+            <div class="form-text ds-text-xs">Um plano/organização não pode incluir este módulo sem incluir também suas dependências.</div>
+          </div>
+        </div>
+        <div id="modErrMsg" class="alert alert-danger py-2 small d-none mt-3"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-danger me-auto d-none" id="btnArquivar">Arquivar</button>
+        <button type="button" class="btn btn-outline-secondary me-auto d-none" id="btnReativar">Reativar</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="btnSalvar">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/bootstrap.bundle.min.js"></script>
+<script type="module">
+  import { requirePlatformAccess, db } from "./assets/admin-auth.js";
+  import { renderAdminNav } from "./assets/admin-nav.js";
+  import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+  import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-functions.js";
+  import { getApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+
+  const functionsApi = getFunctions(getApp(), "us-central1");
+  const fnCreate = httpsCallable(functionsApi, "createModuleCatalogEntry");
+  const fnUpdate = httpsCallable(functionsApi, "updateModuleCatalogEntry");
+  const fnArchive = httpsCallable(functionsApi, "archiveModuleCatalogEntry");
+
+  let myRole = null;
+  let catalogCache = [];
+  const modalEl = document.getElementById("modalModule");
+  const modal = new bootstrap.Modal(modalEl);
+
+  const money = (v) => (typeof v === "number" ? `R$ ${v.toFixed(2).replace(".", ",")}` : "—");
+
+  requirePlatformAccess({
+    onRole: (role) => {
+      myRole = role;
+      renderAdminNav({ active: "module-catalog" });
+      const canManage = myRole === "administrator" || myRole === "owner";
+      document.getElementById("btnNovo").classList.toggle("d-none", !canManage);
+      document.getElementById("readOnlyNote").classList.toggle("d-none", canManage);
+      load();
+    },
+  });
+
+  async function load() {
+    try {
+      const snap = await getDocs(query(collection(db, "moduleCatalog"), orderBy("order")));
+      catalogCache = snap.docs.map((d) => ({ key: d.id, ...d.data() }));
+      render();
+    } catch (e) {
+      document.getElementById("loading").textContent = "Erro ao carregar catálogo de módulos.";
+      console.error(e);
+    }
+  }
+
+  function render() {
+    const canManage = myRole === "administrator" || myRole === "owner";
+    document.getElementById("tbody").innerHTML = catalogCache.map((m) => {
+      const statusBadge = m.active === false
+        ? '<span class="badge bg-secondary">Arquivado</span>'
+        : '<span class="badge bg-success">Ativo</span>';
+      return `<tr>
+        <td><strong>${m.label || m.key}</strong><div class="ds-text-xs ds-text-muted">${m.key}${m.description ? " — " + m.description : ""}</div></td>
+        <td class="ds-text-sm">${money(m.economicValue)}</td>
+        <td class="ds-text-sm ds-text-muted">${(m.dependencies || []).join(", ") || "—"}</td>
+        <td>${statusBadge}</td>
+        <td class="text-end">${canManage ? `<button class="btn btn-sm btn-outline-primary btn-edit" data-key="${m.key}">Editar</button>` : ""}</td>
+      </tr>`;
+    }).join("") || '<tr><td colspan="5" class="ds-table-empty">Nenhum módulo cadastrado ainda</td></tr>';
+
+    document.querySelectorAll(".btn-edit").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const m = catalogCache.find((x) => x.key === btn.dataset.key);
+        if (m) openModal(m);
+      });
+    });
+
+    document.getElementById("loading").classList.add("d-none");
+    document.getElementById("tbl").classList.remove("d-none");
+  }
+
+  function renderDependenciesCheckboxes(currentKey, currentDeps) {
+    const container = document.getElementById("modDependenciesCheckboxes");
+    const options = catalogCache.filter((m) => m.key !== currentKey && m.active !== false);
+    container.innerHTML = options.map((m) => `
+      <div class="form-check form-check-inline border rounded px-2 py-1">
+        <input class="form-check-input" type="checkbox" id="mdep_${m.key}" ${currentDeps?.includes(m.key) ? "checked" : ""}>
+        <label class="form-check-label small" for="mdep_${m.key}">${m.label || m.key}</label>
+      </div>
+    `).join("") || '<span class="ds-text-sm ds-text-muted">Nenhum outro módulo ativo ainda.</span>';
+  }
+
+  function selectedDependencies() {
+    return catalogCache.filter((m) => document.getElementById(`mdep_${m.key}`)?.checked).map((m) => m.key);
+  }
+
+  function openModal(m) {
+    document.getElementById("modErrMsg").classList.add("d-none");
+    document.getElementById("modEditKey").value = m?.key || "";
+    document.getElementById("modKey").value = m?.key || "";
+    document.getElementById("modKey").readOnly = !!m;
+    document.getElementById("modLabel").value = m?.label || "";
+    document.getElementById("modDesc").value = m?.description || "";
+    document.getElementById("modEconomicValue").value = m?.economicValue ?? "";
+    document.getElementById("modOrder").value = m?.order ?? 0;
+    document.getElementById("modalModuleTitle").textContent = m ? "Editar módulo" : "Novo módulo";
+    document.getElementById("btnArquivar").classList.toggle("d-none", !m || m.active === false);
+    document.getElementById("btnReativar").classList.toggle("d-none", !m || m.active !== false);
+    renderDependenciesCheckboxes(m?.key || null, m?.dependencies || []);
+    modal.show();
+  }
+
+  document.getElementById("btnNovo").addEventListener("click", () => openModal(null));
+
+  document.getElementById("btnSalvar").addEventListener("click", async () => {
+    const errMsg = document.getElementById("modErrMsg");
+    errMsg.classList.add("d-none");
+    const editKey = document.getElementById("modEditKey").value.trim();
+    const key = document.getElementById("modKey").value.trim().toLowerCase().replace(/\s+/g, "_");
+    const label = document.getElementById("modLabel").value.trim();
+    const economicValue = Number(document.getElementById("modEconomicValue").value);
+    if (!key || !label || !Number.isFinite(economicValue)) {
+      errMsg.textContent = "Chave, nome e valor econômico são obrigatórios.";
+      errMsg.classList.remove("d-none");
+      return;
+    }
+
+    const payload = {
+      key,
+      label,
+      description: document.getElementById("modDesc").value.trim(),
+      economicValue,
+      order: Number(document.getElementById("modOrder").value) || 0,
+      dependencies: selectedDependencies(),
+    };
+
+    const btn = document.getElementById("btnSalvar");
+    btn.disabled = true;
+    try {
+      if (editKey) await fnUpdate(payload);
+      else await fnCreate(payload);
+      modal.hide();
+      await load();
+    } catch (e) {
+      errMsg.textContent = "Erro ao salvar: " + e.message;
+      errMsg.classList.remove("d-none");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  async function setArchived(active) {
+    const editKey = document.getElementById("modEditKey").value.trim();
+    if (!editKey) return;
+    const dependents = catalogCache.filter((m) => (m.dependencies || []).includes(editKey) && m.active !== false);
+    if (!active && dependents.length > 0 && !confirm(`${dependents.length} outro(s) módulo(s) dependem deste (${dependents.map((d) => d.label || d.key).join(", ")}). Arquivar mesmo assim? Planos que já incluem este módulo não são alterados.`)) return;
+    try {
+      await fnArchive({ key: editKey, active });
+      modal.hide();
+      await load();
+    } catch (e) {
+      alert("Erro: " + e.message);
+    }
+  }
+
+  document.getElementById("btnArquivar").addEventListener("click", () => setArchived(false));
+  document.getElementById("btnReativar").addEventListener("click", () => setArchived(true));
+</script>
+</body>
+</html>

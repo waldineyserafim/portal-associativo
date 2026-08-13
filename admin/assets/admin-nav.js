@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { key: "leads", href: "./leads.html", label: "Leads", icon: "bi-person-lines-fill" },
   { key: "domains", href: "./domains.html", label: "Domínios", icon: "bi-globe2" },
   { key: "plans", href: "./plans.html", label: "Planos", icon: "bi-layers" },
+  { key: "module-catalog", href: "./module-catalog.html", label: "Catálogo de Módulos", icon: "bi-boxes" },
   { key: "subscriptions", href: "./subscriptions.html", label: "Assinaturas", icon: "bi-receipt" },
   { key: "modules", href: "./modules.html", label: "Módulos", icon: "bi-puzzle" },
   { key: "audit", href: "./audit.html", label: "Auditoria", icon: "bi-clock-history" },

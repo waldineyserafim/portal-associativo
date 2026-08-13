@@ -120,7 +120,7 @@
 
         <!-- Assinatura -->
         <div class="tab-pane fade" id="tab-assinatura" role="tabpanel">
-          <div class="ds-card ds-card-body">
+          <div class="ds-card ds-card-body mb-3">
             <div id="semAssinatura" class="d-none">
               <p class="ds-text-sm ds-text-muted">Nenhuma assinatura registrada para esta organização.</p>
               <button class="btn btn-outline-primary btn-sm" id="btnCriarAssinatura">Registrar assinatura</button>
@@ -135,6 +135,7 @@
               <div class="col-md-4">
                 <label class="form-label">Valor mensal (R$)</label>
                 <input class="form-control" id="subValor" type="number" min="0" step="0.01">
+                <div class="form-text ds-text-xs d-none" id="subValorCustomNote">Plano Customizado — valor calculado abaixo, este campo fica só leitura.</div>
               </div>
               <div class="col-md-4">
                 <label class="form-label">Status</label>
@@ -154,6 +155,59 @@
               </div>
               <div class="col-12 d-flex justify-content-end">
                 <button class="btn btn-primary" id="btnSalvarAssinatura">Salvar assinatura</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Plano Customizado — só aparece quando orgData.plan === "customizado" -->
+          <div class="ds-card ds-card-body mb-3 d-none" id="customPlanCard">
+            <h6 class="mb-2">Módulos do plano Customizado</h6>
+            <p class="ds-text-sm ds-text-muted">Esta organização está no plano Customizado — módulos e preço são definidos individualmente aqui, não no template do plano (ver <a href="plans.html" target="_blank">Planos</a>).</p>
+            <div id="customPlanModules"></div>
+            <div class="row g-3 mt-1">
+              <div class="col-md-4">
+                <label class="form-label">Valor econômico dos módulos</label>
+                <div class="form-control-plaintext fw-bold" id="customEconomicValue">R$ 0</div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Desconto</label>
+                <div class="input-group">
+                  <select class="form-select" id="customDiscountType" style="max-width:110px;">
+                    <option value="">Sem desconto</option>
+                    <option value="percent">%</option>
+                    <option value="fixed">R$</option>
+                  </select>
+                  <input class="form-control" id="customDiscountValue" type="number" min="0" step="0.01" value="0">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Preço final sugerido</label>
+                <div class="form-control-plaintext fw-bold" id="customFinalPrice">R$ 0</div>
+              </div>
+            </div>
+            <div id="customPlanErrMsg" class="alert alert-danger py-2 small d-none mt-2"></div>
+            <div class="d-flex justify-content-end mt-2">
+              <button class="btn btn-primary" id="btnSalvarPlanoCustomizado">Salvar plano customizado</button>
+            </div>
+          </div>
+
+          <!-- Isenção de cobrança (por organização — nunca altera plano/módulos, ver CLAUDE.md) -->
+          <div class="ds-card ds-card-body" id="exemptionCard">
+            <h6 class="mb-2">Isenção de cobrança</h6>
+            <div id="exemptionStatus" class="mb-3"></div>
+            <div id="exemptionForm" class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Motivo *</label>
+                <input class="form-control" id="exemptReason" placeholder="Ex.: parceria institucional">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Isenta até (em branco = permanente)</label>
+                <input class="form-control" id="exemptUntil" type="date">
+              </div>
+              <div class="col-12">
+                <div id="exemptErrMsg" class="alert alert-danger py-2 small d-none"></div>
+                <button class="btn btn-outline-primary btn-sm" id="btnConcederIsencao">Conceder isenção</button>
+                <button class="btn btn-outline-danger btn-sm d-none" id="btnRevogarIsencao">Revogar isenção</button>
               </div>
             </div>
           </div>
@@ -539,6 +593,9 @@
   const fnProvisionOrganization = httpsCallable(functionsApi, "provisionOrganization");
   const fnSetOrganizationDomains = httpsCallable(functionsApi, "setOrganizationDomains");
   const fnRestoreSandboxBranding = httpsCallable(functionsApi, "restoreSandboxBranding");
+  const fnApplyOrgCustomPlan = httpsCallable(functionsApi, "applyOrgCustomPlan");
+  const fnGrantOrgExemption = httpsCallable(functionsApi, "grantOrgExemption");
+  const fnRevokeOrgExemption = httpsCallable(functionsApi, "revokeOrgExemption");
 
   // Único identificador do tenant Sandbox oficial da plataforma (ver
   // CLAUDE.md, Fase 3.7) — controla só a VISIBILIDADE do botão aqui; o
@@ -558,12 +615,19 @@
   // desde a Fase 3.1 — um plano novo criado lá ficava invisível/inatribuível
   // aqui (achados #24/#25 da auditoria de hardcodes). Populado uma vez, no boot.
   let PLAN_LABEL_MAP = {};
+  let PLAN_IS_CUSTOM_MAP = {};
+  let moduleCatalogCache = []; // moduleCatalog ativo, ordenado — usado pelo plano Customizado abaixo
   async function populatePlanSelects() {
-    const snap = await getDocs(collection(db, "systemPlans"));
-    const plans = snap.docs
+    const [plansSnap, catalogSnap] = await Promise.all([
+      getDocs(collection(db, "systemPlans")),
+      getDocs(query(collection(db, "moduleCatalog"), orderBy("order"))),
+    ]);
+    const plans = plansSnap.docs
       .map((d) => ({ id: d.id, ...d.data() }))
       .sort((a, b) => (a.label || a.id).localeCompare(b.label || b.id));
     PLAN_LABEL_MAP = Object.fromEntries(plans.map((p) => [p.id, p.label || p.id]));
+    PLAN_IS_CUSTOM_MAP = Object.fromEntries(plans.map((p) => [p.id, p.isCustom === true]));
+    moduleCatalogCache = catalogSnap.docs.map((d) => ({ key: d.id, ...d.data() })).filter((m) => m.active !== false);
     const optionsHtml = plans.map((p) => `<option value="${p.id}">${p.label || p.id}</option>`).join("");
     const orgPlanEl = document.getElementById("orgPlan");
     const subPlanEl = document.getElementById("subPlan");
@@ -787,7 +851,7 @@
   // Configurações → Geral (ver fillGeralForm).
   function fillDadosForm(o) {
     document.getElementById("orgSlug").value = o.slug || o.id || "";
-    document.getElementById("orgPlan").value = o.plan || "enterprise";
+    document.getElementById("orgPlan").value = o.plan || "";
     document.getElementById("orgStatus").value = orgStatus(o);
     document.getElementById("orgObs").value = o.observacoes || "";
   }
@@ -872,22 +936,25 @@
   });
 
   // ── Assinatura (doc ID = orgId) ─────────────────────────────────
+  let subData = null; // cache da última leitura de organizationSubscriptions/{orgId}, reaproveitado pela isenção
   async function loadAssinatura() {
     try {
       const snap = await getDoc(doc(db, "organizationSubscriptions", orgId));
-      if (!snap.exists()) {
+      subData = snap.exists() ? snap.data() : null;
+      if (!subData) {
         document.getElementById("semAssinatura").classList.remove("d-none");
         document.getElementById("formAssinatura").classList.add("d-none");
-        return;
+      } else {
+        document.getElementById("subPlan").value = subData.plan || "";
+        document.getElementById("subValor").value = subData.valorMensal || "";
+        document.getElementById("subStatus").value = subData.status || "ativa";
+        document.getElementById("subInicio").value = toInputDate(subData.dataInicio);
+        document.getElementById("subProxima").value = toInputDate(subData.proximaCobranca);
+        document.getElementById("semAssinatura").classList.add("d-none");
+        document.getElementById("formAssinatura").classList.remove("d-none");
       }
-      const s = snap.data();
-      document.getElementById("subPlan").value = s.plan || "enterprise";
-      document.getElementById("subValor").value = s.valorMensal || "";
-      document.getElementById("subStatus").value = s.status || "ativa";
-      document.getElementById("subInicio").value = toInputDate(s.dataInicio);
-      document.getElementById("subProxima").value = toInputDate(s.proximaCobranca);
-      document.getElementById("semAssinatura").classList.add("d-none");
-      document.getElementById("formAssinatura").classList.remove("d-none");
+      renderCustomPlanSection();
+      renderExemptionSection();
     } catch (e) {
       console.error(e);
     }
@@ -898,6 +965,10 @@
     document.getElementById("formAssinatura").classList.remove("d-none");
   });
   document.getElementById("btnSalvarAssinatura").addEventListener("click", async () => {
+    if (PLAN_IS_CUSTOM_MAP[orgData.plan]) {
+      alert('Esta organização está no plano Customizado — use "Salvar plano customizado" abaixo, o valor mensal é calculado, não digitado aqui.');
+      return;
+    }
     const inicio = document.getElementById("subInicio").value;
     const proxima = document.getElementById("subProxima").value;
     const payload = {
@@ -913,8 +984,144 @@
       await setDoc(doc(db, "organizationSubscriptions", orgId), payload, { merge: true });
       await logPlatformAction("assinatura_atualizada", { orgId, plan: payload.plan });
       alert("Assinatura salva.");
+      await loadAssinatura();
     } catch (e) {
       alert("Erro ao salvar assinatura: " + e.message);
+    }
+  });
+
+  // ── Plano Customizado (só quando orgData.plan === "customizado") ──
+  const money = (v) => `R$ ${(Number(v) || 0).toFixed(2).replace(".", ",")}`;
+
+  function customSelectedModuleKeys() {
+    return moduleCatalogCache.filter((m) => document.getElementById(`cmod_${m.key}`)?.checked).map((m) => m.key);
+  }
+
+  function updateCustomPlanPreview() {
+    const keys = customSelectedModuleKeys();
+    const economicValue = keys.reduce((sum, k) => sum + (moduleCatalogCache.find((m) => m.key === k)?.economicValue || 0), 0);
+    const discountType = document.getElementById("customDiscountType").value;
+    const discountValue = Number(document.getElementById("customDiscountValue").value) || 0;
+    let discountAmount = 0;
+    if (discountType === "percent") discountAmount = economicValue * discountValue / 100;
+    else if (discountType === "fixed") discountAmount = discountValue;
+    const finalPrice = Math.max(0, economicValue - discountAmount);
+    document.getElementById("customEconomicValue").textContent = money(economicValue);
+    document.getElementById("customFinalPrice").textContent = money(finalPrice);
+  }
+
+  function renderCustomPlanSection() {
+    const isCustom = !!(orgData && PLAN_IS_CUSTOM_MAP[orgData.plan]);
+    document.getElementById("customPlanCard").classList.toggle("d-none", !isCustom);
+    document.getElementById("subValorCustomNote").classList.toggle("d-none", !isCustom);
+    document.getElementById("subValor").readOnly = isCustom;
+    if (!isCustom) return;
+
+    const currentKeys = subData?.customPlan?.moduleKeys || Object.keys(orgData.modules || {}).filter((k) => orgData.modules[k]);
+    const container = document.getElementById("customPlanModules");
+    container.innerHTML = moduleCatalogCache.map((m) => `
+      <div class="form-check border rounded px-2 py-1 mb-1">
+        <input class="form-check-input" type="checkbox" id="cmod_${m.key}" ${currentKeys.includes(m.key) ? "checked" : ""}>
+        <label class="form-check-label ds-text-sm" for="cmod_${m.key}">
+          <strong>${m.label}</strong> <span class="ds-text-muted">— ${money(m.economicValue)}</span>
+          ${m.dependencies?.length ? `<div class="ds-text-xs ds-text-muted">Requer: ${m.dependencies.join(", ")}</div>` : ""}
+        </label>
+      </div>
+    `).join("") || '<span class="ds-text-sm ds-text-muted">Nenhum módulo cadastrado no catálogo ainda.</span>';
+    moduleCatalogCache.forEach((m) => document.getElementById(`cmod_${m.key}`)?.addEventListener("change", updateCustomPlanPreview));
+
+    document.getElementById("customDiscountType").value = subData?.customPlan?.discountType || "";
+    document.getElementById("customDiscountValue").value = subData?.customPlan?.discountValue || 0;
+    updateCustomPlanPreview();
+  }
+  document.getElementById("customDiscountType").addEventListener("change", updateCustomPlanPreview);
+  document.getElementById("customDiscountValue").addEventListener("input", updateCustomPlanPreview);
+
+  document.getElementById("btnSalvarPlanoCustomizado").addEventListener("click", async () => {
+    const errMsg = document.getElementById("customPlanErrMsg");
+    errMsg.classList.add("d-none");
+    const moduleKeys = customSelectedModuleKeys();
+    const discountType = document.getElementById("customDiscountType").value || null;
+    const discountValue = Number(document.getElementById("customDiscountValue").value) || 0;
+    const btn = document.getElementById("btnSalvarPlanoCustomizado");
+    btn.disabled = true;
+    try {
+      await fnApplyOrgCustomPlan({ orgId, moduleKeys, discountType, discountValue });
+      await logPlatformAction("org_plano_customizado_atualizado_ui", { orgId, moduleKeys });
+      alert("Plano customizado salvo.");
+      await loadOrg();
+    } catch (e) {
+      errMsg.textContent = "Erro: " + e.message;
+      errMsg.classList.remove("d-none");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // ── Isenção de cobrança (organizationSubscriptions/{orgId}.exempt*) ──
+  // Isenção é característica da ASSINATURA, nunca do plano — nunca altera
+  // orgData.plan/modules. "Está isenta agora?" é calculado aqui (mesma regra
+  // de lib/orgExemption.js no backend: exempt && (!exemptUntil || exemptUntil > now)).
+  function isCurrentlyExempt(s) {
+    if (!s?.exempt) return false;
+    if (!s.exemptUntil) return true;
+    const untilMs = s.exemptUntil.toDate ? s.exemptUntil.toDate().getTime() : new Date(s.exemptUntil).getTime();
+    return untilMs > Date.now();
+  }
+
+  function renderExemptionSection() {
+    const exemptNow = isCurrentlyExempt(subData);
+    const statusEl = document.getElementById("exemptionStatus");
+    if (exemptNow) {
+      const untilTxt = subData.exemptUntil ? `até ${toInputDate(subData.exemptUntil).split("-").reverse().join("/")}` : "permanente";
+      statusEl.innerHTML = `<span class="badge bg-info text-dark">Isenta (${untilTxt})</span> <span class="ds-text-xs ds-text-muted">Motivo: ${subData.exemptReason || "—"}</span>`;
+    } else if (subData?.exempt === false && subData?.exemptRevokedAt) {
+      statusEl.innerHTML = '<span class="badge bg-secondary">Não isenta</span> <span class="ds-text-xs ds-text-muted">Isenção anterior revogada.</span>';
+    } else {
+      statusEl.innerHTML = '<span class="badge bg-secondary">Não isenta</span>';
+    }
+    document.getElementById("exemptionForm").classList.toggle("d-none", exemptNow);
+    document.getElementById("btnRevogarIsencao").classList.toggle("d-none", !exemptNow);
+  }
+
+  document.getElementById("btnConcederIsencao").addEventListener("click", async () => {
+    const errMsg = document.getElementById("exemptErrMsg");
+    errMsg.classList.add("d-none");
+    const reason = document.getElementById("exemptReason").value.trim();
+    const exemptUntil = document.getElementById("exemptUntil").value;
+    if (!reason) { errMsg.textContent = "Motivo é obrigatório."; errMsg.classList.remove("d-none"); return; }
+
+    const planLabel = PLAN_LABEL_MAP[orgData.plan] || orgData.plan || "—";
+    const valorNormal = subData?.valorMensal != null ? money(subData.valorMensal) : "—";
+    const msg = exemptUntil
+      ? `Organização: ${orgData.nome}\nPlano: ${planLabel}\nValor normal: ${valorNormal}/mês\n\nIsenção TEMPORÁRIA até ${exemptUntil.split("-").reverse().join("/")}.\nA organização continua usando o plano normalmente. Confirmar?`
+      : `Organização: ${orgData.nome}\nPlano: ${planLabel}\nValor normal: ${valorNormal}/mês\n\nIsenção PERMANENTE (sem data de expiração) — confirmar?`;
+    if (!confirm(msg)) return;
+
+    const btn = document.getElementById("btnConcederIsencao");
+    btn.disabled = true;
+    try {
+      await fnGrantOrgExemption({ orgId, reason, exemptUntil: exemptUntil || null });
+      await logPlatformAction("org_isencao_concedida_ui", { orgId, permanent: !exemptUntil });
+      document.getElementById("exemptReason").value = "";
+      document.getElementById("exemptUntil").value = "";
+      await loadAssinatura();
+    } catch (e) {
+      errMsg.textContent = "Erro: " + e.message;
+      errMsg.classList.remove("d-none");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById("btnRevogarIsencao").addEventListener("click", async () => {
+    if (!confirm("Revogar a isenção desta organização? A cobrança normal volta a valer.")) return;
+    try {
+      await fnRevokeOrgExemption({ orgId });
+      await logPlatformAction("org_isencao_revogada_ui", { orgId });
+      await loadAssinatura();
+    } catch (e) {
+      alert("Erro: " + e.message);
     }
   });
 
